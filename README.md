@@ -4,8 +4,9 @@ A pixel-perfect recreation of the BHIM UPI fintech app dashboard with an interac
 
 ## Live Demo
 
-> After deploying, your app will be live at:  
-> `https://<your-username>.github.io/bhim-upi/`
+**https://unico-connect.github.io/bhim-poc/**
+
+If you see **404**: In the repo go to **Settings → Pages**. Set **Source** to **"GitHub Actions"** (so the workflow deploys the site), then push a commit or re-run the "Deploy to GitHub Pages" workflow from the Actions tab.
 
 ## Features
 
