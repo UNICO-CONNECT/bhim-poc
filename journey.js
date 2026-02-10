@@ -343,7 +343,7 @@ function verifyHTML(step) {
   });
   return `
   <div class="screen screen-verify screen--no-anim">${statusBarSVG(true)}<div class="verify-overlay"></div>
-    <div class="verify-sheet"><h2 class="verify-sheet__title">Verifying Your Number</h2><div class="verify-steps">${sh}</div></div>${homeIndHTML()}
+    <div class="verify-sheet"><h2 class="verify-sheet__title">Verifying Your Number</h2><div class="verify-steps" id="verify-steps">${sh}</div></div>${homeIndHTML()}
   </div>`;
 }
 
@@ -839,7 +839,13 @@ function showTooltipStep(idx) {
   wait(() => {
     const tt = TOOLTIP_DATA[idx];
     const el = document.querySelector(tt.element);
-    if (!el) return;
+    if (!el) {
+      // Element not found — skip forward so flow never gets stuck
+      console.warn('Tooltip target not found:', tt.element, '— skipping');
+      if (idx < TOOLTIP_DATA.length - 1) showTooltipStep(idx + 1);
+      else endTooltipTour();
+      return;
+    }
 
     let body = `<div class="tt-text">${tt.text}</div>`;
     if (tt.bullets) {
