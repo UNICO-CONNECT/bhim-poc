@@ -2180,7 +2180,32 @@ body.driver-active .screen-language .lang-list,
 body.driver-active .screen-mobile,
 body.driver-active .screen-otp,
 body.driver-active .screen-sim,
-body.driver-active .screen-verify {
+body.driver-active .screen-verify,
+body.driver-active #phone-shell,
+body.driver-active .screen,
+body.driver-active .screen-ab-select,
+body.driver-active .screen-ab-method-select,
+body.driver-active .screen-ab-debit,
+body.driver-active .screen-ab-otp,
+body.driver-active .screen-ab-setpin,
+body.driver-active .screen-ab-confirmpin,
+body.driver-active .screen-ab-success,
+body.driver-active .screen-ab-methods,
+body.driver-active .ab-select-content,
+body.driver-active .ab-debit-content,
+body.driver-active .ab-pin-content,
+body.driver-active .ab-success-content,
+body.driver-active .ab-ms-overlay,
+body.driver-active .ab-ms-sheet,
+body.driver-active .content,
+body.driver-active .screen--no-anim {
+  overflow: visible !important;
+}
+
+/* Counter Driver.js's own overflow:hidden rule on direct parents of highlighted element.
+   :not(body):has(> .driver-active-element) { overflow:hidden!important }
+   We need HIGHER specificity to win.  */
+body.driver-active :not(body):has(> .driver-active-element) {
   overflow: visible !important;
 }
 
@@ -2412,6 +2437,83 @@ body.driver-active .verify-sheet {
 /* Only apply circle radius for scanner button highlight on home screen */
 .driver-active-element#scanner-btn {
   border-radius: 50% !important;
+}
+
+/* Add Bank tour: keep highlighted cards above overlay and avoid mask clipping. */
+body.driver-active #bank-card,
+body.driver-active #ab-tour-select-bank-header,
+body.driver-active #ab-tour-method-sheet,
+body.driver-active #ab-tour-debit-content,
+body.driver-active #ab-tour-otp-row,
+body.driver-active #ab-tour-setpin-row,
+body.driver-active .ab-success-content {
+  position: relative !important;
+  z-index: 1000000001 !important;
+}
+
+/* Break stacking contexts on ancestor containers so highlighted elements can escape
+   above the Driver.js overlay (z-index: 1000000000). */
+body.driver-active .ab-ms-overlay {
+  z-index: auto !important;
+  background: transparent !important;
+}
+body.driver-active .ab-select-content {
+  z-index: auto !important;
+}
+
+.driver-active-element#bank-card,
+.driver-active-element#ab-tour-select-bank-header,
+.driver-active-element#ab-tour-method-sheet,
+.driver-active-element#ab-tour-debit-content,
+.driver-active-element#ab-tour-otp-row,
+.driver-active-element#ab-tour-setpin-row,
+.driver-active-element.ab-success-content {
+  border-radius: 16px !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 10px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Give OTP & PIN rows a solid card-like background when highlighted */
+.driver-active-element#ab-tour-otp-row,
+.driver-active-element#ab-tour-setpin-row {
+  background: #fff !important;
+  padding: 20px 24px !important;
+  border-radius: 12px !important;
+}
+
+/* Give debit content a solid background when highlighted */
+.driver-active-element#ab-tour-debit-content {
+  background: #fff !important;
+}
+
+/* Give select bank header a solid background when highlighted */
+.driver-active-element#ab-tour-select-bank-header {
+  background: #fff !important;
+}
+
+/* Add Bank tour popover: description-only, center-aligned text & buttons. */
+.ab-driver-popover .driver-popover-title {
+  display: none !important;
+}
+
+.ab-driver-popover .driver-popover-description {
+  text-align: center !important;
+}
+
+.ab-driver-popover .bhim-popover-footer {
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ab-driver-popover .bhim-popover-dots {
+  justify-content: center;
+}
+
+.ab-driver-popover .bhim-popover-buttons {
+  justify-content: center;
+  width: 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -563,7 +563,7 @@ function selectBankHTML() {
     <div class="ab-select-content">
       <h1 class="ab-title">Choose your bank</h1>
       <p class="ab-subtitle">Select which bank you have an account with</p>
-      <div class="ab-bank-header">
+      <div class="ab-bank-header" id="ab-tour-select-bank-header">
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
@@ -609,7 +609,7 @@ function debitCardHTML() {
       <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
-    <div class="ab-debit-content">
+    <div class="ab-debit-content" id="ab-tour-debit-content">
       <div class="ab-debit-section">
         <p class="ab-debit-label">LAST 6 DIGIT OF DEBIT CARD</p>
         <div class="ab-digit-row" id="ab-card-digits">${cardBoxes}</div>
@@ -642,9 +642,9 @@ function bankOtpHTML() {
       <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
-    <div class="ab-pin-content">
+    <div class="ab-pin-content" id="ab-tour-otp-content">
       <p class="ab-pin-heading">ENTER OTP</p>
-      <div class="ab-pin-row" id="ab-otp-row">${boxes}</div>
+      <div class="ab-pin-row" id="ab-tour-otp-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("otp")}</div>
   </div>`;
@@ -666,9 +666,9 @@ function setUpiPinHTML() {
       <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
-    <div class="ab-pin-content">
+    <div class="ab-pin-content" id="ab-tour-setpin-content">
       <p class="ab-pin-heading">ENTER NEW UPI PIN</p>
-      <div class="ab-pin-row" id="ab-pin-row">${boxes}</div>
+      <div class="ab-pin-row" id="ab-tour-setpin-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("pin")}</div>
   </div>`;
@@ -812,7 +812,7 @@ function methodSelectHTML() {
     </div>
     <!-- Bottom sheet overlay -->
     <div class="ab-ms-overlay">
-      <div class="ab-ms-sheet">
+      <div class="ab-ms-sheet" id="ab-tour-method-sheet">
         <div class="ab-ms-handle"></div>
         <h3 class="ab-ms-title">Choose option to set UPI PIN</h3>
         <div class="ab-ms-options">
@@ -1079,7 +1079,7 @@ function abNumpadHTML(target) {
 
 // ─── Add Bank Account – 7-Step Tooltip Tour ─────────────────
 let addBankTourStep = 0;
-const ADD_BANK_TOUR_TOTAL = 7;
+const ADD_BANK_TOUR_TOTAL = 6;
 
 function abTourDots(activeIdx) {
   let d = "";
@@ -1122,70 +1122,61 @@ function abTourShow() {
     {
       screen: null, // already on HOME
       element: "#bank-card",
-      title: "Link Your Bank",
-      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      title: "",
+      desc: "यूपीआई पे में आपका स्वागत है",
       side: "bottom",
       radius: 16,
     },
     // Step 1: Select Account – highlight account list
     {
       screen: S.ADD_BANK_SELECT,
-      element: ".ab-account-list",
-      title: "Select Your Account",
-      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      element: "#ab-tour-select-bank-header",
+      title: "",
+      desc: "Select bank from the list below and link your bank account to proceed further",
       side: "bottom",
       radius: 12,
     },
     // Step 2: Method Select – highlight bottom sheet
     {
       screen: S.ADD_BANK_METHOD_SELECT,
-      element: ".ab-ms-sheet",
-      title: "Choose Verification Method",
-      desc: "Link your bank account via Debit Card or Aadhaar number to set your UPI PIN securely.",
+      element: "#ab-tour-method-sheet",
+      title: "",
+      desc: "Link your bank account via Debit Card",
       side: "top",
       radius: 20,
     },
     // Step 3: Debit Card – highlight input area
     {
       screen: S.ADD_BANK_DEBIT_CARD,
-      element: ".ab-debit-content",
-      title: "Enter Debit Card Details",
-      desc: "Enter your debit card details to link and confirm the account for UPI transactions.",
+      element: "#ab-tour-debit-content",
+      title: "",
+      desc: "Enter your debit card details to link your bank account",
       side: "bottom",
       radius: 12,
     },
     // Step 4: OTP – highlight PIN row
     {
       screen: S.ADD_BANK_OTP,
-      element: ".ab-pin-content",
-      title: "Enter OTP",
-      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      element: "#ab-tour-otp-row",
+      title: "",
+      desc: "Select bank from the list below and link your bank account to proceed further",
       side: "bottom",
       radius: 12,
     },
     // Step 5: Set UPI PIN – highlight PIN content
     {
       screen: S.ADD_BANK_SET_PIN,
-      element: ".ab-pin-content",
-      title: "Enter New UPI PIN",
-      desc: "Your new UPI PIN will be saved with your bank. You will need to enter this PIN every time you make a payment or transaction. Keep your UPI PIN safe and secure.",
-      side: "bottom",
-      radius: 12,
-    },
-    // Step 6: Success – highlight success content
-    {
-      screen: S.ADD_BANK_SUCCESS,
-      element: ".ab-success-content",
-      title: "Bank Added Successfully",
-      desc: "Your bank has been successfully linked. Now you can make instant payments and transfers using your bank account.",
-      side: "bottom",
+      element: "#ab-tour-setpin-row",
+      title: "",
+      desc: "Your bank will ask you to set a 4 or 6 digit UPI PIN (as per bank rules). This PIN is required to approve UPI payments from your account.\n\nChoose a PIN you can easily remember, keep it confidential, and never share it with anyone.\nBHIM or your bank will never ask for your UPI PIN-stay alert and secure.",
+      side: "top",
       radius: 12,
     },
   ];
 
   if (addBankTourStep >= tourSteps.length) {
-    // Tour completed – go to payment methods
-    renderScreen(S.ADD_BANK_PAYMENT_METHODS);
+    // Tour completed – continue normal flow
+    renderScreen(S.ADD_BANK_SUCCESS);
     return;
   }
 
@@ -1197,8 +1188,15 @@ function abTourShow() {
     renderScreen(step.screen);
   }
 
-  // Wait for DOM to be ready, then highlight
-  wait(() => {
+  // Wait for DOM to be ready and target to exist, then highlight
+  const showStep = (attempt = 0) => {
+    const targetEl = document.querySelector(step.element);
+    if (!targetEl) {
+      if (attempt < 8) {
+        wait(() => showStep(attempt + 1), 120);
+      }
+      return;
+    }
     const dObj = window.driver.js.driver({
       showProgress: false,
       showButtons: [],
@@ -1206,7 +1204,7 @@ function abTourShow() {
       stagePadding: 10,
       stageRadius: step.radius || 12,
       animate: true,
-      popoverClass: "bhim-driver-popover",
+      popoverClass: "bhim-driver-popover ab-driver-popover",
       allowClose: true,
       onDestroyStarted: () => {
         activeDriver = null;
@@ -1224,7 +1222,8 @@ function abTourShow() {
     });
     window.bhimDriver = dObj;
     activeDriver = dObj;
-  }, 400);
+  };
+  wait(() => showStep(), 400);
 }
 
 function selectBankAccount(idx) {
