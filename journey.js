@@ -196,10 +196,12 @@ function landingHTML() {
     <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
+      <!-- Temporarily hidden
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>5.</span> Check Balance</button>
+      -->
     </div>
   </div>`;
 }
