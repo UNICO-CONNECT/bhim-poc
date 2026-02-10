@@ -1142,7 +1142,7 @@ body {
 }
 .sec-footer {
   position: absolute;
-  bottom: 0;
+  bottom: -10px;
   left: 0;
   right: 0;
   height: 64px;
@@ -1165,6 +1165,12 @@ body {
   border-bottom: 1px solid #6ea2ec;
 }
 .sec-footer svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+/* Override radio color for passcode option */
+#sec-opt-passcode .lang-radio--checked {
+  border-color: #28bf72;
+  background: #28bf72;
+}
 
 /* =============================================================
    SCREEN: PASSCODE
@@ -1246,6 +1252,12 @@ body {
 .screen-loading-splash {
   justify-content: center;
   align-items: center;
+}
+.screen-loading-splash .ob-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 .loading-content {
   position: relative;
