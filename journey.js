@@ -813,6 +813,7 @@ const TOOLTIP_DATA = [
       "User does not need to do anything here",
     ],
     side: "top",
+    offset: 100, // Large gap to fully clear the card
   },
 ];
 
@@ -878,7 +879,12 @@ function showTooltipStep(idx) {
     });
     dObj.highlight({
       element: tt.element,
-      popover: { description: body, side: tt.side, align: "center" },
+      popover: { 
+        description: body, 
+        side: tt.side, 
+        align: "center",
+        ...(tt.offset && { offset: tt.offset, popoverOffset: tt.offset })
+      },
     });
     activeDriver = dObj;
   }, 300);
