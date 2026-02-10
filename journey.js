@@ -158,140 +158,9 @@ function staticKBHTML() {
   return h;
 }
 
-// ─── PREVIEW Screen Renderers (for Tooltip Tour) ─────────────
-// These show static, pre-filled screens used as backdrops for tooltips.
-
-function previewGetStartedHTML() {
-  return `
-  <div class="screen screen-get-started screen--no-anim">
-    <div class="gs-blue-bg"></div>
-    ${statusBarSVG(false)}
-    <div class="gs-header">
-      <div style="margin-top:8px">${upiLogoSVG(80, 36, "upi.svg")}</div>
-      <div class="gs-tagline">India's most loved<br>UPI App!</div>
-    </div>
-    <div class="gs-body">
-      <div class="gs-carousel"><div class="gs-carousel__icon"><img src="assets/star.png" width="24" height="24" alt="Star"></div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
-      <div class="gs-dots"><div class="gs-dot"></div><div class="gs-dot gs-dot--active"></div><div class="gs-dot"></div><div class="gs-dot"></div></div>
-      <div id="gs-lang-section" class="gs-lang-section">
-        <p class="gs-lang-title">Choose your preferred language</p>
-        <div class="gs-lang-cards">
-          <div class="gs-lang-card"><div class="gs-lang-card__text"><h3>हिंदी</h3><p>नमस्ते</p></div><div class="gs-lang-card__radio"></div></div>
-          <div class="gs-lang-card"><div class="gs-lang-card__text"><h3>मराठी</h3><p>नमस्कार</p></div><div class="gs-lang-card__radio"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="ob-bottom-bar">
-      <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary">view all languages</button></div>
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary">Proceed</button></div>
-      ${homeIndHTML()}
-    </div>
-  </div>`;
-}
-
-function previewLangHTML() {
-  const langs = [
-    "हिन्दी|Hindi",
-    "मराठी|Marathi",
-    "English|",
-    "বাংলা|Bengali",
-    "தமிழ்|Tamil",
-    "తెలుగు|Telegu",
-    "ગુજરાતી|Gujarati",
-  ];
-  let list = "";
-  langs.forEach((l, i) => {
-    const [native, eng] = l.split("|");
-    const isSel = native === "English";
-    const cls = isSel ? " lang-item--selected" : "";
-    const radio = isSel
-      ? '<div class="lang-radio lang-radio--checked"></div>'
-      : '<div class="lang-radio"></div>';
-    list += `<div class="lang-item${cls}" id="lang-${i}"><div class="lang-item__text"><h4>${native}</h4>${eng ? "<p>" + eng + "</p>" : ""}</div>${radio}</div>`;
-  });
-  return `
-  <div class="screen screen-language screen--no-anim">
-    <div class="ob-tricolor"></div>
-    ${statusBarSVG(true)}
-    <div class="ob-page-header"><button class="ob-back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#0b0b0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="ob-page-title">Change language</span></div>
-    <div class="lang-search"><div class="lang-search__box"><svg class="lang-search__icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#999" stroke-width="1.5"/><path d="M14 14l4 4" stroke="#999" stroke-width="1.5" stroke-linecap="round"/></svg>Search preferred language<svg class="lang-search__mic" viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="10" rx="3" stroke="#999" stroke-width="1.3"/><path d="M4 10c0 4 3 6 6 6s6-2 6-6" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><path d="M10 16v3" stroke="#999" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-    <div class="lang-list" id="lang-list">${list}</div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary">Done</button></div>${homeIndHTML()}</div>
-  </div>`;
-}
-
-function previewMobileHTML() {
-  return `
-  <div class="screen screen-mobile screen--no-anim">
-    <div class="ob-tricolor"></div>${statusBarSVG(true)}
-    <div class="ob-page-header"><button class="ob-back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#0b0b0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-    <div class="mob-content">
-      <h1 class="mob-title">Enter Your Mobile Number</h1>
-      <p class="mob-subtitle">Please enter the mobile number linked to your bank account to continue using the UPI app.</p>
-      <div class="mob-input-wrap" id="mob-input-wrap"><div class="mob-flag">${indianFlagSVG()}</div><svg class="mob-dropdown" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#999" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mob-code">+91</span><div class="mob-divider"></div><span class="mob-number">9999999999</span></div>
-      <div class="mob-btn-area"><button class="ob-btn ob-btn--primary">Proceed</button></div>
-    </div>${staticKBHTML()}${homeIndHTML()}
-  </div>`;
-}
-
-function previewOtpHTML() {
-  let boxes = "";
-  for (let i = 0; i < 6; i++) boxes += '<div class="otp-box">-</div>';
-  return `
-  <div class="screen screen-otp screen--no-anim">
-    <div class="ob-tricolor"></div>${statusBarSVG(true)}
-    <div class="ob-page-header"><button class="ob-back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#0b0b0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-    <div class="otp-content">
-      <h1 class="otp-title">We are fetching your OTP sent on your number</h1>
-      <div class="otp-number-row"><span class="otp-phone">+91 9999999999</span><span class="otp-change">Change →</span></div>
-      <div class="otp-boxes" id="otp-boxes">${boxes}</div>
-      <p class="otp-timer">Auto reading OTP 1:00</p>
-      <div class="otp-btn-area"><button class="ob-btn ob-btn--disabled">Proceed</button></div>
-    </div>${staticKBHTML()}${homeIndHTML()}
-  </div>`;
-}
-
-function previewSimHTML() {
-  return `
-  <div class="screen screen-sim screen--no-anim">
-    <div class="ob-tricolor"></div>${statusBarSVG(true)}
-    <div class="ob-page-header"><button class="ob-back-btn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#0b0b0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-    <div class="sim-content">
-      <h1 class="sim-title">Lets Verify your number</h1>
-      <p class="sim-subtitle">Choose a SIM card registered to your bank account</p>
-      <div class="sim-cards" id="sim-cards">
-        <div class="sim-card"><div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><path d="M12 34 C16 18, 32 18, 36 34" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div><div class="sim-card__bottom"><div><div class="sim-card__name">Airtel</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"></div></div></div>
-        <div class="sim-card"><div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Jio</text></svg></div><div class="sim-card__bottom"><div><div class="sim-card__name">Jio</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"></div></div></div>
-      </div>
-      <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.</span></div>
-    </div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled">Confirm SIM</button></div>${homeIndHTML()}</div>
-  </div>`;
-}
-
-function previewVerifyHTML() {
-  const steps = [
-    { text: "Verify Mobile Number", active: true },
-    { text: "SMS sent from your mobile", active: true },
-    { text: "Verification completed", active: true },
-  ];
-  let stepsHTML = "";
-  steps.forEach((s, i) => {
-    stepsHTML += `<div class="verify-step verify-step--active"><div class="verify-step__circle">${checkCircleSVG(true)}</div><span class="verify-step__text">${s.text}</span></div>`;
-    if (i < 2)
-      stepsHTML +=
-        '<div class="verify-connector verify-connector--active"></div>';
-  });
-  return `
-  <div class="screen screen-verify screen--no-anim">
-    ${statusBarSVG(true)}
-    <div class="verify-overlay"></div>
-    <div class="verify-sheet"><h2 class="verify-sheet__title">Verifying Your Number</h2><div class="verify-steps" id="verify-steps">${stepsHTML}</div></div>
-    ${homeIndHTML()}
-  </div>`;
-}
-
 // ─── INTERACTIVE Screen Renderers (Manual Flow) ──────────────
+// These functions accept an optional `mode` parameter.
+// When mode === "preview", screens get `screen--no-anim` class and use static keyboards.
 
 function landingHTML() {
   return `
@@ -315,16 +184,19 @@ function splash2HTML() {
   return `<div class="screen screen-splash"><div class="ob-tricolor"></div><div class="ob-circle-deco"></div><div class="ob-sparkle ob-sparkle--1">${sparkleSVG()}</div><div class="ob-sparkle ob-sparkle--2">${sparkleSVG()}</div><p class="splash-text">यूपीआई ऐप खोलें</p><div class="splash-logo splash-logo--animate">${upiLogoDarkSVG(180, 75, "upi_dark_lg.svg")}</div></div>`;
 }
 
-function getStartedHTML() {
+function getStartedHTML(mode) {
+  const isPreview = mode === "preview";
+  const noAnim = isPreview ? " screen--no-anim" : "";
+  const langSectionId = isPreview ? ' id="gs-lang-section"' : '';
   return `
-  <div class="screen screen-get-started">
+  <div class="screen screen-get-started${noAnim}">
     <div class="gs-blue-bg"></div>
     ${statusBarSVG(false)}
     <div class="gs-header"><div style="margin-top:8px">${upiLogoSVG(91, 48, "upi.svg")}</div><div class="gs-tagline">India's most loved<br>UPI App!</div></div>
     <div class="gs-body">
       <div class="gs-carousel"><div class="gs-carousel__icon"><img width="64" height="64" src="assets/star.png"  alt="Star"></div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
       <div class="gs-dots"><div class="gs-dot"></div><div class="gs-dot gs-dot--active"></div><div class="gs-dot"></div><div class="gs-dot"></div></div>
-      <div class="gs-lang-section">
+      <div class="gs-lang-section"${langSectionId}>
         <p class="gs-lang-title">Choose your preferred language</p>
         <div class="gs-lang-cards">
           <div class="gs-lang-card"><div class="gs-lang-card__text"><h3>हिंदी</h3><p>नमस्ते</p></div><div class="gs-lang-card__radio"></div></div>
@@ -333,14 +205,16 @@ function getStartedHTML() {
       </div>
     </div>
     <div class="ob-bottom-bar">
-      <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary" onclick="renderScreen(S.LANG_SELECT)">view all languages</button></div>
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.LANG_SELECT)">Proceed</button></div>
+      <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>view all languages</button></div>
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>Proceed</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
 }
 
-function langSelectHTML() {
+function langSelectHTML(mode) {
+  const isPreview = mode === "preview";
+  const noAnim = isPreview ? " screen--no-anim" : "";
   const langs = [
     { native: "हिन्दी", eng: "Hindi" },
     { native: "मराठी", eng: "Marathi" },
@@ -352,39 +226,65 @@ function langSelectHTML() {
   ];
   let list = "";
   langs.forEach((l, i) => {
-    list += `<div class="lang-item" id="lang-item-${i}" onclick="selectLanguage(${i})"><div class="lang-item__text"><h4>${l.native}</h4>${l.eng ? "<p>" + l.eng + "</p>" : ""}</div><div class="lang-radio" id="lang-radio-${i}"></div></div>`;
+    const isSel = isPreview && l.native === "English";
+    const cls = isSel ? " lang-item--selected" : "";
+    const radio = isSel
+      ? '<div class="lang-radio lang-radio--checked"></div>'
+      : `<div class="lang-radio" id="lang-radio-${i}"></div>`;
+    const onclick = isPreview ? '' : ` onclick="selectLanguage(${i})"`;
+    list += `<div class="lang-item${cls}" id="lang-item-${i}"${onclick}><div class="lang-item__text"><h4>${l.native}</h4>${l.eng ? "<p>" + l.eng + "</p>" : ""}</div>${radio}</div>`;
   });
+  const doneBtn = isPreview
+    ? '<button class="ob-btn ob-btn--primary">Done</button>'
+    : '<button class="ob-btn ob-btn--disabled" id="lang-done-btn">Done</button>';
   return `
-  <div class="screen screen-language">
+  <div class="screen screen-language${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}<span class="ob-page-title">Change language</span></div>
     <div class="lang-search"><div class="lang-search__box"><svg class="lang-search__icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#999" stroke-width="1.5"/><path d="M14 14l4 4" stroke="#999" stroke-width="1.5" stroke-linecap="round"/></svg>Search preferred language<svg class="lang-search__mic" viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="10" rx="3" stroke="#999" stroke-width="1.3"/><path d="M4 10c0 4 3 6 6 6s6-2 6-6" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><path d="M10 16v3" stroke="#999" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-    <div class="lang-list">${list}</div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled" id="lang-done-btn">Done</button></div>${homeIndHTML()}</div>
+    <div class="lang-list" id="lang-list">${list}</div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner">${doneBtn}</div>${homeIndHTML()}</div>
   </div>`;
 }
 
-function mobileEntryHTML() {
+function mobileEntryHTML(mode) {
+  const isPreview = mode === "preview";
+  const noAnim = isPreview ? " screen--no-anim" : "";
+  const phoneDisplay = isPreview ? "9999999999" : "";
+  const inputId = isPreview ? '' : ' id="mob-number"';
+  const wrapId = isPreview ? ' id="mob-input-wrap"' : '';
+  const btnClass = isPreview ? "ob-btn--primary" : "ob-btn--disabled";
+  const btnId = isPreview ? '' : ' id="mob-proceed-btn"';
+  const kb = isPreview ? staticKBHTML() : interactiveKBHTML();
   return `
-  <div class="screen screen-mobile">
+  <div class="screen screen-mobile${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="mob-content">
       <h1 class="mob-title">Enter Your Mobile Number</h1>
       <p class="mob-subtitle">Please enter the mobile number linked to your bank account to continue using the UPI app.</p>
-      <div class="mob-input-wrap"><div class="mob-flag">${indianFlagSVG()}</div><svg class="mob-dropdown" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#999" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mob-code">+91</span><div class="mob-divider"></div><span class="mob-number" id="mob-number"></span></div>
-      <div class="mob-btn-area"><button class="ob-btn ob-btn--disabled" id="mob-proceed-btn">Proceed</button></div>
-    </div>${interactiveKBHTML()}${homeIndHTML()}
+      <div class="mob-input-wrap"${wrapId}><div class="mob-flag">${indianFlagSVG()}</div><svg class="mob-dropdown" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#999" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mob-code">+91</span><div class="mob-divider"></div><span class="mob-number"${inputId}>${phoneDisplay}</span></div>
+      <div class="mob-btn-area"><button class="ob-btn ${btnClass}"${btnId}>Proceed</button></div>
+    </div>${kb}${homeIndHTML()}
   </div>`;
 }
 
-function otpEntryHTML() {
+function otpEntryHTML(mode) {
+  const isPreview = mode === "preview";
+  const noAnim = isPreview ? " screen--no-anim" : "";
   let boxes = "";
-  for (let i = 0; i < 6; i++)
-    boxes += `<div class="otp-box" id="otp-box-${i}"></div>`;
+  for (let i = 0; i < 6; i++) {
+    if (isPreview) {
+      boxes += '<div class="otp-box">-</div>';
+    } else {
+      boxes += `<div class="otp-box" id="otp-box-${i}"></div>`;
+    }
+  }
   const phone = mobileInput || "9999999999";
+  const kb = isPreview ? staticKBHTML() : interactiveKBHTML();
+  const btnId = isPreview ? '' : ' id="otp-proceed-btn"';
   return `
-  <div class="screen screen-otp">
+  <div class="screen screen-otp${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="otp-content">
@@ -392,32 +292,35 @@ function otpEntryHTML() {
       <div class="otp-number-row"><span class="otp-phone">+91 ${phone}</span><span class="otp-change">Change →</span></div>
       <div class="otp-boxes" id="otp-boxes">${boxes}</div>
       <p class="otp-timer">Auto reading OTP 1:00</p>
-      <div class="otp-btn-area"><button class="ob-btn ob-btn--disabled" id="otp-proceed-btn">Proceed</button></div>
-    </div>${interactiveKBHTML()}${homeIndHTML()}
+      <div class="otp-btn-area"><button class="ob-btn ob-btn--disabled"${btnId}>Proceed</button></div>
+    </div>${kb}${homeIndHTML()}
   </div>`;
 }
 
-function simSelectHTML() {
+function simSelectHTML(mode) {
+  const isPreview = mode === "preview";
+  const noAnim = isPreview ? " screen--no-anim" : "";
+  const cardsId = isPreview ? ' id="sim-cards"' : '';
   return `
-  <div class="screen screen-sim">
+  <div class="screen screen-sim${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="sim-content">
       <h1 class="sim-title">Lets Verify your number</h1>
       <p class="sim-subtitle">Choose a SIM card registered to your bank account</p>
-      <div class="sim-cards">
-        <div class="sim-card" id="sim-card-airtel" onclick="selectSim('airtel')">
+      <div class="sim-cards"${cardsId}>
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-airtel" onclick="selectSim(\'airtel\')"'}>
           <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><path d="M12 34 C16 18, 32 18, 36 34" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Airtel</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio" id="sim-radio-airtel"></div></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Airtel</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-airtel"'}></div></div>
         </div>
-        <div class="sim-card" id="sim-card-jio" onclick="selectSim('jio')">
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-jio" onclick="selectSim(\'jio\')"'}>
           <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Jio</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Jio</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio" id="sim-radio-jio"></div></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Jio</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-jio"'}></div></div>
         </div>
       </div>
       <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.</span></div>
     </div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled" id="sim-confirm-btn">Confirm SIM</button></div>${homeIndHTML()}</div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled"${isPreview ? '' : ' id="sim-confirm-btn"'}>Confirm SIM</button></div>${homeIndHTML()}</div>
   </div>`;
 }
 
@@ -787,7 +690,7 @@ const TOOLTIP_DATA = [
     side: "top",
   },
   {
-    element: "#lang-2",
+    element: "#lang-item-2",
     text: "You can choose other languages apart from Hindi and English from here",
     side: "bottom",
   },
@@ -817,14 +720,14 @@ const TOOLTIP_DATA = [
   },
 ];
 
-// Preview screens shown behind each tooltip
+// Screens shown behind each tooltip (reusing interactive functions in preview mode)
 const TOOLTIP_SCREENS = [
-  previewGetStartedHTML,
-  previewLangHTML,
-  previewMobileHTML,
-  previewOtpHTML,
-  previewSimHTML,
-  previewVerifyHTML,
+  () => getStartedHTML("preview"),
+  () => langSelectHTML("preview"),
+  () => mobileEntryHTML("preview"),
+  () => otpEntryHTML("preview"),
+  () => simSelectHTML("preview"),
+  () => verifyHTML(3),
 ];
 
 function showTooltipStep(idx) {
