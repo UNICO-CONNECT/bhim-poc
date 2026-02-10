@@ -103,6 +103,7 @@ body {
 #app-container {
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
 /* ===== Phone Shell ===== */
@@ -113,7 +114,7 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 40px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+  /* box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15); */
 }
 
 /* ===== Screen Base ===== */
@@ -333,6 +334,7 @@ body {
   display: flex;
   justify-content: center;
   padding: 12px 0 7px;
+  z-index: 2;
 }
 
 .ob-home-ind__bar {
@@ -1774,6 +1776,143 @@ body {
   height: 8px;
 }
 
+/* Check balance UI (Figma): card with divider + Check balance btn or balance amount */
+.bank-card--with-check {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  min-height: 72px;
+}
+.bank-card--with-check .bank-card__info {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 10px 12px 14px;
+  gap: 10px;
+}
+.bank-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.bank-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  line-height: 1.3;
+}
+.bank-card__account {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-text-sec);
+  line-height: 1.3;
+}
+.bank-card__chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+.bank-card__divider {
+  width: 1px;
+  background: var(--c-border-light);
+  margin: 8px 0;
+}
+.bank-card__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  min-width: 0;
+}
+.bank-card__check-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-family: var(--font-primary);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-orange);
+  cursor: pointer;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+.bank-card__check-btn svg {
+  width: 10px;
+  height: 10px;
+}
+.bank-card__balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.bank-card__balance-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--c-text-sec);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.bank-card__balance-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  letter-spacing: 0.02em;
+}
+.bank-card-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 0 17px;
+}
+.bank-card-dots__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-border);
+  transition: background 0.2s;
+}
+.bank-card-dots__dot--active {
+  width: 18px;
+  border-radius: 10px;
+  background: var(--c-orange);
+}
+
+/* Home: UPI row (banner + UPI ID) */
+.home-upi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 6px 17px 0;
+  flex-wrap: wrap;
+}
+.ticker-banner--dashed .ticker-banner__pill {
+  border: 1px dashed #6ea2ec;
+  border-radius: 28px;
+}
+.home-upi-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--c-text-sec);
+}
+.home-upi-id__icon {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-sec);
+}
+
 .section {
   margin-top: 16px;
   padding: 0 16px;
@@ -1818,9 +1957,11 @@ body {
   transform: scale(0.92);
 }
 
-.icon-grid__circle svg {
+.icon-grid__circle svg,
+.icon-grid__circle .icon-grid__img {
   width: 24px;
   height: 24px;
+  object-fit: contain;
 }
 
 .icon-grid__label {
@@ -1876,7 +2017,12 @@ body {
   overflow: hidden;
 }
 
-.feature-item__icon img,
+.feature-item__icon .feature-item__img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .feature-item__icon span {
   font-size: 24px;
 }
@@ -2281,6 +2427,8 @@ body.driver-active .verify-sheet {
   width: 72px;
   height: 72px;
   border-radius: 50%;
+  border: 0;
+  padding: 0;
   background: linear-gradient(180deg, #f9a825 0%, var(--color-primary) 100%);
   display: flex;
   align-items: center;
@@ -2309,6 +2457,13 @@ body.driver-active .verify-sheet {
   height: 28px;
 }
 
+.scanner-fab__outer--bg {
+  background-image: url("assets/home/scanner.png"), linear-gradient(180deg, #f9a825 0%, var(--color-primary) 100%);
+  /* background-size: 50px 50px, 100% 100%; */
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, 0 0;
+}
+
 .home-indicator {
   position: absolute;
   bottom: 7px;
@@ -2319,6 +2474,7 @@ body.driver-active .verify-sheet {
   background: #4258a2;
   border-radius: 100px;
   opacity: 0.21;
+  z-index: 10;
 }
 
 /* ===== Home Screen Driver.js Overrides ===== */
@@ -2439,14 +2595,10 @@ body.driver-active .verify-sheet {
   border-radius: 50% !important;
 }
 
-/* Add Bank tour: keep highlighted cards above overlay and avoid mask clipping. */
-body.driver-active #bank-card,
-body.driver-active #ab-tour-select-bank-header,
-body.driver-active #ab-tour-method-sheet,
-body.driver-active #ab-tour-debit-content,
-body.driver-active #ab-tour-otp-row,
-body.driver-active #ab-tour-setpin-row,
-body.driver-active .ab-success-content {
+/* Only the element Driver.js is currently highlighting should sit above the overlay.
+   The library adds .driver-active-element to that single element — do not elevate
+   other IDs or multiple elements will appear highlighted (e.g. send-to-mobile, scanner). */
+body.driver-active .driver-active-element {
   position: relative !important;
   z-index: 1000000001 !important;
 }
@@ -2462,6 +2614,10 @@ body.driver-active .ab-select-content {
 }
 
 .driver-active-element#bank-card,
+.driver-active-element#check-balance-btn,
+.driver-active-element#bank-card-balance,
+.driver-active-element#bank-upi-transfer,
+.driver-active-element#send-to-mobile,
 .driver-active-element#ab-tour-select-bank-header,
 .driver-active-element#ab-tour-method-sheet,
 .driver-active-element#ab-tour-debit-content,
@@ -2911,6 +3067,23 @@ body.driver-active .ab-select-content {
   display: block;
 }
 
+.ab-pin-show {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--c-text-sec);
+  cursor: pointer;
+}
+.ab-pin-show__circle {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 50%;
+  display: inline-block;
+}
+
 .ab-pin-digit__line {
   width: 100%;
   height: 3px;
@@ -3040,10 +3213,26 @@ body.driver-active .ab-select-content {
 .ab-methods-bank {
   background: #f1f3f5;
   border-radius: 16px;
-  padding: 14px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.ab-methods-bank__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e8eaf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ab-methods-bank__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .ab-methods-bank__details {
@@ -3055,10 +3244,10 @@ body.driver-active .ab-select-content {
 .ab-methods-add {
   border: 2px dashed #d1d5db;
   border-radius: 16px;
-  padding: 14px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   transition: border-color 0.2s;
 }
@@ -3068,10 +3257,10 @@ body.driver-active .ab-select-content {
 }
 
 .ab-methods-add__icon {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: #e8eaf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3087,19 +3276,27 @@ body.driver-active .ab-select-content {
 
 /* ── Toast ────────────────────────────────────────────────── */
 .ab-toast {
-  position: absolute;
-  bottom: 24px;
-  left: 16px;
-  right: 16px;
   background: #fff;
-  border-radius: 12px;
+  position: absolute;
+  /* border-radius: 12px; */
   padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   z-index: 10;
   animation: ab-toast-in 0.4s ease-out;
+}
+
+.ab-toast--success {
+  height: 100px;
+  background: #dcfce7;
+  box-shadow: none;
+  width: 100%;
+  bottom: 0;
+  padding: 14px 16px;
+  z-index: 1;
 }
 
 @keyframes ab-toast-in {
@@ -3114,6 +3311,10 @@ body.driver-active .ab-select-content {
   }
 }
 
+.ab-toast__icon {
+  flex-shrink: 0;
+}
+
 .ab-toast__text {
   font-family: var(--font);
   font-weight: 400;
@@ -3123,13 +3324,22 @@ body.driver-active .ab-select-content {
   line-height: 1.4;
 }
 
+.ab-toast--success .ab-toast__text {
+  font-size: 13px;
+  color: #166534;
+}
+
 .ab-toast__close {
   font-family: var(--font);
   font-weight: 600;
-  font-size: 12px;
-  color: #16a34a;
+  font-size: 13px;
+  color: #0b0b0b;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.ab-toast--success .ab-toast__close {
+  color: #0b0b0b;
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -33,6 +33,8 @@ const S = Object.freeze({
   ADD_BANK_AADHAAR_CONSENT: "add_bank_aadhaar_consent",
   ADD_BANK_AADHAAR_NUMBER: "add_bank_aadhaar_number",
   ADD_BANK_AADHAAR_OTP: "add_bank_aadhaar_otp",
+  // Check Balance flow (from home)
+  CHECK_BALANCE_PIN: "check_balance_pin",
 });
 
 // ─── Globals ─────────────────────────────────────────────────
@@ -66,6 +68,10 @@ let addBankAadhaarOtp = "";
 let skipHomeTour = false;
 let selectedSim = null;
 let selectedSecurity = null; // 'device' or 'passcode'
+// Check Balance flow
+let checkBalancePinInput = "";
+let checkBalancePinMasked = true;
+let balanceRevealed = false;
 
 function clearTimers() {
   timers.forEach((t) => clearTimeout(t));
@@ -196,11 +202,11 @@ function landingHTML() {
     <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
-      <!-- Temporarily hidden
+      <!--
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
-      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>5.</span> Check Balance</button>
+      <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>5.</span> Check Balance</button>
       -->
     </div>
   </div>`;
@@ -466,8 +472,51 @@ function loadingSplashHTML() {
   return `<div class="screen screen-loading-splash"><div class="ob-tricolor"></div>${statusBarSVG(true)}<div class="loading-content">${upiLogoDarkSVG(140, 58, "upi_dark_lg.svg")}<p class="loading-text">Loading...</p></div></div>`;
 }
 
-// ─── Home Screen HTML (from original index.html) ─────────────
+// ─── Check Balance: Enter UPI PIN screen ─────────────────────
+function checkBalancePinHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const raw = i < checkBalancePinInput.length ? checkBalancePinInput[i] : "";
+    const val = raw && checkBalancePinMasked ? "•" : raw;
+    const active = i === checkBalancePinInput.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="cb-pin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
+  }
+  const showLabel = checkBalancePinMasked ? "Show" : "Hide";
+  return `
+  <div class="screen screen-check-balance-pin">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBackFromCheckBalancePin()">←</span><span class="ob-page-title">Enter UPI</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">Bharatiya Payments Bank</span>
+      <span class="ab-bank-bar__num">XXXXXXXX***2453</span>
+    </div>
+    <div class="ab-pin-content" id="cb-pin-content">
+      <p class="ab-pin-heading">ENTER UPI PIN</p>
+      <div class="ab-pin-row" id="cb-pin-row">${boxes}</div>
+      <p class="ab-pin-show" id="cb-pin-show" onclick="toggleCheckBalancePinMask()" role="button" tabindex="0"><span class="ab-pin-show__circle"></span> <span id="cb-pin-show-label">${showLabel}</span></p>
+    </div>
+    <div class="ab-pin-keyboard">${abNumpadHTML("cbpin")}</div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+// ─── Home Screen HTML (Check balance UI from Figma) ──────────
 function homeScreenHTML() {
+  const bannerText = "Beat the heat with Swiggy 50%";
+  const upiId = "***2776@upi";
+  const bankCardLeft = `
+    <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
+    <div class="bank-card__details">
+      <span class="bank-card__name">Bharatiya Payments Bank</span>
+      <span class="bank-card__account">***2453 Bank account</span>
+    </div>
+    <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const bankCardRight = balanceRevealed
+    ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
+    : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+  const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
+  const bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+
   return `
   <div class="screen screen--no-anim" style="display:block">
     <div class="status-bar"><span class="status-bar__time">9:41</span><div class="status-bar__icons"><svg viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#080a0b"/><rect x="5" y="5" width="3" height="7" rx="0.5" fill="#080a0b"/><rect x="10" y="2" width="3" height="10" rx="0.5" fill="#080a0b"/><rect x="15" y="0" width="3" height="12" rx="0.5" fill="#080a0b"/></svg><svg viewBox="0 0 16 12" fill="none"><path d="M8 11.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="#080a0b"/><path d="M4.5 7.5C5.5 6.2 6.7 5.5 8 5.5s2.5.7 3.5 2" stroke="#080a0b" stroke-width="1.2" stroke-linecap="round"/><path d="M2 5c1.8-2 3.7-3 6-3s4.2 1 6 3" stroke="#080a0b" stroke-width="1.2" stroke-linecap="round"/></svg><svg viewBox="0 0 28 13" fill="none"><rect x="0.5" y="0.5" width="23" height="12" rx="2" stroke="#080a0b" stroke-opacity="0.35"/><rect x="2" y="2" width="20" height="9" rx="1" fill="#080a0b"/><path d="M25 4.5v4a2 2 0 000-4z" fill="#080a0b" fill-opacity="0.4"/></svg></div></div>
@@ -477,27 +526,30 @@ function homeScreenHTML() {
       <div class="notification-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5c-3.5 0-6 2.5-6 6v3.5l-1.5 2.5c-.3.5.1 1 .6 1h13.8c.5 0 .9-.5.6-1L18 12v-3.5c0-3.5-2.5-6-6-6z" stroke="#0b0b0b" stroke-width="1.5"/><path d="M9 18.5c.5 1.5 1.5 2.5 3 2.5s2.5-1 3-2.5" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg><div class="notification-btn__dot"></div></div>
     </div>
     <div class="content">
-      <div class="ticker-banner"><div class="ticker-banner__pill"><span class="ticker-banner__emoji">🎉</span><span class="ticker-banner__text">गर्मी को मात दो, स्विगी पर 50% छूट के साथ!</span></div></div>
-      <div class="bank-card" id="bank-card"><div class="bank-card__info"><div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div><span class="bank-card__label">अपना बैंक खाता अभी जोड़ें</span></div><div class="bank-card__arrow"><svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="#4258a2" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="home-upi-row">
+        <div class="ticker-banner ticker-banner--dashed"><div class="ticker-banner__pill"><span class="ticker-banner__emoji">🎉</span><span class="ticker-banner__text">${bannerText}</span></div></div>
+        <div class="home-upi-id"><span class="home-upi-id__masked">${upiId}</span><button type="button" class="home-upi-id__icon" aria-label="Toggle visibility"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 4C4 4 1 10 1 10s3 6 9 6 9-6 9-6-3-6-9-6z" stroke="#666" stroke-width="1.2"/><circle cx="10" cy="10" r="2.5" stroke="#666" stroke-width="1.2"/></svg></button><button type="button" class="home-upi-id__icon" aria-label="Copy"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="6" y="6" width="10" height="10" rx="1" stroke="#666" stroke-width="1.2"/><path d="M4 4v10h10" stroke="#666" stroke-width="1.2"/></svg></button></div>
+      </div>
+      ${bankCardHTML}
       <div class="section" id="payments-section"><h2 class="section__title">भुगतान और ट्रांसफ़र</h2>
         <div class="icon-grid">
-          <div class="icon-grid__item" id="send-to-mobile"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="10" height="18" rx="2" stroke="#1d264e" stroke-width="1.5"/><path d="M8 17h4" stroke="#1d264e" stroke-width="1.2" stroke-linecap="round"/><path d="M17 6l3 3-3 3" stroke="#1d264e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 9h-5" stroke="#1d264e" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-grid__label">मोबाइल पर भेजें</span></div>
-          <div class="icon-grid__item" id="bank-upi-transfer"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18" stroke="#1d264e" stroke-width="1.5" stroke-linecap="round"/><path d="M5 17V10M10 17V10M14 17V10M19 17V10" stroke="#1d264e" stroke-width="1.5"/><path d="M12 3L2 8h20L12 3z" stroke="#1d264e" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span class="icon-grid__label">बैंक/UPI/खुद को भेजें</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="14" rx="2" stroke="#1d264e" stroke-width="1.5"/><path d="M7 11h4M7 14h2" stroke="#1d264e" stroke-width="1.2" stroke-linecap="round"/><circle cx="17" cy="12" r="2" stroke="#1d264e" stroke-width="1.2"/></svg></div><span class="icon-grid__label">भुगतान की मंज़ूरी दें</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1d264e" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="#1d264e" stroke-width="1.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="#1d264e" stroke-width="1.2" stroke-linecap="round"/></svg></div><span class="icon-grid__label">यूपीआई सर्कल</span></div>
+          <div class="icon-grid__item" id="send-to-mobile"><div class="icon-grid__circle"><img src="assets/home/Icon.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">मोबाइल पर भेजें</span></div>
+          <div class="icon-grid__item" id="bank-upi-transfer"><div class="icon-grid__circle"><img src="assets/home/Icon-1.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">बैंक/UPI/खुद को भेजें</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-2.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">भुगतान की मंज़ूरी दें</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-3.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">यूपीआई सर्कल</span></div>
           <div class="icon-grid__separator"></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="#1d264e" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 9h16" stroke="#1d264e" stroke-width="1.2"/><path d="M8 13h3M8 16h5" stroke="#1d264e" stroke-width="1.2" stroke-linecap="round"/></svg></div><span class="icon-grid__label">बिल और रिचार्ज</span></div>
-          <div class="icon-grid__item" id="mobile-prepaid"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="#1d264e" stroke-width="1.5"/><circle cx="12" cy="18" r="1" fill="#1d264e"/><path d="M10 5h4" stroke="#1d264e" stroke-width="1" stroke-linecap="round"/></svg></div><span class="icon-grid__label">मोबाइल प्रीपेड</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="14" height="10" rx="2" stroke="#1d264e" stroke-width="1.5"/><path d="M6 9h8M6 12h5" stroke="#1d264e" stroke-width="1" stroke-linecap="round"/><circle cx="18" cy="14" r="4" stroke="#1d264e" stroke-width="1.2"/><path d="M18 12.5v3l1.5-1" stroke="#1d264e" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-grid__label">आईपीओ / ऑटोपे / सेवाएँ</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><svg viewBox="0 0 24 24" fill="none"><path d="M3 20L7 4M10 20l4-16M17 20l4-16" stroke="#1d264e" stroke-width="1.5" stroke-linecap="round"/><path d="M2 8h20M1 14h20" stroke="#1d264e" stroke-width="1.2" stroke-linecap="round"/></svg></div><span class="icon-grid__label">खर्च का विश्लेषण</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-4.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">बिल और रिचार्ज</span></div>
+          <div class="icon-grid__item" id="mobile-prepaid"><div class="icon-grid__circle"><img src="assets/home/Icon-5.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">मोबाइल प्रीपेड</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-6.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">आईपीओ / ऑटोपे / सेवाएँ</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-7.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">खर्च का विश्लेषण</span></div>
         </div>
       </div>
       <div class="section" id="suggested-features"><h2 class="section__title">सुझाए गए फीचर्स</h2>
         <div class="features-row">
-          <div class="feature-item"><div class="feature-item__icon"><span>📱</span></div><span class="feature-item__label">मोबाइल प्रीपेड</span></div>
-          <div class="feature-item"><span class="feature-item__chip">POPULAR</span><div class="feature-item__icon"><span>🚗</span></div><span class="feature-item__label">FASTag</span></div>
-          <div class="feature-item"><div class="feature-item__icon"><span>💡</span></div><span class="feature-item__label">बिजली</span></div>
-          <div class="feature-item"><div class="feature-item__icon"><span>📡</span></div><span class="feature-item__label">डीटीएच</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/mobile-recharge.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">मोबाइल प्रीपेड</span></div>
+          <div class="feature-item"><span class="feature-item__chip">POPULAR</span><div class="feature-item__icon"><img src="assets/home/Car wifi icon 2.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">FASTag</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/electric.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">बिजली</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/dish3d.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">डीटीएच</span></div>
           <div class="feature-item"><div class="feature-item__icon"><span>📲</span></div><span class="feature-item__label">मोबाइल पोस्टपेड</span></div>
         </div>
       </div>
@@ -515,7 +567,7 @@ function homeScreenHTML() {
     <div class="bottom-nav">
       <div class="bottom-nav__bg"><svg viewBox="0 0 390 108" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28V108H0V28Z" fill="white"/><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28" stroke="rgba(29,38,78,0.08)" stroke-width="1"/></svg></div>
       <div class="bottom-nav__items"><div class="bottom-nav__item"><svg viewBox="0 0 20 20" fill="none"><path d="M4 5l4.5-3.5a2 2 0 012.5 0L16 5" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/><path d="M3 8h14" stroke="#687f8f" stroke-width="1.3"/><path d="M5 8v7h3.5v-4h3v4H15V8" stroke="#687f8f" stroke-width="1.3"/><path d="M2 17h16" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">ऑफ़र</span></div><div style="width:72px"></div><div class="bottom-nav__item"><svg viewBox="0 0 18 18" fill="none"><path d="M2 5v8a2 2 0 002 2h10a2 2 0 002-2V5" stroke="#687f8f" stroke-width="1.3"/><path d="M5 2h8l3 3H2l3-3z" stroke="#687f8f" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 8h4" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">हिस्ट्री</span></div></div>
-      <div class="scanner-fab"><div class="scanner-fab__outer" id="scanner-btn"><div class="scanner-fab__inner"><svg viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="9" height="9" rx="2" stroke="white" stroke-width="2"/><rect x="17" y="2" width="9" height="9" rx="2" stroke="white" stroke-width="2"/><rect x="2" y="17" width="9" height="9" rx="2" stroke="white" stroke-width="2"/><rect x="4.5" y="4.5" width="4" height="4" rx="1" fill="white"/><rect x="19.5" y="4.5" width="4" height="4" rx="1" fill="white"/><rect x="4.5" y="19.5" width="4" height="4" rx="1" fill="white"/><rect x="17" y="17" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.5"/><rect x="20" y="20" width="3" height="3" rx=".5" fill="white"/></svg></div></div></div>
+      <div class="scanner-fab"><button type="button" class="scanner-fab__outer scanner-fab__outer--bg" id="scanner-btn" aria-label="Scanner"></button></div>
       <div class="home-indicator"></div>
     </div>
   </div>`;
@@ -732,14 +784,14 @@ function paymentMethodsHTML() {
       </div>
       <div class="ab-methods-list">
         <div class="ab-methods-bank">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
             <span class="ab-account-name">Pragati Bank</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
         </div>
         <div class="ab-methods-bank">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
             <span class="ab-account-name">Bharatiya Payments Bank</span>
             <span class="ab-account-ifsc">XXXX53</span>
@@ -753,11 +805,14 @@ function paymentMethodsHTML() {
         </div>
       </div>
     </div>
-    <div class="ab-toast">
-      <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="ab-toast ab-toast--success">
+      <div class="ab-toast__icon">
+        <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <span class="ab-toast__text">Your Bharatiya Payments Bank has been added successfully!</span>
       <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">Close</span>
     </div>
+    ${homeIndHTML()}
   </div>`;
 }
 
@@ -1241,6 +1296,20 @@ function selectBankAccount(idx) {
 }
 
 function handleAddBankKey(target, key) {
+  if (target === "cbpin") {
+    if (key === "DEL") checkBalancePinInput = checkBalancePinInput.slice(0, -1);
+    else if (key === "SUBMIT" && checkBalancePinInput.length === 4) {
+      balanceRevealed = true;
+      checkBalancePinInput = "";
+      if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+      renderScreen(S.HOME);
+      clearTimers();
+      wait(() => showBalanceRevealedTour(), 500);
+      return;
+    } else if (key !== "SUBMIT" && checkBalancePinInput.length < 4) checkBalancePinInput += String(key);
+    updateCheckBalancePinUI();
+    return;
+  }
   if (target === "otp") {
     if (key === "DEL") addBankOtp = addBankOtp.slice(0, -1);
     else if (key === "SUBMIT" && addBankOtp.length === 4) { renderScreen(S.ADD_BANK_SET_PIN); return; }
@@ -1257,6 +1326,28 @@ function handleAddBankKey(target, key) {
     else if (key !== "SUBMIT" && addBankConfirmPin.length < 4) addBankConfirmPin += key;
     updateConfirmPinUI();
   }
+}
+
+function updateCheckBalancePinUI() {
+  const display = (i) => {
+    if (i >= checkBalancePinInput.length) return "";
+    return checkBalancePinMasked ? "•" : checkBalancePinInput[i];
+  };
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById("cb-pin-" + i);
+    if (el) {
+      const span = el.querySelector("span");
+      if (span) span.textContent = display(i);
+      el.classList.toggle("ab-pin-digit--active", i === checkBalancePinInput.length);
+    }
+  }
+  const labelEl = document.getElementById("cb-pin-show-label");
+  if (labelEl) labelEl.textContent = checkBalancePinMasked ? "Show" : "Hide";
+}
+
+function toggleCheckBalancePinMask() {
+  checkBalancePinMasked = !checkBalancePinMasked;
+  updateCheckBalancePinUI();
 }
 
 function updateDebitCardUI() {
@@ -1342,6 +1433,7 @@ function renderScreen(state) {
   if (state === S.ADD_BANK_CONFIRM_PIN) { addBankConfirmPin = ""; }
   if (state === S.ADD_BANK_AADHAAR_NUMBER) { addBankAadhaarNumber = ""; }
   if (state === S.ADD_BANK_AADHAAR_OTP) { addBankAadhaarOtp = ""; }
+  if (state === S.CHECK_BALANCE_PIN) { checkBalancePinInput = ""; }
 
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
@@ -1378,6 +1470,8 @@ function getScreenHTML(state) {
       return passcodeEntryHTML();
     case S.LOADING_SPLASH:
       return loadingSplashHTML();
+    case S.CHECK_BALANCE_PIN:
+      return checkBalancePinHTML();
     case S.HOME:
       return homeScreenHTML();
     // Add Bank Account flow
@@ -1611,7 +1705,14 @@ function goBack() {
     case S.ADD_BANK_CONFIRM_PIN:
       renderScreen(S.ADD_BANK_SET_PIN);
       break;
+    case S.CHECK_BALANCE_PIN:
+      renderScreen(S.HOME);
+      break;
   }
+}
+
+function goBackFromCheckBalancePin() {
+  renderScreen(S.HOME);
 }
 
 // ─── DOM Update Helpers (no re-render, just patch) ───────────
@@ -1827,6 +1928,103 @@ function startOnboarding() {
 }
 function goHome() {
   renderScreen(S.HOME);
+}
+
+// ─── Check Balance Flow (Figma-aligned tour) ──────────────────
+// Starts when user taps "5. Check Balance" on landing. Highlights elements
+// as in the Figma flow: bank card → bank/UPI transfer → optional scanner.
+function startCheckBalanceFlow() {
+  skipHomeTour = true;
+  renderScreen(S.HOME);
+  clearTimers();
+  wait(() => runCheckBalanceTour(), 600);
+}
+
+function runCheckBalanceTour() {
+  if (activeDriver) {
+    activeDriver.destroy();
+    activeDriver = null;
+  }
+  // If balance already revealed, show the "balance visible" step only
+  if (balanceRevealed) {
+    showBalanceRevealedTour();
+    return;
+  }
+  const footerHtml =
+    '<div class="bhim-popover-footer"><div class="bhim-popover-dots"><div class="bhim-popover-dot bhim-popover-dot--active"></div><div class="bhim-popover-dot"></div></div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.checkBalanceDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="openCheckBalancePinScreen()">Next</button></div></div>';
+  const d = window.driver.js.driver({
+    showProgress: false,
+    showButtons: [],
+    overlayColor: "rgba(0,0,0,0.65)",
+    stagePadding: 6,
+    stageRadius: 16,
+    animate: true,
+    smoothScroll: false,
+    allowClose: true,
+    popoverClass: "bhim-driver-popover",
+    steps: [
+      {
+        element: "#bank-card",
+        popover: {
+          title: "Check Balance",
+          description: "Tap here to enter your UPI PIN and view your account balance." + footerHtml,
+          side: "bottom",
+          align: "center",
+          popoverClass: "bhim-driver-popover",
+        },
+      },
+    ],
+    onDestroyStarted: () => {
+      activeDriver = null;
+      d.destroy();
+    },
+  });
+  window.checkBalanceDriver = d;
+  activeDriver = d;
+  d.drive();
+}
+
+function openCheckBalancePinScreen() {
+  if (window.checkBalanceDriver) window.checkBalanceDriver.destroy();
+  activeDriver = null;
+  checkBalancePinMasked = true;
+  renderScreen(S.CHECK_BALANCE_PIN);
+}
+
+function showBalanceRevealedTour() {
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  const footerHtml =
+    '<div class="bhim-popover-footer"><div class="bhim-popover-dots"><div class="bhim-popover-dot"></div><div class="bhim-popover-dot bhim-popover-dot--active"></div></div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.checkBalanceDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="window.checkBalanceDriver.destroy()">Done</button></div></div>';
+  const d = window.driver.js.driver({
+    showProgress: false,
+    showButtons: [],
+    overlayColor: "rgba(0,0,0,0.65)",
+    stagePadding: 6,
+    stageRadius: 16,
+    animate: true,
+    smoothScroll: false,
+    allowClose: true,
+    popoverClass: "bhim-driver-popover",
+    steps: [
+      {
+        element: "#bank-card",
+        popover: {
+          title: "Balance visible",
+          description: "Your account balance is shown here after you enter your UPI PIN." + footerHtml,
+          side: "bottom",
+          align: "center",
+          popoverClass: "bhim-driver-popover",
+        },
+      },
+    ],
+    onDestroyStarted: () => {
+      activeDriver = null;
+      d.destroy();
+    },
+  });
+  window.checkBalanceDriver = d;
+  activeDriver = d;
+  d.drive();
 }
 
 // ─── Home Screen Tour ────────────────────────────────────────
