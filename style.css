@@ -336,6 +336,8 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+  position: relative;
+  z-index: 5;
 }
 .ob-key {
   background: var(--c-white);
