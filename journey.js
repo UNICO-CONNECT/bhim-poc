@@ -20,6 +20,19 @@ const S = Object.freeze({
   PASSCODE_ENTRY: "passcode_entry",
   LOADING_SPLASH: "loading_splash",
   HOME: "home",
+  // Add Bank Account flow
+  ADD_BANK_SELECT: "add_bank_select",
+  ADD_BANK_METHOD_SELECT: "add_bank_method_select",
+  ADD_BANK_DEBIT_CARD: "add_bank_debit_card",
+  ADD_BANK_OTP: "add_bank_otp",
+  ADD_BANK_SET_PIN: "add_bank_set_pin",
+  ADD_BANK_CONFIRM_PIN: "add_bank_confirm_pin",
+  ADD_BANK_SUCCESS: "add_bank_success",
+  ADD_BANK_PAYMENT_METHODS: "add_bank_payment_methods",
+  // Aadhaar flow
+  ADD_BANK_AADHAAR_CONSENT: "add_bank_aadhaar_consent",
+  ADD_BANK_AADHAAR_NUMBER: "add_bank_aadhaar_number",
+  ADD_BANK_AADHAAR_OTP: "add_bank_aadhaar_otp",
 });
 
 // ─── Globals ─────────────────────────────────────────────────
@@ -38,6 +51,19 @@ let mobileInput = "";
 let otpInput = "";
 let passcodeEnter = "";
 let passcodeConfirm = "";
+
+// Add Bank Account flow state
+let addBankCardDigits = "";
+let addBankExpiry = "";
+let addBankOtp = "";
+let addBankPin = "";
+let addBankConfirmPin = "";
+let addBankSelectedAccount = 0; // default first account
+let addBankInputFocus = "card"; // "card" | "expiry"
+let addBankMethod = "debit"; // "debit" | "aadhaar"
+let addBankAadhaarNumber = "";
+let addBankAadhaarOtp = "";
+let skipHomeTour = false;
 let selectedSim = null;
 let selectedSecurity = null; // 'device' or 'passcode'
 
@@ -170,7 +196,7 @@ function landingHTML() {
     <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
-      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>2.</span> Add Bank Account</button>
+      <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>5.</span> Check Balance</button>
@@ -493,6 +519,801 @@ function homeScreenHTML() {
   </div>`;
 }
 
+// ─── Add Bank Account Screen Renderers ───────────────────────
+
+function bankIconSVG() {
+  return '<svg viewBox="0 0 18 18" fill="none" width="18" height="18"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg>';
+}
+
+function selectBankHTML() {
+  const accounts = [
+    { name: "Bharatiya Payments Bank", ifsc: "BPB1234IN" },
+    { name: "Bharatiya Payments Bank", ifsc: "HDF1234IN", needsPin: true },
+  ];
+  let accountList = "";
+  accounts.forEach((acc, i) => {
+    const isSelected = addBankSelectedAccount === i;
+    const radioClass = isSelected ? "ab-radio ab-radio--checked" : "ab-radio";
+    accountList += `
+      <div class="ab-account-card" onclick="selectBankAccount(${i})">
+        <div class="ab-account-info">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-account-details">
+            <span class="ab-account-name">${acc.name}</span>
+            <span class="ab-account-ifsc">IFSC - ${acc.ifsc}</span>
+          </div>
+        </div>
+        <div class="${radioClass}"></div>
+      </div>`;
+    if (acc.needsPin) {
+      accountList += `
+      <div class="ab-pin-warning">
+        <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
+        <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
+        <span class="ab-pin-warning__link">Set UPI PIN</span>
+      </div>`;
+    }
+  });
+
+  return `
+  <div class="screen screen-ab-select">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="ab-select-content">
+      <h1 class="ab-title">Choose your bank</h1>
+      <p class="ab-subtitle">Select which bank you have an account with</p>
+      <div class="ab-bank-header">
+        <div class="ab-bank-header__info">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-bank-header__details">
+            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__num">*** 2453</span>
+          </div>
+        </div>
+        <span class="ab-bank-header__change">Change bank →</span>
+      </div>
+      <div class="ab-section-label">
+        <span>Select your account</span>
+        <span class="ab-section-label__star">✦</span>
+        <div class="ab-section-label__line"></div>
+      </div>
+      <div class="ab-account-list">${accountList}</div>
+    </div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
+  </div>`;
+}
+
+function debitCardHTML() {
+  let cardBoxes = "";
+  for (let i = 0; i < 6; i++) {
+    const val = i < addBankCardDigits.length ? addBankCardDigits[i] : "";
+    const active = (addBankInputFocus === "card" && i === addBankCardDigits.length) ? " ab-digit--active" : "";
+    cardBoxes += `<div class="ab-digit${active}" id="ab-card-${i}"><span>${val}</span><div class="ab-digit__line"></div></div>`;
+  }
+  let expiryBoxes = "";
+  for (let i = 0; i < 4; i++) {
+    const val = i < addBankExpiry.length ? addBankExpiry[i] : "";
+    const active = (addBankInputFocus === "expiry" && i === addBankExpiry.length) ? " ab-digit--active" : "";
+    expiryBoxes += `<div class="ab-digit${active}" id="ab-exp-${i}"><span>${val}</span><div class="ab-digit__line"></div></div>`;
+    if (i === 1) expiryBoxes += '<span class="ab-expiry-slash">/</span>';
+  }
+  const canConfirm = addBankCardDigits.length === 6 && addBankExpiry.length === 4;
+  const btnClass = canConfirm ? "ob-btn ob-btn--primary" : "ob-btn ob-btn--disabled";
+
+  return `
+  <div class="screen screen-ab-debit">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+    </div>
+    <div class="ab-debit-content">
+      <div class="ab-debit-section">
+        <p class="ab-debit-label">LAST 6 DIGIT OF DEBIT CARD</p>
+        <div class="ab-digit-row" id="ab-card-digits">${cardBoxes}</div>
+      </div>
+      <div class="ab-debit-section">
+        <p class="ab-debit-label">Valid Upto</p>
+        <div class="ab-digit-row ab-digit-row--expiry" id="ab-expiry-digits">${expiryBoxes}</div>
+      </div>
+    </div>
+    <div class="ab-debit-bottom">
+      <div class="ab-debit-btn-area"><button class="${btnClass}" id="ab-debit-confirm" ${canConfirm ? 'onclick="renderScreen(S.ADD_BANK_OTP)"' : ''}>Confirm</button></div>
+      ${interactiveKBHTML()}
+    </div>
+  </div>`;
+}
+
+function bankOtpHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const val = i < addBankOtp.length ? addBankOtp[i] : "";
+    const active = i === addBankOtp.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="ab-otp-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
+  }
+
+  return `
+  <div class="screen screen-ab-otp">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+    </div>
+    <div class="ab-pin-content">
+      <p class="ab-pin-heading">ENTER OTP</p>
+      <div class="ab-pin-row" id="ab-otp-row">${boxes}</div>
+    </div>
+    <div class="ab-pin-keyboard">${abNumpadHTML("otp")}</div>
+  </div>`;
+}
+
+function setUpiPinHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const val = i < addBankPin.length ? addBankPin[i] : "";
+    const active = i === addBankPin.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="ab-pin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
+  }
+
+  return `
+  <div class="screen screen-ab-setpin">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+    </div>
+    <div class="ab-pin-content">
+      <p class="ab-pin-heading">ENTER NEW UPI PIN</p>
+      <div class="ab-pin-row" id="ab-pin-row">${boxes}</div>
+    </div>
+    <div class="ab-pin-keyboard">${abNumpadHTML("pin")}</div>
+  </div>`;
+}
+
+function confirmUpiPinHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const val = i < addBankConfirmPin.length ? addBankConfirmPin[i] : "";
+    const active = i === addBankConfirmPin.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="ab-cpin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
+  }
+
+  return `
+  <div class="screen screen-ab-confirmpin">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+    </div>
+    <div class="ab-pin-content">
+      <p class="ab-pin-heading">ENTER OTP</p>
+      <div class="ab-pin-row" id="ab-cpin-row">${boxes}</div>
+    </div>
+    <div class="ab-pin-keyboard">${abNumpadHTML("cpin")}</div>
+  </div>`;
+}
+
+function bankSuccessHTML() {
+  return `
+  <div class="screen screen-ab-success">
+    ${statusBarSVG(false)}
+    <div class="ab-success-content">
+      <div class="ab-success-badge">
+        <svg viewBox="0 0 80 80" fill="none" width="80" height="80">
+          <path d="M40 8c-4 0-7.5 2-9.5 5l-3.5 5.5c-2 3-5 5-8.5 5.5l-6 1c-6 1-10.5 5.5-11.5 11.5l-1 6c-.5 3.5-2.5 6.5-5.5 8.5L0 55c0 0 0 0 0 0 0 0 0 0 0 0l5.5 3.5c3 2 5 5 5.5 8.5l1 6c1 6 5.5 10.5 11.5 11.5l6 1c3.5.5 6.5 2.5 8.5 5.5L40 96" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" transform="translate(4, -12) scale(0.9)"/>
+          <circle cx="40" cy="40" r="24" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="40" cy="40" r="18" fill="rgba(255,255,255,0.35)"/>
+          <path d="M30 40l6 6 14-14" stroke="#166534" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="ab-success-text">Your Bank has been added successfully!</p>
+    </div>
+  </div>`;
+}
+
+function paymentMethodsHTML() {
+  return `
+  <div class="screen screen-ab-methods">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="renderScreen(S.HOME)">←</span><span class="ob-page-title">Payment Methods</span></div>
+    <div class="ab-methods-content">
+      <div class="ab-section-label">
+        <span>Bank Account</span>
+        <span class="ab-section-label__star">✦</span>
+        <div class="ab-section-label__line"></div>
+      </div>
+      <div class="ab-methods-list">
+        <div class="ab-methods-bank">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-methods-bank__details">
+            <span class="ab-account-name">Pragati Bank</span>
+            <span class="ab-account-ifsc">XXXX53</span>
+          </div>
+        </div>
+        <div class="ab-methods-bank">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-methods-bank__details">
+            <span class="ab-account-name">Bharatiya Payments Bank</span>
+            <span class="ab-account-ifsc">XXXX53</span>
+          </div>
+        </div>
+        <div class="ab-methods-add">
+          <div class="ab-methods-add__icon">
+            <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#6b7280" stroke-width="1.3"/><path d="M2 8h16" stroke="#6b7280" stroke-width="1.2"/><path d="M6 12h3" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <span class="ab-methods-add__text">Add new bank account</span>
+        </div>
+      </div>
+    </div>
+    <div class="ab-toast">
+      <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="ab-toast__text">Your Bharatiya Payments Bank has been added successfully!</span>
+      <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">Close</span>
+    </div>
+  </div>`;
+}
+
+// ─── Method Selection Bottom Sheet ────────────────────────────
+function methodSelectHTML() {
+  const debitChecked = addBankMethod === "debit" ? "ab-ms-radio--checked" : "";
+  const aadhaarChecked = addBankMethod === "aadhaar" ? "ab-ms-radio--checked" : "";
+  return `
+  <div class="screen screen-ab-method-select">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="ab-select-content">
+      <h1 class="ab-title">Which account?</h1>
+      <p class="ab-subtitle">Choose the account that you would want to use</p>
+      <div class="ab-bank-header">
+        <div class="ab-bank-header__info">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-bank-header__details">
+            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__num">*** 2453</span>
+          </div>
+        </div>
+        <span class="ab-bank-header__change">Change bank →</span>
+      </div>
+      <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
+      <div class="ab-account-list">
+        <div class="ab-account-card">
+          <div class="ab-account-info">
+            <div class="ab-account-logo">${bankIconSVG()}</div>
+            <div class="ab-account-details">
+              <span class="ab-account-name">Bharatiya Payments Bank</span>
+              <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+            </div>
+          </div>
+          <div class="ab-radio ab-radio--checked"></div>
+        </div>
+        <div class="ab-account-card">
+          <div class="ab-account-info">
+            <div class="ab-account-logo">${bankIconSVG()}</div>
+            <div class="ab-account-details">
+              <span class="ab-account-name">Bharatiya Payments Bank</span>
+              <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+            </div>
+          </div>
+          <div class="ab-radio"></div>
+        </div>
+        <div class="ab-pin-warning">
+          <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
+          <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
+          <span class="ab-pin-warning__link">Set UPI PIN</span>
+        </div>
+      </div>
+    </div>
+    <!-- Bottom sheet overlay -->
+    <div class="ab-ms-overlay">
+      <div class="ab-ms-sheet">
+        <div class="ab-ms-handle"></div>
+        <h3 class="ab-ms-title">Choose option to set UPI PIN</h3>
+        <div class="ab-ms-options">
+          <div class="ab-ms-option" onclick="selectMethod('debit')">
+            <div class="ab-ms-option__info">
+              <svg class="ab-ms-option__icon" viewBox="0 0 24 24" fill="none" width="24" height="24"><rect x="2" y="4" width="20" height="16" rx="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M2 10h20" stroke="#0b0b0b" stroke-width="1.5"/><path d="M6 15h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="ab-ms-option__label">Debit Card</span>
+            </div>
+            <div class="ab-ms-radio ${debitChecked}"></div>
+          </div>
+          <div class="ab-ms-option" onclick="selectMethod('aadhaar')">
+            <div class="ab-ms-option__info">
+              <svg class="ab-ms-option__icon" viewBox="0 0 24 24" fill="none" width="24" height="24"><circle cx="12" cy="8" r="3.5" fill="#e54d26"/><circle cx="9" cy="14" r="1.2" fill="#e54d26"/><circle cx="15" cy="14" r="1.2" fill="#e54d26"/><circle cx="12" cy="14" r="1.2" fill="#e54d26"/><circle cx="12" cy="18" r="1.2" fill="#e54d26"/><circle cx="9" cy="18" r="1.2" fill="#e54d26"/><circle cx="15" cy="18" r="1.2" fill="#e54d26"/><circle cx="6" cy="14" r="0.8" fill="#e54d26"/><circle cx="18" cy="14" r="0.8" fill="#e54d26"/></svg>
+              <span class="ab-ms-option__label">Aadhaar number</span>
+            </div>
+            <div class="ab-ms-radio ${aadhaarChecked}"></div>
+          </div>
+        </div>
+        <div class="ab-ms-buttons">
+          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_SELECT)">Cancel</button>
+          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="proceedMethod()">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectMethod(method) {
+  addBankMethod = method;
+  document.querySelectorAll(".ab-ms-radio").forEach((r, i) => {
+    r.className = (i === 0 && method === "debit") || (i === 1 && method === "aadhaar")
+      ? "ab-ms-radio ab-ms-radio--checked" : "ab-ms-radio";
+  });
+}
+
+function proceedMethod() {
+  if (addBankMethod === "debit") {
+    renderScreen(S.ADD_BANK_DEBIT_CARD);
+  } else {
+    renderScreen(S.ADD_BANK_AADHAAR_CONSENT);
+  }
+}
+
+// ─── Aadhaar Consent Bottom Sheet ─────────────────────────────
+function aadhaarConsentHTML() {
+  return `
+  <div class="screen screen-ab-aadhaar-consent">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="ab-select-content">
+      <h1 class="ab-title">Which account?</h1>
+      <p class="ab-subtitle">Choose the account that you would want to use</p>
+      <div class="ab-bank-header">
+        <div class="ab-bank-header__info">
+          <div class="ab-account-logo">${bankIconSVG()}</div>
+          <div class="ab-bank-header__details">
+            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__num">*** 2453</span>
+          </div>
+        </div>
+        <span class="ab-bank-header__change">Change bank →</span>
+      </div>
+      <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
+      <div class="ab-account-list">
+        <div class="ab-account-card">
+          <div class="ab-account-info">
+            <div class="ab-account-logo">${bankIconSVG()}</div>
+            <div class="ab-account-details">
+              <span class="ab-account-name">Bharatiya Payments Bank</span>
+              <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+            </div>
+          </div>
+          <div class="ab-radio ab-radio--checked"></div>
+        </div>
+        <div class="ab-account-card">
+          <div class="ab-account-info">
+            <div class="ab-account-logo">${bankIconSVG()}</div>
+            <div class="ab-account-details">
+              <span class="ab-account-name">Bharatiya Payments Bank</span>
+              <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+            </div>
+          </div>
+          <div class="ab-radio"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Aadhaar Consent Bottom Sheet -->
+    <div class="ab-ms-overlay">
+      <div class="ab-ms-sheet ab-ms-sheet--consent">
+        <div class="ab-ms-handle"></div>
+        <p class="ab-consent-text">I hereby give my consent to <strong>Bharatiya Payments BANK</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
+        <div class="ab-ms-buttons">
+          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Cancel</button>
+          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="renderScreen(S.ADD_BANK_AADHAAR_NUMBER)">Accept</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Aadhaar Number Entry ─────────────────────────────────────
+function aadhaarNumberHTML() {
+  let boxes = "";
+  for (let i = 0; i < 6; i++) {
+    const val = i < addBankAadhaarNumber.length ? addBankAadhaarNumber[i] : "";
+    const active = i === addBankAadhaarNumber.length ? " ab-digit--active" : "";
+    boxes += `<div class="ab-digit${active}" id="ab-aadh-${i}"><span>${val}</span><div class="ab-digit__line"></div></div>`;
+  }
+  const maskDigits = "XXXX";
+  return `
+  <div class="screen screen-ab-aadhaar-num">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">SET UPI PIN</span></div>
+    <div class="ab-bank-bar">
+      <div class="ab-bank-bar__left">
+        <div class="ab-bank-bar__icon">${bankIconSVG()}</div>
+        <span class="ab-bank-bar__name">Bharatiya Payments Bank- XXXX2657</span>
+      </div>
+    </div>
+    <div class="ab-aadhaar-content">
+      <h2 class="ab-aadhaar-heading">Create 4-digit UPI PIN using your Aadhaar details</h2>
+      <p class="ab-aadhaar-desc">Your PIN will be securely saved with your Bank. You will need to enter this PIN every time you make a payment using your Bank Account.</p>
+      <div class="ab-aadhaar-input-section">
+        <div class="ab-aadhaar-label-row">
+          <span class="ab-aadhaar-label">AADHAAR NUMBER</span>
+          <svg class="ab-aadhaar-logo" viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="13" r="5" fill="#e54d26"/><circle cx="14" cy="23" r="1.5" fill="#e54d26"/><circle cx="20" cy="23" r="1.5" fill="#e54d26"/><circle cx="26" cy="23" r="1.5" fill="#e54d26"/><circle cx="20" cy="29" r="1.5" fill="#e54d26"/><circle cx="14" cy="29" r="1.5" fill="#e54d26"/><circle cx="26" cy="29" r="1.5" fill="#e54d26"/><circle cx="10" cy="23" r="1" fill="#e54d26"/><circle cx="30" cy="23" r="1" fill="#e54d26"/></svg>
+        </div>
+        <p class="ab-aadhaar-sublabel">First 6-Digits of Aadhaar Number</p>
+        <div class="ab-aadhaar-input-row">
+          <div class="ab-aadhaar-mask">
+            <span class="ab-aadhaar-mask__sep"></span>
+            <div class="ab-aadhaar-digits-row" id="ab-aadh-row">${boxes}</div>
+          </div>
+          <div class="ab-aadhaar-mask-suffix">
+            <span>${maskDigits}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ab-aadhaar-keyboard">
+      <div class="ab-aadhaar-numpad">
+        ${[1,2,3,4,5,6,7,8,9,"del",0,"go"].map(k => {
+          if (k === "del") return '<button class="ab-aadhaar-numpad__key ab-aadhaar-numpad__key--del" onclick="handleAadhaarNumberKey(\'DEL\')">⌫</button>';
+          if (k === "go") return '<button class="ab-aadhaar-numpad__key ab-aadhaar-numpad__key--go" onclick="handleAadhaarNumberKey(\'GO\')" id="ab-aadh-go">Go</button>';
+          return '<button class="ab-aadhaar-numpad__key" onclick="handleAadhaarNumberKey(\'' + k + '\')">'+k+'</button>';
+        }).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Aadhaar OTP Entry ────────────────────────────────────────
+function aadhaarOtpHTML() {
+  let boxes = "";
+  for (let i = 0; i < 6; i++) {
+    const val = i < addBankAadhaarOtp.length ? addBankAadhaarOtp[i] : "";
+    const active = i === addBankAadhaarOtp.length ? " ab-aadh-otp-digit--active" : "";
+    boxes += `<div class="ab-aadh-otp-digit${active}" id="ab-aadhotp-${i}"><span>${val}</span></div>`;
+  }
+  return `
+  <div class="screen screen-ab-aadhaar-otp">
+    <div class="ab-aadhaar-otp-header">
+      ${statusBarSVG(false)}
+      <div class="ab-aadhaar-otp-topbar">
+        <span class="ab-aadhaar-otp-cancel" onclick="goBack()">CANCEL</span>
+        <div class="ab-aadhaar-otp-upi">
+          <svg viewBox="0 0 40 16" fill="none" width="40" height="16"><text x="0" y="13" font-family="Arial" font-weight="bold" font-size="14" fill="white">UPI</text></svg>
+        </div>
+      </div>
+      <div class="ab-aadhaar-otp-bankbar">
+        <span class="ab-aadhaar-otp-bankname">Bharatiya Payments BANK</span>
+      </div>
+      <div class="ab-aadhaar-otp-acctbar">
+        <span class="ab-aadhaar-otp-acctnum">XXXXXXXXXXXX</span>
+        <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><polyline points="12,4 6,10 12,16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <div class="ab-aadhaar-otp-body">
+      <p class="ab-aadhaar-otp-title">ENTER 6 DIGIT OTP</p>
+      <div class="ab-aadhaar-otp-row" id="ab-aadhotp-row">${boxes}</div>
+      <p class="ab-aadhaar-otp-msg">AADHAAR-OTP has been sent to your registered mobile number via SMS</p>
+      <span class="ab-aadhaar-otp-timer">0s</span>
+    </div>
+    <div class="ab-aadhaar-otp-keyboard">
+      <div class="ab-aadhaar-otp-numpad">
+        ${[1,2,3,4,5,6,7,8,9,"del",0,"submit"].map(k => {
+          if (k === "del") return '<button class="ab-aadhaar-otp-numpad__key ab-aadhaar-otp-numpad__key--del" onclick="handleAadhaarOtpKey(\'DEL\')">⌫</button>';
+          if (k === "submit") return '<button class="ab-aadhaar-otp-numpad__key ab-aadhaar-otp-numpad__key--submit" onclick="handleAadhaarOtpKey(\'SUBMIT\')">SUBMIT</button>';
+          return '<button class="ab-aadhaar-otp-numpad__key" onclick="handleAadhaarOtpKey(\'' + k + '\')">'+k+'</button>';
+        }).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Aadhaar Input Handlers ───────────────────────────────────
+function handleAadhaarNumberKey(key) {
+  if (key === "DEL") {
+    addBankAadhaarNumber = addBankAadhaarNumber.slice(0, -1);
+  } else if (key === "GO" && addBankAadhaarNumber.length === 6) {
+    renderScreen(S.ADD_BANK_AADHAAR_OTP);
+    return;
+  } else if (key !== "GO" && addBankAadhaarNumber.length < 6) {
+    addBankAadhaarNumber += key;
+  }
+  updateAadhaarNumberUI();
+}
+
+function handleAadhaarOtpKey(key) {
+  if (key === "DEL") {
+    addBankAadhaarOtp = addBankAadhaarOtp.slice(0, -1);
+  } else if (key === "SUBMIT" && addBankAadhaarOtp.length === 6) {
+    renderScreen(S.ADD_BANK_SET_PIN);
+    return;
+  } else if (key !== "SUBMIT" && addBankAadhaarOtp.length < 6) {
+    addBankAadhaarOtp += key;
+  }
+  updateAadhaarOtpUI();
+}
+
+function updateAadhaarNumberUI() {
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById("ab-aadh-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankAadhaarNumber.length ? addBankAadhaarNumber[i] : "";
+      el.classList.toggle("ab-digit--active", i === addBankAadhaarNumber.length);
+    }
+  }
+  const goBtn = document.getElementById("ab-aadh-go");
+  if (goBtn) {
+    goBtn.classList.toggle("ab-aadhaar-numpad__key--go-active", addBankAadhaarNumber.length === 6);
+  }
+}
+
+function updateAadhaarOtpUI() {
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById("ab-aadhotp-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankAadhaarOtp.length ? addBankAadhaarOtp[i] : "";
+      el.classList.toggle("ab-aadh-otp-digit--active", i === addBankAadhaarOtp.length);
+    }
+  }
+}
+
+/* iOS-style numpad for OTP/PIN screens */
+function abNumpadHTML(target) {
+  const keys = [1,2,3,4,5,6,7,8,9,"del",0,"submit"];
+  let h = '<div class="ab-numpad">';
+  keys.forEach(k => {
+    if (k === "del") {
+      h += `<button class="ab-numpad__key ab-numpad__key--del" onclick="handleAddBankKey('${target}','DEL')"><svg viewBox="0 0 24 18" fill="none" width="23" height="17"><path d="M7.5 1h13A2.5 2.5 0 0 1 23 3.5v11a2.5 2.5 0 0 1-2.5 2.5h-13L1 9l6.5-8z" stroke="#0b0b0b" stroke-width="1.3"/><path d="M11 6l6 6M17 6l-6 6" stroke="#0b0b0b" stroke-width="1.3" stroke-linecap="round"/></svg></button>`;
+    } else if (k === "submit") {
+      h += `<button class="ab-numpad__key ab-numpad__key--submit" onclick="handleAddBankKey('${target}','SUBMIT')"><svg viewBox="0 0 24 24" fill="none" width="24" height="24"><circle cx="12" cy="12" r="11" fill="#1b327e"/><path d="M7 12l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    } else {
+      h += `<button class="ab-numpad__key" onclick="handleAddBankKey('${target}','${k}')">${k}</button>`;
+    }
+  });
+  h += '</div>';
+  return h;
+}
+
+// ─── Add Bank Account Flow Control ──────────────────────────
+
+// ─── Add Bank Account – 7-Step Tooltip Tour ─────────────────
+let addBankTourStep = 0;
+const ADD_BANK_TOUR_TOTAL = 7;
+
+function abTourDots(activeIdx) {
+  let d = "";
+  for (let i = 0; i < ADD_BANK_TOUR_TOTAL; i++) {
+    d += '<div class="bhim-popover-dot' + (i === activeIdx ? " bhim-popover-dot--active" : "") + '"></div>';
+  }
+  return (
+    '<div class="bhim-popover-footer"><div class="bhim-popover-dots">' + d +
+    '</div><div class="bhim-popover-buttons">' +
+    '<button class="bhim-btn-skip" onclick="abTourSkip()">Skip</button>' +
+    '<button class="bhim-btn-next" onclick="abTourNext()">Next</button>' +
+    '</div></div>'
+  );
+}
+
+function abTourSkip() {
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  renderScreen(S.ADD_BANK_SELECT);
+}
+
+function abTourNext() {
+  addBankTourStep++;
+  abTourShow();
+}
+
+function startAddBankFlow() {
+  addBankTourStep = 0;
+  skipHomeTour = true;
+  renderScreen(S.HOME);
+  clearTimers();
+  wait(() => abTourShow(), 600);
+}
+
+function abTourShow() {
+  // Destroy previous driver if active
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+
+  const tourSteps = [
+    // Step 0: Home – highlight bank card
+    {
+      screen: null, // already on HOME
+      element: "#bank-card",
+      title: "Link Your Bank",
+      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      side: "bottom",
+      radius: 16,
+    },
+    // Step 1: Select Account – highlight account list
+    {
+      screen: S.ADD_BANK_SELECT,
+      element: ".ab-account-list",
+      title: "Select Your Account",
+      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      side: "bottom",
+      radius: 12,
+    },
+    // Step 2: Method Select – highlight bottom sheet
+    {
+      screen: S.ADD_BANK_METHOD_SELECT,
+      element: ".ab-ms-sheet",
+      title: "Choose Verification Method",
+      desc: "Link your bank account via Debit Card or Aadhaar number to set your UPI PIN securely.",
+      side: "top",
+      radius: 20,
+    },
+    // Step 3: Debit Card – highlight input area
+    {
+      screen: S.ADD_BANK_DEBIT_CARD,
+      element: ".ab-debit-content",
+      title: "Enter Debit Card Details",
+      desc: "Enter your debit card details to link and confirm the account for UPI transactions.",
+      side: "bottom",
+      radius: 12,
+    },
+    // Step 4: OTP – highlight PIN row
+    {
+      screen: S.ADD_BANK_OTP,
+      element: ".ab-pin-content",
+      title: "Enter OTP",
+      desc: "Select bank from the list below and link your bank account to directly transfer or make payments from your account.",
+      side: "bottom",
+      radius: 12,
+    },
+    // Step 5: Set UPI PIN – highlight PIN content
+    {
+      screen: S.ADD_BANK_SET_PIN,
+      element: ".ab-pin-content",
+      title: "Enter New UPI PIN",
+      desc: "Your new UPI PIN will be saved with your bank. You will need to enter this PIN every time you make a payment or transaction. Keep your UPI PIN safe and secure.",
+      side: "bottom",
+      radius: 12,
+    },
+    // Step 6: Success – highlight success content
+    {
+      screen: S.ADD_BANK_SUCCESS,
+      element: ".ab-success-content",
+      title: "Bank Added Successfully",
+      desc: "Your bank has been successfully linked. Now you can make instant payments and transfers using your bank account.",
+      side: "bottom",
+      radius: 12,
+    },
+  ];
+
+  if (addBankTourStep >= tourSteps.length) {
+    // Tour completed – go to payment methods
+    renderScreen(S.ADD_BANK_PAYMENT_METHODS);
+    return;
+  }
+
+  const step = tourSteps[addBankTourStep];
+
+  // Navigate to appropriate screen if needed
+  if (step.screen) {
+    skipHomeTour = true;
+    renderScreen(step.screen);
+  }
+
+  // Wait for DOM to be ready, then highlight
+  wait(() => {
+    const dObj = window.driver.js.driver({
+      showProgress: false,
+      showButtons: [],
+      overlayColor: "rgba(0,0,0,0.65)",
+      stagePadding: 10,
+      stageRadius: step.radius || 12,
+      animate: true,
+      popoverClass: "bhim-driver-popover",
+      allowClose: true,
+      onDestroyStarted: () => {
+        activeDriver = null;
+        dObj.destroy();
+      },
+    });
+    dObj.highlight({
+      element: step.element,
+      popover: {
+        title: step.title,
+        description: step.desc + abTourDots(addBankTourStep),
+        side: step.side,
+        align: "center",
+      },
+    });
+    window.bhimDriver = dObj;
+    activeDriver = dObj;
+  }, 400);
+}
+
+function selectBankAccount(idx) {
+  addBankSelectedAccount = idx;
+  // Re-render to update radio buttons
+  const container = document.querySelector(".ab-account-list");
+  if (container) {
+    document.querySelectorAll(".ab-radio").forEach((r, i) => {
+      if (i === idx) r.className = "ab-radio ab-radio--checked";
+      else r.className = "ab-radio";
+    });
+  }
+}
+
+function handleAddBankKey(target, key) {
+  if (target === "otp") {
+    if (key === "DEL") addBankOtp = addBankOtp.slice(0, -1);
+    else if (key === "SUBMIT" && addBankOtp.length === 4) { renderScreen(S.ADD_BANK_SET_PIN); return; }
+    else if (key !== "SUBMIT" && addBankOtp.length < 4) addBankOtp += key;
+    updateBankOtpUI();
+  } else if (target === "pin") {
+    if (key === "DEL") addBankPin = addBankPin.slice(0, -1);
+    else if (key === "SUBMIT" && addBankPin.length === 4) { renderScreen(S.ADD_BANK_CONFIRM_PIN); return; }
+    else if (key !== "SUBMIT" && addBankPin.length < 4) addBankPin += key;
+    updateSetPinUI();
+  } else if (target === "cpin") {
+    if (key === "DEL") addBankConfirmPin = addBankConfirmPin.slice(0, -1);
+    else if (key === "SUBMIT" && addBankConfirmPin.length === 4) { renderScreen(S.ADD_BANK_SUCCESS); return; }
+    else if (key !== "SUBMIT" && addBankConfirmPin.length < 4) addBankConfirmPin += key;
+    updateConfirmPinUI();
+  }
+}
+
+function updateDebitCardUI() {
+  // Update card digit boxes
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById("ab-card-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankCardDigits.length ? addBankCardDigits[i] : "";
+      el.classList.toggle("ab-digit--active", addBankInputFocus === "card" && i === addBankCardDigits.length);
+    }
+  }
+  // Update expiry digit boxes
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById("ab-exp-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankExpiry.length ? addBankExpiry[i] : "";
+      el.classList.toggle("ab-digit--active", addBankInputFocus === "expiry" && i === addBankExpiry.length);
+    }
+  }
+  // Update button
+  const btn = document.getElementById("ab-debit-confirm");
+  if (btn) {
+    const canConfirm = addBankCardDigits.length === 6 && addBankExpiry.length === 4;
+    btn.className = canConfirm ? "ob-btn ob-btn--primary" : "ob-btn ob-btn--disabled";
+    btn.onclick = canConfirm ? function() { renderScreen(S.ADD_BANK_OTP); } : null;
+  }
+}
+
+function updateBankOtpUI() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById("ab-otp-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankOtp.length ? addBankOtp[i] : "";
+      el.classList.toggle("ab-pin-digit--active", i === addBankOtp.length);
+    }
+  }
+}
+
+function updateSetPinUI() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById("ab-pin-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankPin.length ? addBankPin[i] : "";
+      el.classList.toggle("ab-pin-digit--active", i === addBankPin.length);
+    }
+  }
+}
+
+function updateConfirmPinUI() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById("ab-cpin-" + i);
+    if (el) {
+      el.querySelector("span").textContent = i < addBankConfirmPin.length ? addBankConfirmPin[i] : "";
+      el.classList.toggle("ab-pin-digit--active", i === addBankConfirmPin.length);
+    }
+  }
+}
+
 // ─── Main Render ─────────────────────────────────────────────
 function renderScreen(state) {
   clearTimers();
@@ -511,6 +1332,15 @@ function renderScreen(state) {
     passcodeEnter = "";
     passcodeConfirm = "";
   }
+  // Add Bank Account flow resets
+  if (state === S.ADD_BANK_SELECT) { addBankSelectedAccount = 0; }
+  if (state === S.ADD_BANK_DEBIT_CARD) { addBankCardDigits = ""; addBankExpiry = ""; addBankInputFocus = "card"; }
+  if (state === S.ADD_BANK_METHOD_SELECT) { addBankMethod = "debit"; }
+  if (state === S.ADD_BANK_OTP) { addBankOtp = ""; }
+  if (state === S.ADD_BANK_SET_PIN) { addBankPin = ""; }
+  if (state === S.ADD_BANK_CONFIRM_PIN) { addBankConfirmPin = ""; }
+  if (state === S.ADD_BANK_AADHAAR_NUMBER) { addBankAadhaarNumber = ""; }
+  if (state === S.ADD_BANK_AADHAAR_OTP) { addBankAadhaarOtp = ""; }
 
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
@@ -549,6 +1379,29 @@ function getScreenHTML(state) {
       return loadingSplashHTML();
     case S.HOME:
       return homeScreenHTML();
+    // Add Bank Account flow
+    case S.ADD_BANK_SELECT:
+      return selectBankHTML();
+    case S.ADD_BANK_METHOD_SELECT:
+      return methodSelectHTML();
+    case S.ADD_BANK_AADHAAR_CONSENT:
+      return aadhaarConsentHTML();
+    case S.ADD_BANK_AADHAAR_NUMBER:
+      return aadhaarNumberHTML();
+    case S.ADD_BANK_AADHAAR_OTP:
+      return aadhaarOtpHTML();
+    case S.ADD_BANK_DEBIT_CARD:
+      return debitCardHTML();
+    case S.ADD_BANK_OTP:
+      return bankOtpHTML();
+    case S.ADD_BANK_SET_PIN:
+      return setUpiPinHTML();
+    case S.ADD_BANK_CONFIRM_PIN:
+      return confirmUpiPinHTML();
+    case S.ADD_BANK_SUCCESS:
+      return bankSuccessHTML();
+    case S.ADD_BANK_PAYMENT_METHODS:
+      return paymentMethodsHTML();
     default:
       return landingHTML();
   }
@@ -584,7 +1437,14 @@ function handlePostRender(state) {
       wait(() => renderScreen(S.HOME), 2500);
       break;
     case S.HOME:
-      wait(() => startHomeTour(), 800);
+      if (!skipHomeTour) {
+        wait(() => startHomeTour(), 800);
+      }
+      skipHomeTour = false;
+      break;
+    // Add Bank Account flow
+    case S.ADD_BANK_SUCCESS:
+      wait(() => renderScreen(S.ADD_BANK_PAYMENT_METHODS), 2500);
       break;
   }
 }
@@ -613,6 +1473,25 @@ function handleKeyPress(key) {
         else if (passcodeConfirm.length < 4) passcodeConfirm += key;
       }
       updatePasscodeUI();
+      break;
+    case S.ADD_BANK_DEBIT_CARD:
+      if (key === "DEL") {
+        if (addBankInputFocus === "expiry" && addBankExpiry.length > 0) {
+          addBankExpiry = addBankExpiry.slice(0, -1);
+        } else if (addBankInputFocus === "expiry" && addBankExpiry.length === 0) {
+          addBankInputFocus = "card";
+        } else if (addBankInputFocus === "card" && addBankCardDigits.length > 0) {
+          addBankCardDigits = addBankCardDigits.slice(0, -1);
+        }
+      } else {
+        if (addBankInputFocus === "card" && addBankCardDigits.length < 6) {
+          addBankCardDigits += key;
+          if (addBankCardDigits.length === 6) addBankInputFocus = "expiry";
+        } else if (addBankInputFocus === "expiry" && addBankExpiry.length < 4) {
+          addBankExpiry += key;
+        }
+      }
+      updateDebitCardUI();
       break;
   }
 }
@@ -702,6 +1581,34 @@ function goBack() {
       break;
     case S.PASSCODE_ENTRY:
       renderScreen(S.SECURITY_SELECT);
+      break;
+    // Add Bank Account flow back navigation
+    case S.ADD_BANK_SELECT:
+      renderScreen(S.HOME);
+      break;
+    case S.ADD_BANK_METHOD_SELECT:
+      renderScreen(S.ADD_BANK_SELECT);
+      break;
+    case S.ADD_BANK_DEBIT_CARD:
+      renderScreen(S.ADD_BANK_METHOD_SELECT);
+      break;
+    case S.ADD_BANK_AADHAAR_CONSENT:
+      renderScreen(S.ADD_BANK_METHOD_SELECT);
+      break;
+    case S.ADD_BANK_AADHAAR_NUMBER:
+      renderScreen(S.ADD_BANK_AADHAAR_CONSENT);
+      break;
+    case S.ADD_BANK_AADHAAR_OTP:
+      renderScreen(S.ADD_BANK_AADHAAR_NUMBER);
+      break;
+    case S.ADD_BANK_OTP:
+      renderScreen(S.ADD_BANK_DEBIT_CARD);
+      break;
+    case S.ADD_BANK_SET_PIN:
+      renderScreen(S.ADD_BANK_OTP);
+      break;
+    case S.ADD_BANK_CONFIRM_PIN:
+      renderScreen(S.ADD_BANK_SET_PIN);
       break;
   }
 }
