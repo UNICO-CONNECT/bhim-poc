@@ -5,48 +5,55 @@
 
 // ─── State Definitions ───────────────────────────────────────
 const S = Object.freeze({
-  LANDING:          'landing',
-  SPLASH_1:         'splash_1',
-  SPLASH_2:         'splash_2',
-  GET_STARTED:      'get_started',
-  LANG_SELECT:      'lang_select',
-  MOBILE_ENTRY:     'mobile_entry',
-  OTP_ENTRY:        'otp_entry',
-  SIM_SELECT:       'sim_select',
-  VERIFY_1:         'verify_1',
-  VERIFY_2:         'verify_2',
-  VERIFY_3:         'verify_3',
-  PASSCODE_ENTRY:   'passcode_entry',
-  LOADING_SPLASH:   'loading_splash',
-  HOME:             'home',
+  LANDING: "landing",
+  SPLASH_1: "splash_1",
+  SPLASH_2: "splash_2",
+  GET_STARTED: "get_started",
+  LANG_SELECT: "lang_select",
+  MOBILE_ENTRY: "mobile_entry",
+  OTP_ENTRY: "otp_entry",
+  SIM_SELECT: "sim_select",
+  VERIFY_1: "verify_1",
+  VERIFY_2: "verify_2",
+  VERIFY_3: "verify_3",
+  PASSCODE_ENTRY: "passcode_entry",
+  LOADING_SPLASH: "loading_splash",
+  HOME: "home",
 });
 
 // ─── Globals ─────────────────────────────────────────────────
-let currentState    = null;
-let phoneShell      = null;
-let activeDriver    = null;
-let timers          = [];
+let currentState = null;
+let phoneShell = null;
+let activeDriver = null;
+let timers = [];
 
 // Tooltip tour state
-let tooltipsSeen    = false;
-let currentTTIdx    = -1;     // current tooltip index during tour
+let tooltipsSeen = false;
+let currentTTIdx = -1; // current tooltip index during tour
 
 // Interactive input state (manual flow)
-let selectedLang    = null;
-let mobileInput     = '';
-let otpInput        = '';
-let passcodeEnter   = '';
-let passcodeConfirm = '';
-let selectedSim     = null;
+let selectedLang = null;
+let mobileInput = "";
+let otpInput = "";
+let passcodeEnter = "";
+let passcodeConfirm = "";
+let selectedSim = null;
 
-function clearTimers() { timers.forEach(t => clearTimeout(t)); timers = []; }
-function wait(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
+function clearTimers() {
+  timers.forEach((t) => clearTimeout(t));
+  timers = [];
+}
+function wait(fn, ms) {
+  const t = setTimeout(fn, ms);
+  timers.push(t);
+  return t;
+}
 
 // ─── SVG Helpers ─────────────────────────────────────────────
 function statusBarSVG(dark) {
-  const c = dark ? '#080a0b' : '#ffffff';
+  const c = dark ? "#080a0b" : "#ffffff";
   return `
-  <div class="ob-status-bar ob-status-bar--${dark ? 'dark' : 'light'}">
+  <div class="ob-status-bar ob-status-bar--${dark ? "dark" : "light"}">
     <span class="ob-status-bar__time" style="color:${c}">9:41</span>
     <div class="ob-status-bar__icons">
       <svg viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx=".5" fill="${c}"/><rect x="5" y="5" width="3" height="7" rx=".5" fill="${c}"/><rect x="10" y="2" width="3" height="10" rx=".5" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx=".5" fill="${c}"/></svg>
@@ -64,18 +71,18 @@ function homeIndHTML() {
   return `<div class="ob-home-ind"><div class="ob-home-ind__bar"></div></div>`;
 }
 
-function upiLogoSVG(w, h) {
-  w = w || 120; h = h || 50;
-  return `<svg width="${w}" height="${h}" viewBox="0 0 240 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 80 Q10 20 40 20 L40 80 Q40 90 30 90 L20 90 Q10 90 10 80Z" fill="#555"/>
-    <path d="M55 20 L55 60 Q55 80 75 80 Q95 80 95 60 L95 20" stroke="#555" stroke-width="12" fill="none" stroke-linecap="round"/>
-    <path d="M110 20 L110 80" stroke="#555" stroke-width="12" stroke-linecap="round"/>
-    <path d="M110 20 L140 20 Q160 20 160 40 Q160 60 140 60 L110 60" fill="none" stroke="#555" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M175 20 L175 80" stroke="#555" stroke-width="12" stroke-linecap="round"/>
-    <polygon points="195,15 230,50 195,85" fill="url(#triG)"/>
-    <defs><linearGradient id="triG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF9933"/><stop offset="50%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#138808"/></linearGradient></defs>
-    <text x="10" y="98" font-family="Figtree,sans-serif" font-size="11" fill="#999" letter-spacing="3.5" font-weight="500">UNIFIED PAYMENTS INTERFACE</text>
-  </svg>`;
+function upiLogoSVG(w, h, svgName) {
+  svgName = svgName || "upi.svg";
+  w = w || 120;
+  h = h || 50;
+  return `<img src="assets/${svgName}" width="${w}" height="${h}" alt="UPI Logo" style="object-fit: contain;">`;
+}
+
+function upiLogoDarkSVG(w, h, svgName) {
+  svgName = svgName || "upi_dark_lg.svg";
+  w = w || 120;
+  h = h || 50;
+  return `<img src="assets/${svgName}" width="${w}" height="${h}" alt="UPI Logo Dark" style="object-fit: contain;">`;
 }
 
 function sparkleSVG() {
@@ -87,44 +94,67 @@ function indianFlagSVG() {
 }
 
 function checkCircleSVG(active) {
-  if (active) return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/><path d="M7 12l3 3 7-7" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if (active)
+    return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/><path d="M7 12l3 3 7-7" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#f0f0f0" stroke="#ddd" stroke-width="1.5"/><path d="M7 12l3 3 7-7" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 /* Keyboard with interactive onclick handlers */
 function interactiveKBHTML() {
   const keys = [
-    {d:'1'},{d:'2',s:'ABC'},{d:'3',s:'DEF'},
-    {d:'4',s:'GHI'},{d:'5',s:'JKL'},{d:'6',s:'MNO'},
-    {d:'7',s:'PQRS'},{d:'8',s:'TUV'},{d:'9',s:'WXYZ'},
-    {d:'',empty:true},{d:'0'},{d:'⌫',del:true}
+    { d: "1" },
+    { d: "2", s: "ABC" },
+    { d: "3", s: "DEF" },
+    { d: "4", s: "GHI" },
+    { d: "5", s: "JKL" },
+    { d: "6", s: "MNO" },
+    { d: "7", s: "PQRS" },
+    { d: "8", s: "TUV" },
+    { d: "9", s: "WXYZ" },
+    { d: "", empty: true },
+    { d: "0" },
+    { d: "⌫", del: true },
   ];
   let h = '<div class="ob-keyboard">';
-  keys.forEach(k => {
-    if (k.empty) { h += '<div class="ob-key ob-key--empty"></div>'; return; }
-    const cls = k.del ? ' ob-key--del' : '';
-    const val = k.del ? 'DEL' : k.d;
-    h += `<button class="ob-key${cls}" onclick="handleKeyPress('${val}')">${k.d}${k.s ? '<span class="ob-key__sub">'+k.s+'</span>' : ''}</button>`;
+  keys.forEach((k) => {
+    if (k.empty) {
+      h += '<div class="ob-key ob-key--empty"></div>';
+      return;
+    }
+    const cls = k.del ? " ob-key--del" : "";
+    const val = k.del ? "DEL" : k.d;
+    h += `<button class="ob-key${cls}" onclick="handleKeyPress('${val}')">${k.d}${k.s ? '<span class="ob-key__sub">' + k.s + "</span>" : ""}</button>`;
   });
-  h += '</div>';
+  h += "</div>";
   return h;
 }
 
 /* Static (non-interactive) keyboard for tooltip preview screens */
 function staticKBHTML() {
   const keys = [
-    {d:'1'},{d:'2',s:'ABC'},{d:'3',s:'DEF'},
-    {d:'4',s:'GHI'},{d:'5',s:'JKL'},{d:'6',s:'MNO'},
-    {d:'7',s:'PQRS'},{d:'8',s:'TUV'},{d:'9',s:'WXYZ'},
-    {d:'',empty:true},{d:'0'},{d:'⌫',del:true}
+    { d: "1" },
+    { d: "2", s: "ABC" },
+    { d: "3", s: "DEF" },
+    { d: "4", s: "GHI" },
+    { d: "5", s: "JKL" },
+    { d: "6", s: "MNO" },
+    { d: "7", s: "PQRS" },
+    { d: "8", s: "TUV" },
+    { d: "9", s: "WXYZ" },
+    { d: "", empty: true },
+    { d: "0" },
+    { d: "⌫", del: true },
   ];
   let h = '<div class="ob-keyboard">';
-  keys.forEach(k => {
-    if (k.empty) { h += '<div class="ob-key ob-key--empty"></div>'; return; }
-    const cls = k.del ? ' ob-key--del' : '';
-    h += `<button class="ob-key${cls}">${k.d}${k.s ? '<span class="ob-key__sub">'+k.s+'</span>' : ''}</button>`;
+  keys.forEach((k) => {
+    if (k.empty) {
+      h += '<div class="ob-key ob-key--empty"></div>';
+      return;
+    }
+    const cls = k.del ? " ob-key--del" : "";
+    h += `<button class="ob-key${cls}">${k.d}${k.s ? '<span class="ob-key__sub">' + k.s + "</span>" : ""}</button>`;
   });
-  h += '</div>';
+  h += "</div>";
   return h;
 }
 
@@ -137,11 +167,11 @@ function previewGetStartedHTML() {
     <div class="gs-blue-bg"></div>
     ${statusBarSVG(false)}
     <div class="gs-header">
-      <div style="margin-top:8px">${upiLogoSVG(80, 36)}</div>
+      <div style="margin-top:8px">${upiLogoSVG(80, 36, "upi.svg")}</div>
       <div class="gs-tagline">India's most loved<br>UPI App!</div>
     </div>
     <div class="gs-body">
-      <div class="gs-carousel"><div class="gs-carousel__icon">⭐</div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
+      <div class="gs-carousel"><div class="gs-carousel__icon"><img src="assets/star.png" width="24" height="24" alt="Star"></div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
       <div class="gs-dots"><div class="gs-dot"></div><div class="gs-dot gs-dot--active"></div><div class="gs-dot"></div><div class="gs-dot"></div></div>
       <div id="gs-lang-section" class="gs-lang-section">
         <p class="gs-lang-title">Choose your preferred language</p>
@@ -160,14 +190,24 @@ function previewGetStartedHTML() {
 }
 
 function previewLangHTML() {
-  const langs = ['हिन्दी|Hindi','मराठी|Marathi','English|','বাংলা|Bengali','தமிழ்|Tamil','తెలుగు|Telegu','ગુજરાતી|Gujarati'];
-  let list = '';
+  const langs = [
+    "हिन्दी|Hindi",
+    "मराठी|Marathi",
+    "English|",
+    "বাংলা|Bengali",
+    "தமிழ்|Tamil",
+    "తెలుగు|Telegu",
+    "ગુજરાતી|Gujarati",
+  ];
+  let list = "";
   langs.forEach((l, i) => {
-    const [native, eng] = l.split('|');
-    const isSel = native === 'English';
-    const cls = isSel ? ' lang-item--selected' : '';
-    const radio = isSel ? '<div class="lang-radio lang-radio--checked"></div>' : '<div class="lang-radio"></div>';
-    list += `<div class="lang-item${cls}" id="lang-${i}"><div class="lang-item__text"><h4>${native}</h4>${eng ? '<p>'+eng+'</p>' : ''}</div>${radio}</div>`;
+    const [native, eng] = l.split("|");
+    const isSel = native === "English";
+    const cls = isSel ? " lang-item--selected" : "";
+    const radio = isSel
+      ? '<div class="lang-radio lang-radio--checked"></div>'
+      : '<div class="lang-radio"></div>';
+    list += `<div class="lang-item${cls}" id="lang-${i}"><div class="lang-item__text"><h4>${native}</h4>${eng ? "<p>" + eng + "</p>" : ""}</div>${radio}</div>`;
   });
   return `
   <div class="screen screen-language screen--no-anim">
@@ -195,7 +235,8 @@ function previewMobileHTML() {
 }
 
 function previewOtpHTML() {
-  let boxes = ''; for (let i = 0; i < 6; i++) boxes += '<div class="otp-box">-</div>';
+  let boxes = "";
+  for (let i = 0; i < 6; i++) boxes += '<div class="otp-box">-</div>';
   return `
   <div class="screen screen-otp screen--no-anim">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
@@ -230,14 +271,16 @@ function previewSimHTML() {
 
 function previewVerifyHTML() {
   const steps = [
-    { text: 'Verify Mobile Number', active: true },
-    { text: 'SMS sent from your mobile', active: true },
-    { text: 'Verification completed', active: true },
+    { text: "Verify Mobile Number", active: true },
+    { text: "SMS sent from your mobile", active: true },
+    { text: "Verification completed", active: true },
   ];
-  let stepsHTML = '';
+  let stepsHTML = "";
   steps.forEach((s, i) => {
     stepsHTML += `<div class="verify-step verify-step--active"><div class="verify-step__circle">${checkCircleSVG(true)}</div><span class="verify-step__text">${s.text}</span></div>`;
-    if (i < 2) stepsHTML += '<div class="verify-connector verify-connector--active"></div>';
+    if (i < 2)
+      stepsHTML +=
+        '<div class="verify-connector verify-connector--active"></div>';
   });
   return `
   <div class="screen screen-verify screen--no-anim">
@@ -253,7 +296,7 @@ function previewVerifyHTML() {
 function landingHTML() {
   return `
   <div class="screen screen-landing">
-    <div class="landing-logo">${upiLogoSVG(140, 58)}</div>
+    <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>2.</span> Add Bank Account</button>
@@ -269,7 +312,7 @@ function splash1HTML() {
 }
 
 function splash2HTML() {
-  return `<div class="screen screen-splash"><div class="ob-tricolor"></div><div class="ob-circle-deco"></div><div class="ob-sparkle ob-sparkle--1">${sparkleSVG()}</div><div class="ob-sparkle ob-sparkle--2">${sparkleSVG()}</div><p class="splash-text">यूपीआई ऐप खोलें</p><div class="splash-logo splash-logo--animate">${upiLogoSVG(180, 75)}</div></div>`;
+  return `<div class="screen screen-splash"><div class="ob-tricolor"></div><div class="ob-circle-deco"></div><div class="ob-sparkle ob-sparkle--1">${sparkleSVG()}</div><div class="ob-sparkle ob-sparkle--2">${sparkleSVG()}</div><p class="splash-text">यूपीआई ऐप खोलें</p><div class="splash-logo splash-logo--animate">${upiLogoDarkSVG(180, 75, "upi_dark_lg.svg")}</div></div>`;
 }
 
 function getStartedHTML() {
@@ -277,9 +320,9 @@ function getStartedHTML() {
   <div class="screen screen-get-started">
     <div class="gs-blue-bg"></div>
     ${statusBarSVG(false)}
-    <div class="gs-header"><div style="margin-top:8px">${upiLogoSVG(80, 36)}</div><div class="gs-tagline">India's most loved<br>UPI App!</div></div>
+    <div class="gs-header"><div style="margin-top:8px">${upiLogoSVG(91, 48, "upi.svg")}</div><div class="gs-tagline">India's most loved<br>UPI App!</div></div>
     <div class="gs-body">
-      <div class="gs-carousel"><div class="gs-carousel__icon">⭐</div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
+      <div class="gs-carousel"><div class="gs-carousel__icon"><img width="64" height="64" src="assets/star.png"  alt="Star"></div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
       <div class="gs-dots"><div class="gs-dot"></div><div class="gs-dot gs-dot--active"></div><div class="gs-dot"></div><div class="gs-dot"></div></div>
       <div class="gs-lang-section">
         <p class="gs-lang-title">Choose your preferred language</p>
@@ -299,17 +342,17 @@ function getStartedHTML() {
 
 function langSelectHTML() {
   const langs = [
-    { native: 'हिन्दी', eng: 'Hindi' },
-    { native: 'मराठी', eng: 'Marathi' },
-    { native: 'English', eng: '' },
-    { native: 'বাংলা', eng: 'Bengali' },
-    { native: 'தமிழ்', eng: 'Tamil' },
-    { native: 'తెలుగు', eng: 'Telegu' },
-    { native: 'ગુજરાતી', eng: 'Gujarati' },
+    { native: "हिन्दी", eng: "Hindi" },
+    { native: "मराठी", eng: "Marathi" },
+    { native: "English", eng: "" },
+    { native: "বাংলা", eng: "Bengali" },
+    { native: "தமிழ்", eng: "Tamil" },
+    { native: "తెలుగు", eng: "Telegu" },
+    { native: "ગુજરાતી", eng: "Gujarati" },
   ];
-  let list = '';
+  let list = "";
   langs.forEach((l, i) => {
-    list += `<div class="lang-item" id="lang-item-${i}" onclick="selectLanguage(${i})"><div class="lang-item__text"><h4>${l.native}</h4>${l.eng ? '<p>'+l.eng+'</p>' : ''}</div><div class="lang-radio" id="lang-radio-${i}"></div></div>`;
+    list += `<div class="lang-item" id="lang-item-${i}" onclick="selectLanguage(${i})"><div class="lang-item__text"><h4>${l.native}</h4>${l.eng ? "<p>" + l.eng + "</p>" : ""}</div><div class="lang-radio" id="lang-radio-${i}"></div></div>`;
   });
   return `
   <div class="screen screen-language">
@@ -336,9 +379,10 @@ function mobileEntryHTML() {
 }
 
 function otpEntryHTML() {
-  let boxes = '';
-  for (let i = 0; i < 6; i++) boxes += `<div class="otp-box" id="otp-box-${i}"></div>`;
-  const phone = mobileInput || '9999999999';
+  let boxes = "";
+  for (let i = 0; i < 6; i++)
+    boxes += `<div class="otp-box" id="otp-box-${i}"></div>`;
+  const phone = mobileInput || "9999999999";
   return `
   <div class="screen screen-otp">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
@@ -379,16 +423,16 @@ function simSelectHTML() {
 
 function verifyHTML(step) {
   const steps = [
-    { text: 'Verify Mobile Number', active: step >= 1 },
-    { text: 'SMS sent from your mobile', active: step >= 2 },
-    { text: 'Verification completed', active: step >= 3 },
+    { text: "Verify Mobile Number", active: step >= 1 },
+    { text: "SMS sent from your mobile", active: step >= 2 },
+    { text: "Verification completed", active: step >= 3 },
   ];
-  let sh = '';
+  let sh = "";
   steps.forEach((s, i) => {
-    const cls = s.active ? 'verify-step--active' : 'verify-step--pending';
+    const cls = s.active ? "verify-step--active" : "verify-step--pending";
     sh += `<div class="verify-step ${cls}"><div class="verify-step__circle">${checkCircleSVG(s.active)}</div><span class="verify-step__text">${s.text}</span></div>`;
     if (i < 2) {
-      const cc = steps[i + 1].active ? ' verify-connector--active' : '';
+      const cc = steps[i + 1].active ? " verify-connector--active" : "";
       sh += `<div class="verify-connector${cc}"></div>`;
     }
   });
@@ -399,7 +443,8 @@ function verifyHTML(step) {
 }
 
 function passcodeEntryHTML() {
-  let eBoxes = '', cBoxes = '';
+  let eBoxes = "",
+    cBoxes = "";
   for (let i = 0; i < 4; i++) {
     eBoxes += `<div class="pass-box pass-box--empty" id="pass-e-${i}"><div class="pass-box__dot"></div></div>`;
     cBoxes += `<div class="pass-box pass-box--empty" id="pass-c-${i}"><div class="pass-box__dot"></div></div>`;
@@ -420,7 +465,7 @@ function passcodeEntryHTML() {
 }
 
 function loadingSplashHTML() {
-  return `<div class="screen screen-loading-splash"><div class="ob-tricolor"></div>${statusBarSVG(true)}<div class="loading-content">${upiLogoSVG(140, 58)}<p class="loading-text">Loading...</p></div></div>`;
+  return `<div class="screen screen-loading-splash"><div class="ob-tricolor"></div>${statusBarSVG(true)}<div class="loading-content">${upiLogoDarkSVG(140, 58, "upi_dark_lg.svg")}<p class="loading-text">Loading...</p></div></div>`;
 }
 
 // ─── Home Screen HTML (from original index.html) ─────────────
@@ -481,14 +526,20 @@ function homeScreenHTML() {
 // ─── Main Render ─────────────────────────────────────────────
 function renderScreen(state) {
   clearTimers();
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  if (activeDriver) {
+    activeDriver.destroy();
+    activeDriver = null;
+  }
 
   // Reset input state for interactive screens
-  if (state === S.LANG_SELECT)     selectedLang = null;
-  if (state === S.MOBILE_ENTRY)    mobileInput = '';
-  if (state === S.OTP_ENTRY)       otpInput = '';
-  if (state === S.SIM_SELECT)      selectedSim = null;
-  if (state === S.PASSCODE_ENTRY)  { passcodeEnter = ''; passcodeConfirm = ''; }
+  if (state === S.LANG_SELECT) selectedLang = null;
+  if (state === S.MOBILE_ENTRY) mobileInput = "";
+  if (state === S.OTP_ENTRY) otpInput = "";
+  if (state === S.SIM_SELECT) selectedSim = null;
+  if (state === S.PASSCODE_ENTRY) {
+    passcodeEnter = "";
+    passcodeConfirm = "";
+  }
 
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
@@ -497,21 +548,36 @@ function renderScreen(state) {
 
 function getScreenHTML(state) {
   switch (state) {
-    case S.LANDING:         return landingHTML();
-    case S.SPLASH_1:        return splash1HTML();
-    case S.SPLASH_2:        return splash2HTML();
-    case S.GET_STARTED:     return getStartedHTML();
-    case S.LANG_SELECT:     return langSelectHTML();
-    case S.MOBILE_ENTRY:    return mobileEntryHTML();
-    case S.OTP_ENTRY:       return otpEntryHTML();
-    case S.SIM_SELECT:      return simSelectHTML();
-    case S.VERIFY_1:        return verifyHTML(1);
-    case S.VERIFY_2:        return verifyHTML(2);
-    case S.VERIFY_3:        return verifyHTML(3);
-    case S.PASSCODE_ENTRY:  return passcodeEntryHTML();
-    case S.LOADING_SPLASH:  return loadingSplashHTML();
-    case S.HOME:            return homeScreenHTML();
-    default:                return landingHTML();
+    case S.LANDING:
+      return landingHTML();
+    case S.SPLASH_1:
+      return splash1HTML();
+    case S.SPLASH_2:
+      return splash2HTML();
+    case S.GET_STARTED:
+      return getStartedHTML();
+    case S.LANG_SELECT:
+      return langSelectHTML();
+    case S.MOBILE_ENTRY:
+      return mobileEntryHTML();
+    case S.OTP_ENTRY:
+      return otpEntryHTML();
+    case S.SIM_SELECT:
+      return simSelectHTML();
+    case S.VERIFY_1:
+      return verifyHTML(1);
+    case S.VERIFY_2:
+      return verifyHTML(2);
+    case S.VERIFY_3:
+      return verifyHTML(3);
+    case S.PASSCODE_ENTRY:
+      return passcodeEntryHTML();
+    case S.LOADING_SPLASH:
+      return loadingSplashHTML();
+    case S.HOME:
+      return homeScreenHTML();
+    default:
+      return landingHTML();
   }
 }
 
@@ -522,16 +588,21 @@ function handlePostRender(state) {
       break;
     case S.SPLASH_2:
       wait(() => {
-        if (!tooltipsSeen) { showTooltipStep(0); }
-        else { renderScreen(S.GET_STARTED); }
+        if (!tooltipsSeen) {
+          showTooltipStep(0);
+        } else {
+          renderScreen(S.GET_STARTED);
+        }
       }, 2500);
       break;
     case S.VERIFY_1:
       // Auto-play verification animation (non-interactive loading)
       wait(() => {
-        phoneShell.innerHTML = verifyHTML(2); currentState = S.VERIFY_2;
+        phoneShell.innerHTML = verifyHTML(2);
+        currentState = S.VERIFY_2;
         wait(() => {
-          phoneShell.innerHTML = verifyHTML(3); currentState = S.VERIFY_3;
+          phoneShell.innerHTML = verifyHTML(3);
+          currentState = S.VERIFY_3;
           wait(() => renderScreen(S.PASSCODE_ENTRY), 1200);
         }, 1200);
       }, 1200);
@@ -550,18 +621,19 @@ function handlePostRender(state) {
 function handleKeyPress(key) {
   switch (currentState) {
     case S.MOBILE_ENTRY:
-      if (key === 'DEL') mobileInput = mobileInput.slice(0, -1);
+      if (key === "DEL") mobileInput = mobileInput.slice(0, -1);
       else if (mobileInput.length < 10) mobileInput += key;
       updateMobileUI();
       break;
     case S.OTP_ENTRY:
-      if (key === 'DEL') otpInput = otpInput.slice(0, -1);
+      if (key === "DEL") otpInput = otpInput.slice(0, -1);
       else if (otpInput.length < 6) otpInput += key;
       updateOtpUI();
       break;
     case S.PASSCODE_ENTRY:
-      if (key === 'DEL') {
-        if (passcodeConfirm.length > 0) passcodeConfirm = passcodeConfirm.slice(0, -1);
+      if (key === "DEL") {
+        if (passcodeConfirm.length > 0)
+          passcodeConfirm = passcodeConfirm.slice(0, -1);
         else passcodeEnter = passcodeEnter.slice(0, -1);
       } else {
         if (passcodeEnter.length < 4) passcodeEnter += key;
@@ -574,107 +646,134 @@ function handleKeyPress(key) {
 
 function selectLanguage(idx) {
   selectedLang = idx;
-  document.querySelectorAll('.lang-item').forEach((el, i) => {
+  document.querySelectorAll(".lang-item").forEach((el, i) => {
     if (i === idx) {
-      el.classList.add('lang-item--selected');
-      el.querySelector('.lang-radio').className = 'lang-radio lang-radio--checked';
+      el.classList.add("lang-item--selected");
+      el.querySelector(".lang-radio").className =
+        "lang-radio lang-radio--checked";
     } else {
-      el.classList.remove('lang-item--selected');
-      el.querySelector('.lang-radio').className = 'lang-radio';
+      el.classList.remove("lang-item--selected");
+      el.querySelector(".lang-radio").className = "lang-radio";
     }
   });
-  const btn = document.getElementById('lang-done-btn');
-  if (btn) { btn.className = 'ob-btn ob-btn--primary'; btn.onclick = function() { renderScreen(S.MOBILE_ENTRY); }; }
+  const btn = document.getElementById("lang-done-btn");
+  if (btn) {
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = function () {
+      renderScreen(S.MOBILE_ENTRY);
+    };
+  }
 }
 
 function selectSim(sim) {
   selectedSim = sim;
-  ['airtel', 'jio'].forEach(s => {
-    const card = document.getElementById('sim-card-' + s);
-    const radio = document.getElementById('sim-radio-' + s);
+  ["airtel", "jio"].forEach((s) => {
+    const card = document.getElementById("sim-card-" + s);
+    const radio = document.getElementById("sim-radio-" + s);
     if (s === sim) {
-      card.classList.add('sim-card--selected');
-      radio.className = 'lang-radio lang-radio--checked';
+      card.classList.add("sim-card--selected");
+      radio.className = "lang-radio lang-radio--checked";
     } else {
-      card.classList.remove('sim-card--selected');
-      radio.className = 'lang-radio';
+      card.classList.remove("sim-card--selected");
+      radio.className = "lang-radio";
     }
   });
-  const btn = document.getElementById('sim-confirm-btn');
-  if (btn) { btn.className = 'ob-btn ob-btn--primary'; btn.onclick = function() { renderScreen(S.VERIFY_1); }; }
+  const btn = document.getElementById("sim-confirm-btn");
+  if (btn) {
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = function () {
+      renderScreen(S.VERIFY_1);
+    };
+  }
 }
 
 function goBack() {
   switch (currentState) {
-    case S.LANG_SELECT:     renderScreen(S.GET_STARTED); break;
-    case S.MOBILE_ENTRY:    renderScreen(S.LANG_SELECT); break;
-    case S.OTP_ENTRY:       renderScreen(S.MOBILE_ENTRY); break;
-    case S.SIM_SELECT:      renderScreen(S.OTP_ENTRY); break;
-    case S.PASSCODE_ENTRY:  renderScreen(S.SIM_SELECT); break;
+    case S.LANG_SELECT:
+      renderScreen(S.GET_STARTED);
+      break;
+    case S.MOBILE_ENTRY:
+      renderScreen(S.LANG_SELECT);
+      break;
+    case S.OTP_ENTRY:
+      renderScreen(S.MOBILE_ENTRY);
+      break;
+    case S.SIM_SELECT:
+      renderScreen(S.OTP_ENTRY);
+      break;
+    case S.PASSCODE_ENTRY:
+      renderScreen(S.SIM_SELECT);
+      break;
   }
 }
 
 // ─── DOM Update Helpers (no re-render, just patch) ───────────
 
 function updateMobileUI() {
-  const el = document.getElementById('mob-number');
+  const el = document.getElementById("mob-number");
   if (el) el.textContent = mobileInput;
-  const btn = document.getElementById('mob-proceed-btn');
+  const btn = document.getElementById("mob-proceed-btn");
   if (!btn) return;
   if (mobileInput.length === 10) {
-    btn.className = 'ob-btn ob-btn--primary';
-    btn.onclick = function() { renderScreen(S.OTP_ENTRY); };
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = function () {
+      renderScreen(S.OTP_ENTRY);
+    };
   } else {
-    btn.className = 'ob-btn ob-btn--disabled';
+    btn.className = "ob-btn ob-btn--disabled";
     btn.onclick = null;
   }
 }
 
 function updateOtpUI() {
   for (let i = 0; i < 6; i++) {
-    const box = document.getElementById('otp-box-' + i);
+    const box = document.getElementById("otp-box-" + i);
     if (!box) continue;
     if (i < otpInput.length) {
       box.textContent = otpInput[i];
-      box.classList.add('otp-box--filled');
+      box.classList.add("otp-box--filled");
     } else {
-      box.textContent = '';
-      box.classList.remove('otp-box--filled');
+      box.textContent = "";
+      box.classList.remove("otp-box--filled");
     }
   }
-  const btn = document.getElementById('otp-proceed-btn');
+  const btn = document.getElementById("otp-proceed-btn");
   if (!btn) return;
   if (otpInput.length === 6) {
-    btn.className = 'ob-btn ob-btn--primary';
-    btn.onclick = function() { renderScreen(S.SIM_SELECT); };
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = function () {
+      renderScreen(S.SIM_SELECT);
+    };
   } else {
-    btn.className = 'ob-btn ob-btn--disabled';
+    btn.className = "ob-btn ob-btn--disabled";
     btn.onclick = null;
   }
 }
 
 function updatePasscodeUI() {
   for (let i = 0; i < 4; i++) {
-    const eBox = document.getElementById('pass-e-' + i);
+    const eBox = document.getElementById("pass-e-" + i);
     if (eBox) {
-      if (i < passcodeEnter.length) eBox.classList.remove('pass-box--empty');
-      else eBox.classList.add('pass-box--empty');
+      if (i < passcodeEnter.length) eBox.classList.remove("pass-box--empty");
+      else eBox.classList.add("pass-box--empty");
     }
-    const cBox = document.getElementById('pass-c-' + i);
+    const cBox = document.getElementById("pass-c-" + i);
     if (cBox) {
-      if (i < passcodeConfirm.length) cBox.classList.remove('pass-box--empty');
-      else cBox.classList.add('pass-box--empty');
+      if (i < passcodeConfirm.length) cBox.classList.remove("pass-box--empty");
+      else cBox.classList.add("pass-box--empty");
     }
   }
-  const btn = document.getElementById('pass-confirm-btn');
+  const btn = document.getElementById("pass-confirm-btn");
   if (!btn) return;
   if (passcodeEnter.length === 4 && passcodeConfirm.length === 4) {
-    btn.className = 'ob-btn ob-btn--primary';
-    btn.textContent = 'Confirm Passcode';
-    btn.onclick = function() { renderScreen(S.LOADING_SPLASH); };
+    btn.className = "ob-btn ob-btn--primary";
+    btn.textContent = "Confirm Passcode";
+    btn.onclick = function () {
+      renderScreen(S.LOADING_SPLASH);
+    };
   } else {
-    btn.className = 'ob-btn ob-btn--disabled';
-    btn.textContent = 'Proceed';
+    btn.className = "ob-btn ob-btn--disabled";
+    btn.textContent = "Proceed";
     btn.onclick = null;
   }
 }
@@ -682,12 +781,40 @@ function updatePasscodeUI() {
 // ─── Tooltip Tour System ─────────────────────────────────────
 
 const TOOLTIP_DATA = [
-  { element: '#gs-lang-section', text: 'You can choose your preferred language in which you want to access the app', side: 'top' },
-  { element: '#lang-2',          text: 'You can choose other languages apart from Hindi and English from here', side: 'bottom' },
-  { element: '#mob-input-wrap',   text: 'You need to enter the mobile number linked with your bank account so that you can link and use your bank account for UPI Payments', side: 'bottom' },
-  { element: '#otp-boxes',        text: 'To ensure that your mobile number, linked with your bank account, is being used only by you, we will send an OTP on your number which will be auto fetched by your app.', side: 'bottom' },
-  { element: '#sim-cards',        text: 'In this step you need to confirm your SIM Card company and we will proceed with binding of your SIM and device with the app. This will ensure that no one else can use your UPI Account apart from yourself', side: 'bottom' },
-  { element: '#verify-steps',     text: 'Verifying and Binding your SIM in Progress', bullets: ['This happens automatically in real UPI apps', 'User does not need to do anything here'], side: 'top' },
+  {
+    element: "#gs-lang-section",
+    text: "You can choose your preferred language in which you want to access the app",
+    side: "top",
+  },
+  {
+    element: "#lang-2",
+    text: "You can choose other languages apart from Hindi and English from here",
+    side: "bottom",
+  },
+  {
+    element: "#mob-input-wrap",
+    text: "You need to enter the mobile number linked with your bank account so that you can link and use your bank account for UPI Payments",
+    side: "bottom",
+  },
+  {
+    element: "#otp-boxes",
+    text: "To ensure that your mobile number, linked with your bank account, is being used only by you, we will send an OTP on your number which will be auto fetched by your app.",
+    side: "bottom",
+  },
+  {
+    element: "#sim-cards",
+    text: "In this step you need to confirm your SIM Card company and we will proceed with binding of your SIM and device with the app. This will ensure that no one else can use your UPI Account apart from yourself",
+    side: "bottom",
+  },
+  {
+    element: "#verify-steps",
+    text: "Verifying and Binding your SIM in Progress",
+    bullets: [
+      "This happens automatically in real UPI apps",
+      "User does not need to do anything here",
+    ],
+    side: "top",
+  },
 ];
 
 // Preview screens shown behind each tooltip
@@ -702,7 +829,10 @@ const TOOLTIP_SCREENS = [
 
 function showTooltipStep(idx) {
   clearTimers();
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  if (activeDriver) {
+    activeDriver.destroy();
+    activeDriver = null;
+  }
 
   currentTTIdx = idx;
   phoneShell.innerHTML = TOOLTIP_SCREENS[idx]();
@@ -715,24 +845,36 @@ function showTooltipStep(idx) {
     let body = `<div class="tt-text">${tt.text}</div>`;
     if (tt.bullets) {
       body += '<ul class="tt-bullets">';
-      tt.bullets.forEach(b => { body += '<li>' + b + '</li>'; });
-      body += '</ul>';
+      tt.bullets.forEach((b) => {
+        body += "<li>" + b + "</li>";
+      });
+      body += "</ul>";
     }
     // Dots
     body += '<div class="tt-dots">';
     for (let i = 0; i < TOOLTIP_DATA.length; i++) {
-      body += '<div class="tt-dot' + (i <= idx ? ' tt-dot--active' : '') + '"></div>';
+      body +=
+        '<div class="tt-dot' + (i <= idx ? " tt-dot--active" : "") + '"></div>';
     }
-    body += '</div>';
+    body += "</div>";
     // Buttons
-    body += '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">Skip</button><button class="tt-btn-next" onclick="tooltipNext()">Next</button></div>';
+    body +=
+      '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">Skip</button><button class="tt-btn-next" onclick="tooltipNext()">Next</button></div>';
 
     const dObj = window.driver.js.driver({
-      showProgress: false, showButtons: [], overlayColor: 'rgba(0,0,0,0.55)',
-      stagePadding: 8, stageRadius: 12, animate: true,
-      popoverClass: 'ob-tooltip', allowClose: false,
+      showProgress: false,
+      showButtons: [],
+      overlayColor: "rgba(0,0,0,0.55)",
+      stagePadding: 8,
+      stageRadius: 12,
+      animate: true,
+      popoverClass: "ob-tooltip ob-tooltip-step-" + idx,
+      allowClose: false,
     });
-    dObj.highlight({ element: tt.element, popover: { description: body, side: tt.side, align: 'center' } });
+    dObj.highlight({
+      element: tt.element,
+      popover: { description: body, side: tt.side, align: "center" },
+    });
     activeDriver = dObj;
   }, 300);
 }
@@ -752,41 +894,106 @@ function tooltipSkip() {
 function endTooltipTour() {
   tooltipsSeen = true;
   currentTTIdx = -1;
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  if (activeDriver) {
+    activeDriver.destroy();
+    activeDriver = null;
+  }
   renderScreen(S.GET_STARTED);
 }
 
 // ─── Flow Control ────────────────────────────────────────────
 
-function startOnboarding() { renderScreen(S.SPLASH_1); }
-function goHome() { renderScreen(S.HOME); }
+function startOnboarding() {
+  renderScreen(S.SPLASH_1);
+}
+function goHome() {
+  renderScreen(S.HOME);
+}
 
 // ─── Home Screen Tour ────────────────────────────────────────
 function startHomeTour() {
   const total = 4;
   function hf(si) {
-    let d = '';
-    for (let i = 0; i < total; i++) d += '<div class="bhim-popover-dot' + (i === si ? ' bhim-popover-dot--active' : '') + '"></div>';
-    return '<div class="bhim-popover-footer"><div class="bhim-popover-dots">' + d + '</div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.bhimDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="window.bhimDriver.moveNext()">Next</button></div></div>';
+    let d = "";
+    for (let i = 0; i < total; i++)
+      d +=
+        '<div class="bhim-popover-dot' +
+        (i === si ? " bhim-popover-dot--active" : "") +
+        '"></div>';
+    return (
+      '<div class="bhim-popover-footer"><div class="bhim-popover-dots">' +
+      d +
+      '</div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.bhimDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="window.bhimDriver.moveNext()">Next</button></div></div>'
+    );
   }
   const steps = [
-    { element: '#scanner-btn', popover: { title: 'Scan & Pay', description: 'Click on Scanner Icon to start the journey of Scan & pay.' + hf(0), side: 'top', align: 'center', popoverClass: 'bhim-driver-popover' } },
-    { element: '#bank-card', popover: { title: 'Link Your Bank', description: 'Add your bank account to start making payments instantly.' + hf(1), side: 'bottom', align: 'center', popoverClass: 'bhim-driver-popover' } },
-    { element: '#send-to-mobile', popover: { title: 'Send to Mobile', description: 'Send money to any mobile number using UPI. Fast and secure!' + hf(2), side: 'bottom', align: 'start', popoverClass: 'bhim-driver-popover' } },
-    { element: '#suggested-features', popover: { title: 'Suggested Features', description: 'Quick access to your most used services like Recharge, FASTag, and more.' + hf(3), side: 'top', align: 'center', popoverClass: 'bhim-driver-popover' } },
+    {
+      element: "#scanner-btn",
+      popover: {
+        title: "Scan & Pay",
+        description:
+          "Click on Scanner Icon to start the journey of Scan & pay." + hf(0),
+        side: "top",
+        align: "center",
+        popoverClass: "bhim-driver-popover",
+      },
+    },
+    {
+      element: "#bank-card",
+      popover: {
+        title: "Link Your Bank",
+        description:
+          "Add your bank account to start making payments instantly." + hf(1),
+        side: "bottom",
+        align: "center",
+        popoverClass: "bhim-driver-popover",
+      },
+    },
+    {
+      element: "#send-to-mobile",
+      popover: {
+        title: "Send to Mobile",
+        description:
+          "Send money to any mobile number using UPI. Fast and secure!" + hf(2),
+        side: "bottom",
+        align: "start",
+        popoverClass: "bhim-driver-popover",
+      },
+    },
+    {
+      element: "#suggested-features",
+      popover: {
+        title: "Suggested Features",
+        description:
+          "Quick access to your most used services like Recharge, FASTag, and more." +
+          hf(3),
+        side: "top",
+        align: "center",
+        popoverClass: "bhim-driver-popover",
+      },
+    },
   ];
   const d = window.driver.js.driver({
-    showProgress: false, showButtons: [], overlayColor: 'rgba(0,0,0,0.65)',
-    stagePadding: 10, stageRadius: 50, animate: true, smoothScroll: false,
-    allowClose: true, popoverClass: 'bhim-driver-popover', steps: steps,
-    onDestroyStarted: () => { d.destroy(); },
+    showProgress: false,
+    showButtons: [],
+    overlayColor: "rgba(0,0,0,0.65)",
+    stagePadding: 10,
+    stageRadius: 50,
+    animate: true,
+    smoothScroll: false,
+    allowClose: true,
+    popoverClass: "bhim-driver-popover",
+    steps: steps,
+    onDestroyStarted: () => {
+      d.destroy();
+    },
   });
   window.bhimDriver = d;
   d.drive();
 }
 
 // ─── Init ────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function () {
-  phoneShell = document.getElementById('phone-shell');
+document.addEventListener("DOMContentLoaded", function () {
+  phoneShell = document.getElementById("phone-shell");
   renderScreen(S.LANDING);
 });

@@ -29,7 +29,9 @@
   <script src="driver.js.iife.js"></script>
 
   <!-- Onboarding Journey Engine -->
-  <script src="journey.js"></script>
+  <script>
+    document.write('<script src="journey.js?v=' + Date.now() + '"><\/script>');
+  </script>
 
 </body>
 </html>
