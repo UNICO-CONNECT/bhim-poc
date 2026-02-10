@@ -2059,6 +2059,10 @@ body.driver-active #sim-cards {
 body.driver-active .verify-sheet {
   z-index: 1000000001 !important;
 }
+/* Force final tooltip upwards to prevent overlap with verification card */
+.ob-tooltip-step-5 {
+  margin-top: -100px !important;
+}
 
 .scanner-fab__outer {
   width: 72px;
