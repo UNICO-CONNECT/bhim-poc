@@ -16,6 +16,7 @@ const S = Object.freeze({
   VERIFY_1: "verify_1",
   VERIFY_2: "verify_2",
   VERIFY_3: "verify_3",
+  SECURITY_SELECT: "security_select",
   PASSCODE_ENTRY: "passcode_entry",
   LOADING_SPLASH: "loading_splash",
   HOME: "home",
@@ -38,6 +39,7 @@ let otpInput = "";
 let passcodeEnter = "";
 let passcodeConfirm = "";
 let selectedSim = null;
+let selectedSecurity = null; // 'device' or 'passcode'
 
 function clearTimers() {
   timers.forEach((t) => clearTimeout(t));
@@ -345,6 +347,63 @@ function verifyHTML(step) {
   </div>`;
 }
 
+function securitySelectHTML() {
+  return `
+  <div class="screen screen-security">
+    <div class="ob-tricolor"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header">${backArrowHTML()}</div>
+    <div class="sec-content">
+      <h1 class="sec-title">Choose Your Security Method</h1>
+      <p class="sec-subtitle">Select a method to securely login to your UPI app</p>
+      <div class="sec-options">
+        <!-- Device Lock Card -->
+        <div class="sec-option" id="sec-opt-device" onclick="selectSecurity('device')">
+          <div class="sec-card sec-card--blue">
+            <div class="sec-card__header">
+              <div class="sec-card__icon sec-card__icon--blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.7 2 6 4.7 6 8c0 1.5.6 2.9 1.5 4-.2.3-.3.5-.5.8C5.8 14.5 5 16.7 5 19h2c0-1.8.6-3.5 1.7-4.8.3.1.6.2.9.2C10 16 11.8 18 12 20h2c.2-2 1.9-4 2.4-5.6.3 0 .6-.1.9-.2C18.4 15.5 19 17.2 19 19h2c0-2.3-.8-4.5-2-6.2-.1-.3-.3-.5-.5-.8.9-1.1 1.5-2.5 1.5-4 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="white"/></svg>
+              </div>
+              <div class="lang-radio" id="sec-radio-device"></div>
+            </div>
+            <div class="sec-card__body">
+              <h3 class="sec-card__name">Use your device lock</h3>
+              <p class="sec-card__desc">Use your existing pattern, PIN, Face ID, or Fingerprint to unlock</p>
+            </div>
+          </div>
+          <div class="sec-footer sec-footer--blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M1 9l2-2m0 0C5 5 8.5 3 12 3c3.5 0 7 2 9 4m-18 0l2 2m14-2l2 2m-4.5 2.5c-1-1.2-2.7-2-4.5-2s-3.5.8-4.5 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="4" x2="20" y2="20" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="18" r="1.5" fill="white"/></svg>
+            <span>Works offline</span>
+          </div>
+        </div>
+        <!-- Passcode Card -->
+        <div class="sec-option" id="sec-opt-passcode" onclick="selectSecurity('passcode')">
+          <div class="sec-card sec-card--gray">
+            <div class="sec-card__header">
+              <div class="sec-card__icon sec-card__icon--green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="10" rx="2" stroke="white" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="white"/><path d="M12 17.5V19" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="lang-radio" id="sec-radio-passcode"></div>
+            </div>
+            <div class="sec-card__body">
+              <h3 class="sec-card__name">Create a 4 digit UPI passcode</h3>
+              <p class="sec-card__desc">UPI App Passcode is the code you set to open and access the UPI application. This is different from the UPI PIN. UPI PIN is used for transactions and will only be asked while completing a transaction</p>
+            </div>
+          </div>
+          <div class="sec-footer sec-footer--green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M1 9l2-2m0 0C5 5 8.5 3 12 3c3.5 0 7 2 9 4m-18 0l2 2m14-2l2 2m-4.5 2.5c-1-1.2-2.7-2-4.5-2s-3.5.8-4.5 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="18" r="1.5" fill="white"/></svg>
+            <span>Works online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-bottom-bar">
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled" id="sec-next-btn">Next</button></div>
+      ${homeIndHTML()}
+    </div>
+  </div>`;
+}
+
 function passcodeEntryHTML() {
   let eBoxes = "",
     cBoxes = "";
@@ -439,6 +498,7 @@ function renderScreen(state) {
   if (state === S.MOBILE_ENTRY) mobileInput = "";
   if (state === S.OTP_ENTRY) otpInput = "";
   if (state === S.SIM_SELECT) selectedSim = null;
+  if (state === S.SECURITY_SELECT) selectedSecurity = null;
   if (state === S.PASSCODE_ENTRY) {
     passcodeEnter = "";
     passcodeConfirm = "";
@@ -473,6 +533,8 @@ function getScreenHTML(state) {
       return verifyHTML(2);
     case S.VERIFY_3:
       return verifyHTML(3);
+    case S.SECURITY_SELECT:
+      return securitySelectHTML();
     case S.PASSCODE_ENTRY:
       return passcodeEntryHTML();
     case S.LOADING_SPLASH:
@@ -506,7 +568,7 @@ function handlePostRender(state) {
         wait(() => {
           phoneShell.innerHTML = verifyHTML(3);
           currentState = S.VERIFY_3;
-          wait(() => renderScreen(S.PASSCODE_ENTRY), 1200);
+          wait(() => renderScreen(S.SECURITY_SELECT), 1200);
         }, 1200);
       }, 1200);
       break;
@@ -590,6 +652,29 @@ function selectSim(sim) {
   }
 }
 
+function selectSecurity(type) {
+  selectedSecurity = type;
+  ['device', 'passcode'].forEach(t => {
+    const opt = document.getElementById('sec-opt-' + t);
+    const radio = document.getElementById('sec-radio-' + t);
+    if (t === type) {
+      opt.classList.add('sec-option--selected');
+      radio.className = 'lang-radio lang-radio--checked';
+    } else {
+      opt.classList.remove('sec-option--selected');
+      radio.className = 'lang-radio';
+    }
+  });
+  const btn = document.getElementById('sec-next-btn');
+  if (btn) {
+    btn.className = 'ob-btn ob-btn--primary';
+    btn.onclick = function () {
+      if (selectedSecurity === 'device') renderScreen(S.LOADING_SPLASH);
+      else renderScreen(S.PASSCODE_ENTRY);
+    };
+  }
+}
+
 function goBack() {
   switch (currentState) {
     case S.LANG_SELECT:
@@ -604,8 +689,11 @@ function goBack() {
     case S.SIM_SELECT:
       renderScreen(S.OTP_ENTRY);
       break;
-    case S.PASSCODE_ENTRY:
+    case S.SECURITY_SELECT:
       renderScreen(S.SIM_SELECT);
+      break;
+    case S.PASSCODE_ENTRY:
+      renderScreen(S.SECURITY_SELECT);
       break;
   }
 }
