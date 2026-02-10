@@ -1996,9 +1996,12 @@ body.driver-active .screen-verify {
   overflow: visible !important;
 }
 
-/* Highlighted Element Styles */
-/* .gs-body has z-index:2 which creates a stacking context trapping children.
-   Reset it to 'auto' so #gs-lang-section can be elevated above Driver.js overlay. */
+/* Highlighted Element Styles for All Tooltip Steps */
+/* Parent containers with z-index:2 create stacking contexts that trap children.
+   Reset them to 'auto' during the tour so highlighted elements can be elevated
+   above Driver.js overlay (z-index: 1000000000). */
+
+/* Step 0: Get Started - Language Section */
 body.driver-active .gs-body {
   z-index: auto !important;
 }
@@ -2008,6 +2011,53 @@ body.driver-active #gs-lang-section {
   position: relative;
   z-index: 1000000001 !important;
   padding: 16px;
+}
+
+/* Step 1: Language Selection - English Option */
+body.driver-active .lang-list {
+  z-index: auto !important;
+}
+body.driver-active #lang-item-2 {
+  background: var(--c-white);
+  border-radius: var(--r-md);
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 2: Mobile Entry - Input Wrapper */
+body.driver-active .mob-content {
+  z-index: auto !important;
+}
+body.driver-active #mob-input-wrap {
+  background: var(--c-white);
+  border-radius: var(--r-md);
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 3: OTP Entry - OTP Boxes */
+body.driver-active .otp-content {
+  z-index: auto !important;
+}
+body.driver-active #otp-boxes {
+  background: transparent;
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 4: SIM Selection - SIM Cards */
+body.driver-active .sim-content {
+  z-index: auto !important;
+}
+body.driver-active #sim-cards {
+  background: transparent;
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 5: Verification - Verify Steps */
+body.driver-active .verify-sheet {
+  z-index: 1000000001 !important;
 }
 
 .scanner-fab__outer {
