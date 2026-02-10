@@ -424,6 +424,21 @@ body {
   align-items: center;
   overflow: hidden;
 }
+.screen-splash .ob-tricolor {
+  background:
+    radial-gradient(
+      ellipse at 5% 95%,
+      rgba(255, 183, 128, 0.7) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 95% 95%,
+      rgba(130, 220, 170, 0.7) 0%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, rgba(255, 240, 228, 0.4) 0%, transparent 30%),
+    white;
+}
 .splash-logo {
   position: relative;
   z-index: 2;
@@ -522,6 +537,26 @@ body {
   padding: 75px 20px;
 
   overflow-y: auto;
+}
+
+@keyframes gsHeaderIn {
+  from {
+    transform: translateY(30vh);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes gsBodyIn {
+  from {
+    transform: translateY(100vh);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 .gs-carousel {
   display: flex;
@@ -1336,6 +1371,12 @@ body {
   justify-content: center;
   align-items: center;
 }
+.screen-loading-splash .ob-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 .loading-content {
   position: relative;
   z-index: 2;
@@ -2139,27 +2180,7 @@ body.driver-active .screen-language .lang-list,
 body.driver-active .screen-mobile,
 body.driver-active .screen-otp,
 body.driver-active .screen-sim,
-body.driver-active .screen-verify,
-body.driver-active #phone-shell,
-body.driver-active .screen,
-body.driver-active .screen-ab-select,
-body.driver-active .screen-ab-debit,
-body.driver-active .screen-ab-otp,
-body.driver-active .screen-ab-setpin,
-body.driver-active .screen-ab-confirmpin,
-body.driver-active .screen-ab-success,
-body.driver-active .screen-ab-methods,
-body.driver-active .screen-ab-aadhaar-num,
-body.driver-active .screen-ab-aadhaar-otp,
-body.driver-active .ab-select-content,
-body.driver-active .ab-debit-content,
-body.driver-active .ab-pin-content,
-body.driver-active .ab-success-content,
-body.driver-active .ab-methods-content,
-body.driver-active .ab-aadhaar-content,
-body.driver-active .ab-aadhaar-otp-body,
-body.driver-active .ab-ms-overlay,
-body.driver-active .ab-ms-sheet {
+body.driver-active .screen-verify {
   overflow: visible !important;
 }
 
@@ -2177,13 +2198,54 @@ body.driver-active #gs-lang-section {
   border-radius: var(--r-xl);
   position: relative;
   z-index: 1000000001 !important;
-  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.65), 0 4px 24px rgba(0,0,0,0.2) !important;
-  /* Note: The large shadow simulates the overlay if z-index puts it above. 
-     But since Driver.js handles the overlay, we just want to ensure the element itself looks like a card. */
-   box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-   padding: 16px; 
-   margin: 0 -16px; /* Compensate for padding to keep alignment? No, simpler to just bg */
-   margin-left: 0; margin-right: 0;
+  padding: 16px;
+}
+
+/* Step 1: Language Selection - English Option */
+body.driver-active .lang-list {
+  z-index: auto !important;
+}
+body.driver-active #lang-item-2 {
+  background: var(--c-white);
+  border-radius: var(--r-md);
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 2: Mobile Entry - Input Wrapper */
+body.driver-active .mob-content {
+  z-index: auto !important;
+}
+body.driver-active #mob-input-wrap {
+  background: var(--c-white);
+  border-radius: var(--r-md);
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 3: OTP Entry - OTP Boxes */
+body.driver-active .otp-content {
+  z-index: auto !important;
+}
+body.driver-active #otp-boxes {
+  background: transparent;
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 4: SIM Selection - SIM Cards */
+body.driver-active .sim-content {
+  z-index: auto !important;
+}
+body.driver-active #sim-cards {
+  background: transparent;
+  position: relative;
+  z-index: 1000000001 !important;
+}
+
+/* Step 5: Verification - Verify Steps */
+body.driver-active .verify-sheet {
+  z-index: 1000000001 !important;
 }
 /* Force final tooltip upwards to prevent overlap with verification card */
 .ob-tooltip-step-5 {
@@ -2347,40 +2409,9 @@ body.driver-active #gs-lang-section {
 .driver-overlay {
   background: rgba(0, 0, 0, 0.65) !important;
 }
-.driver-active-element {
-  z-index: 1000000001 !important;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.95),
-    0 10px 28px rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Keep scanner highlight circular; avoid masking rectangular tour targets. */
+/* Only apply circle radius for scanner button highlight on home screen */
 .driver-active-element#scanner-btn {
   border-radius: 50% !important;
-}
-
-/* Add Bank flow specific highlight lift to avoid clipping/masking. */
-body.driver-active #bank-card,
-body.driver-active .ab-account-list,
-body.driver-active .ab-ms-sheet,
-body.driver-active .ab-debit-content,
-body.driver-active .ab-pin-content,
-body.driver-active .ab-success-content {
-  position: relative !important;
-  z-index: 1000000001 !important;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.95),
-    0 10px 28px rgba(0, 0, 0, 0.35) !important;
-}
-
-body.driver-active #bank-card,
-body.driver-active .ab-account-list,
-body.driver-active .ab-ms-sheet,
-body.driver-active .ab-debit-content,
-body.driver-active .ab-pin-content,
-body.driver-active .ab-success-content,
-body.driver-active .driver-active-element {
-  border-radius: 16px !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
