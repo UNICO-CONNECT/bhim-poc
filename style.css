@@ -1979,19 +1979,35 @@ body {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
+/* Fix: Remove overflow clipping on ALL ancestors when Driver.js is active
+   so highlighted elements can escape the stacking context and appear
+   above Driver.js's body-level overlay (z-index: 1000000000).
+   
+   Driver.js itself adds: :not(body):has(> .driver-active-element){overflow:hidden!important}
+   We must override that plus the normal overflow:hidden on #phone-shell and screens. */
+body.driver-active .screen-get-started,
+body.driver-active .screen-get-started .gs-body,
+body.driver-active .screen-language,
+body.driver-active .screen-language .lang-list,
+body.driver-active .screen-mobile,
+body.driver-active .screen-otp,
+body.driver-active .screen-sim,
+body.driver-active .screen-verify {
+  overflow: visible !important;
+}
+
 /* Highlighted Element Styles */
+/* .gs-body has z-index:2 which creates a stacking context trapping children.
+   Reset it to 'auto' so #gs-lang-section can be elevated above Driver.js overlay. */
+body.driver-active .gs-body {
+  z-index: auto !important;
+}
 body.driver-active #gs-lang-section {
   background: var(--c-white);
   border-radius: var(--r-xl);
   position: relative;
   z-index: 1000000001 !important;
-  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.65), 0 4px 24px rgba(0,0,0,0.2) !important;
-  /* Note: The large shadow simulates the overlay if z-index puts it above. 
-     But since Driver.js handles the overlay, we just want to ensure the element itself looks like a card. */
-   box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-   padding: 16px; 
-   margin: 0 -16px; /* Compensate for padding to keep alignment? No, simpler to just bg */
-   margin-left: 0; margin-right: 0;
+  padding: 16px;
 }
 
 .scanner-fab__outer {
@@ -2135,6 +2151,7 @@ body.driver-active #gs-lang-section {
 .driver-overlay {
   background: rgba(0, 0, 0, 0.65) !important;
 }
-.driver-active-element {
+/* Only apply circle radius for scanner button highlight on home screen */
+.driver-active-element#scanner-btn {
   border-radius: 50% !important;
 }
