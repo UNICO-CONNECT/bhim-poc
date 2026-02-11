@@ -33,6 +33,9 @@
   --c-border: #d2d2d2;
   --c-border-light: #eaeaea;
 
+  /* Accent (used for radio / checkbox active state) */
+  --c-accent: #2563eb;
+
   /* Misc */
   --c-red-airtel: #e40000;
   --c-blue-jio: #1a3f8e;
@@ -654,12 +657,37 @@ body {
   margin-top: 2px;
 }
 
+.gs-lang-card {
+  cursor: pointer;
+}
+
+.gs-lang-card--selected {
+  background: var(--c-blue-selected);
+}
+
 .gs-lang-card__radio {
   width: 24px;
   height: 24px;
   border-radius: 50%;
   border: 2px solid var(--c-border);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.gs-lang-card__radio--checked {
+  border-color: var(--c-blue-radio);
+  background: var(--c-blue-radio);
+}
+
+.gs-lang-card__radio--checked::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
 }
 
 /* =============================================================
@@ -2852,6 +2880,18 @@ body.driver-active .ab-select-content {
   transition: background 0.2s;
 }
 
+.ab-account-card--has-pin {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ab-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .ab-account-card:active {
   background: #e5e7eb;
 }
@@ -2904,25 +2944,28 @@ body.driver-active .ab-select-content {
 }
 
 .ab-radio--checked {
-  border-color: var(--c-accent);
+  border-color: #0b0b0b;
+  background: #0b0b0b;
 }
 
 .ab-radio--checked::after {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
   border-radius: 50%;
-  background: var(--c-accent);
+  background: #ffffff;
 }
 
 .ab-pin-warning {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 14px 0 14px;
+  padding: 10px 0 0 0;
+  margin-top: 10px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .ab-pin-warning__text {
@@ -3614,8 +3657,10 @@ body.driver-active .ab-select-content {
 }
 
 .ab-aadhaar-logo {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .ab-aadhaar-sublabel {

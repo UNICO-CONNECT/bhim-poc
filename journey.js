@@ -75,6 +75,64 @@ let checkBalancePinInput = "";
 let checkBalancePinMasked = true;
 let balanceRevealed = false;
 
+// ─── i18n – Internationalisation helpers ─────────────────────
+let currentLang = "en"; // "en" | "hi"
+
+const i18n = {
+  en: {
+    // Home – Payments & Transfers
+    "home.payments_title":    "Payments & Transfers",
+    "home.send_mobile":       "Send to mobile",
+    "home.send_bank":         "Send to bank/ UPI/Self",
+    "home.approve_pay":       "Approve to pay",
+    "home.upi_circle":        "UPI circle",
+    "home.bills_recharges":   "Bills & recharges",
+    "home.mobile_prepaid":    "Mobile prepaid",
+    "home.ipo_autopay":       "IPO/Autopay/ Services",
+    "home.spend_analytics":   "Spend Analytics",
+    // Home – Suggested features
+    "home.suggested_features":"Recommended features",
+    "home.mobile_prepaid_f":  "Mobile prepaid",
+    "home.electricity":       "Electricity",
+    "home.dth":               "DTH",
+    "home.mobile_postpaid":   "Mobile postpaid",
+    // Home – Promo cards
+    "home.cashback_offers":   "Cashback & Offers",
+    "home.refer_friend":      "Refer a friend",
+    // Home – Bottom nav
+    "home.offers":            "Offers",
+    "home.history":           "History",
+    // Tooltip
+    "home.welcome_tooltip":   "Welcome to UPI Pay",
+  },
+  hi: {
+    "home.payments_title":    "भुगतान और ट्रांसफ़र",
+    "home.send_mobile":       "मोबाइल पर भेजें",
+    "home.send_bank":         "बैंक/UPI/खुद को भेजें",
+    "home.approve_pay":       "भुगतान की मंज़ूरी दें",
+    "home.upi_circle":        "यूपीआई सर्कल",
+    "home.bills_recharges":   "बिल और रिचार्ज",
+    "home.mobile_prepaid":    "मोबाइल प्रीपेड",
+    "home.ipo_autopay":       "आईपीओ / ऑटोपे / सेवाएँ",
+    "home.spend_analytics":   "खर्च का विश्लेषण",
+    "home.suggested_features":"सुझाए गए फीचर्स",
+    "home.mobile_prepaid_f":  "मोबाइल प्रीपेड",
+    "home.electricity":       "बिजली",
+    "home.dth":               "डीटीएच",
+    "home.mobile_postpaid":   "मोबाइल पोस्टपेड",
+    "home.cashback_offers":   "कैशबैक और ऑफ़र",
+    "home.refer_friend":      "दोस्त को रेफ़र करें",
+    "home.offers":            "ऑफ़र",
+    "home.history":           "हिस्ट्री",
+    "home.welcome_tooltip":   "यूपीआई पे में आपका स्वागत है",
+  },
+};
+
+/** Translate helper – returns the string for the current language, falls back to English then the key itself. */
+function t(key) {
+  return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+}
+
 function clearTimers() {
   timers.forEach((t) => clearTimeout(t));
   timers = [];
@@ -237,8 +295,13 @@ function getStartedHTML(mode) {
       <div class="gs-lang-section"${langSectionId}>
         <p class="gs-lang-title">Choose your preferred language</p>
         <div class="gs-lang-cards">
-          <div class="gs-lang-card"><div class="gs-lang-card__text"><h3>हिंदी</h3><p>नमस्ते</p></div><div class="gs-lang-card__radio"></div></div>
-          <div class="gs-lang-card"><div class="gs-lang-card__text"><h3>मराठी</h3><p>नमस्कार</p></div><div class="gs-lang-card__radio"></div></div>
+          ${[["हिंदी", "नमस्ते"], ["मराठी", "नमस्कार"]].map(([name, greet], i) => {
+            const sel = selectedLang === i;
+            const cardCls = "gs-lang-card" + (sel ? " gs-lang-card--selected" : "");
+            const radioCls = "gs-lang-card__radio" + (sel ? " gs-lang-card__radio--checked" : "");
+            const onClick = isPreview ? "" : ` onclick="selectGetStartedLanguage(${i})"`;
+            return `<div class="${cardCls}" id="gs-lang-card-${i}"${onClick}><div class="gs-lang-card__text"><h3>${name}</h3><p>${greet}</p></div><div class="${radioCls}"></div></div>`;
+          }).join("")}
         </div>
       </div>
     </div>
@@ -533,29 +596,29 @@ function homeScreenHTML() {
         <div class="home-upi-id"><span class="home-upi-id__masked">${upiId}</span><button type="button" class="home-upi-id__icon" aria-label="Toggle visibility"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 4C4 4 1 10 1 10s3 6 9 6 9-6 9-6-3-6-9-6z" stroke="#666" stroke-width="1.2"/><circle cx="10" cy="10" r="2.5" stroke="#666" stroke-width="1.2"/></svg></button><button type="button" class="home-upi-id__icon" aria-label="Copy"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="6" y="6" width="10" height="10" rx="1" stroke="#666" stroke-width="1.2"/><path d="M4 4v10h10" stroke="#666" stroke-width="1.2"/></svg></button></div>
       </div>
       ${bankCardHTML}
-      <div class="section" id="payments-section"><h2 class="section__title">भुगतान और ट्रांसफ़र</h2>
+      <div class="section" id="payments-section"><h2 class="section__title">${t("home.payments_title")}</h2>
         <div class="icon-grid">
-          <div class="icon-grid__item" id="send-to-mobile"><div class="icon-grid__circle"><img src="assets/home/Icon.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">मोबाइल पर भेजें</span></div>
-          <div class="icon-grid__item" id="bank-upi-transfer"><div class="icon-grid__circle"><img src="assets/home/Icon-1.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">बैंक/UPI/खुद को भेजें</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-2.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">भुगतान की मंज़ूरी दें</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-3.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">यूपीआई सर्कल</span></div>
+          <div class="icon-grid__item" id="send-to-mobile"><div class="icon-grid__circle"><img src="assets/home/Icon.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.send_mobile")}</span></div>
+          <div class="icon-grid__item" id="bank-upi-transfer"><div class="icon-grid__circle"><img src="assets/home/Icon-1.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.send_bank")}</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-2.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.approve_pay")}</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-3.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.upi_circle")}</span></div>
           <div class="icon-grid__separator"></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-4.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">बिल और रिचार्ज</span></div>
-          <div class="icon-grid__item" id="mobile-prepaid"><div class="icon-grid__circle"><img src="assets/home/Icon-5.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">मोबाइल प्रीपेड</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-6.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">आईपीओ / ऑटोपे / सेवाएँ</span></div>
-          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-7.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">खर्च का विश्लेषण</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-4.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.bills_recharges")}</span></div>
+          <div class="icon-grid__item" id="mobile-prepaid"><div class="icon-grid__circle"><img src="assets/home/Icon-5.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.mobile_prepaid")}</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-6.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.ipo_autopay")}</span></div>
+          <div class="icon-grid__item"><div class="icon-grid__circle"><img src="assets/home/Icon-7.png" alt="" class="icon-grid__img"/></div><span class="icon-grid__label">${t("home.spend_analytics")}</span></div>
         </div>
       </div>
-      <div class="section" id="suggested-features"><h2 class="section__title">सुझाए गए फीचर्स</h2>
+      <div class="section" id="suggested-features"><h2 class="section__title">${t("home.suggested_features")}</h2>
         <div class="features-row">
-          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/mobile-recharge.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">मोबाइल प्रीपेड</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/mobile-recharge.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">${t("home.mobile_prepaid_f")}</span></div>
           <div class="feature-item"><span class="feature-item__chip">POPULAR</span><div class="feature-item__icon"><img src="assets/home/Car wifi icon 2.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">FASTag</span></div>
-          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/electric.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">बिजली</span></div>
-          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/dish3d.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">डीटीएच</span></div>
-          <div class="feature-item"><div class="feature-item__icon"><span>📲</span></div><span class="feature-item__label">मोबाइल पोस्टपेड</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/electric.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">${t("home.electricity")}</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/dish3d.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">${t("home.dth")}</span></div>
+          <div class="feature-item"><div class="feature-item__icon"><span>📲</span></div><span class="feature-item__label">${t("home.mobile_postpaid")}</span></div>
         </div>
       </div>
-      <div class="promo-cards"><div class="promo-card"><div class="promo-card__icon">🪙</div><span class="promo-card__text">कैशबैक और ऑफ़र</span></div><div class="promo-card"><div class="promo-card__icon">🎁</div><span class="promo-card__text">दोस्त को रेफ़र करें</span></div></div>
+      <div class="promo-cards"><div class="promo-card"><div class="promo-card__icon">🪙</div><span class="promo-card__text">${t("home.cashback_offers")}</span></div><div class="promo-card"><div class="promo-card__icon">🎁</div><span class="promo-card__text">${t("home.refer_friend")}</span></div></div>
       <div class="ad-banner"><div class="ad-banner__content"><div class="ad-banner__title">It's Payday!</div><div class="ad-banner__subtitle">Treat yourself with a nice meal with <strong>Swiggy</strong></div><div class="ad-banner__cta">Claim your <strong>20% off</strong></div></div><div class="ad-banner__image">🍜</div></div>
       <div class="explore-section"><h2 class="explore-section__title">Explore more with BHIM</h2>
         <div class="explore-cards">
@@ -568,7 +631,7 @@ function homeScreenHTML() {
     </div>
     <div class="bottom-nav">
       <div class="bottom-nav__bg"><svg viewBox="0 0 390 108" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28V108H0V28Z" fill="white"/><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28" stroke="rgba(29,38,78,0.08)" stroke-width="1"/></svg></div>
-      <div class="bottom-nav__items"><div class="bottom-nav__item"><svg viewBox="0 0 20 20" fill="none"><path d="M4 5l4.5-3.5a2 2 0 012.5 0L16 5" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/><path d="M3 8h14" stroke="#687f8f" stroke-width="1.3"/><path d="M5 8v7h3.5v-4h3v4H15V8" stroke="#687f8f" stroke-width="1.3"/><path d="M2 17h16" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">ऑफ़र</span></div><div style="width:72px"></div><div class="bottom-nav__item"><svg viewBox="0 0 18 18" fill="none"><path d="M2 5v8a2 2 0 002 2h10a2 2 0 002-2V5" stroke="#687f8f" stroke-width="1.3"/><path d="M5 2h8l3 3H2l3-3z" stroke="#687f8f" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 8h4" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">हिस्ट्री</span></div></div>
+      <div class="bottom-nav__items"><div class="bottom-nav__item"><svg viewBox="0 0 20 20" fill="none"><path d="M4 5l4.5-3.5a2 2 0 012.5 0L16 5" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/><path d="M3 8h14" stroke="#687f8f" stroke-width="1.3"/><path d="M5 8v7h3.5v-4h3v4H15V8" stroke="#687f8f" stroke-width="1.3"/><path d="M2 17h16" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">${t("home.offers")}</span></div><div style="width:72px"></div><div class="bottom-nav__item"><svg viewBox="0 0 18 18" fill="none"><path d="M2 5v8a2 2 0 002 2h10a2 2 0 002-2V5" stroke="#687f8f" stroke-width="1.3"/><path d="M5 2h8l3 3H2l3-3z" stroke="#687f8f" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 8h4" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">${t("home.history")}</span></div></div>
       <div class="scanner-fab"><button type="button" class="scanner-fab__outer scanner-fab__outer--bg" id="scanner-btn" aria-label="Scanner"></button></div>
       <div class="home-indicator"></div>
     </div>
@@ -590,25 +653,25 @@ function selectBankHTML() {
   accounts.forEach((acc, i) => {
     const isSelected = addBankSelectedAccount === i;
     const radioClass = isSelected ? "ab-radio ab-radio--checked" : "ab-radio";
+    const pinWarningHTML = acc.needsPin ? `
+        <div class="ab-pin-warning">
+          <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
+          <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
+          <span class="ab-pin-warning__link">Set UPI PIN</span>
+        </div>` : "";
     accountList += `
-      <div class="ab-account-card" onclick="selectBankAccount(${i})">
-        <div class="ab-account-info">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
-          <div class="ab-account-details">
-            <span class="ab-account-name">${acc.name}</span>
-            <span class="ab-account-ifsc">IFSC - ${acc.ifsc}</span>
+      <div class="ab-account-card${acc.needsPin ? " ab-account-card--has-pin" : ""}" onclick="selectBankAccount(${i})">
+        <div class="ab-account-row">
+          <div class="ab-account-info">
+            <div class="ab-account-logo">${bankIconSVG()}</div>
+            <div class="ab-account-details">
+              <span class="ab-account-name">${acc.name}</span>
+              <span class="ab-account-ifsc">IFSC - ${acc.ifsc}</span>
+            </div>
           </div>
-        </div>
-        <div class="${radioClass}"></div>
+          <div class="${radioClass}"></div>
+        </div>${pinWarningHTML}
       </div>`;
-    if (acc.needsPin) {
-      accountList += `
-      <div class="ab-pin-warning">
-        <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
-        <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
-        <span class="ab-pin-warning__link">Set UPI PIN</span>
-      </div>`;
-    }
   });
 
   return `
@@ -842,30 +905,34 @@ function methodSelectHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card">
-          <div class="ab-account-info">
-            <div class="ab-account-logo">${bankIconSVG()}</div>
-            <div class="ab-account-details">
-              <span class="ab-account-name">Bharatiya Payments Bank</span>
-              <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+        <div class="ab-account-card" onclick="selectBankAccount(0)">
+          <div class="ab-account-row">
+            <div class="ab-account-info">
+              <div class="ab-account-logo">${bankIconSVG()}</div>
+              <div class="ab-account-details">
+                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+              </div>
             </div>
+            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
           </div>
-          <div class="ab-radio ab-radio--checked"></div>
         </div>
-        <div class="ab-account-card">
-          <div class="ab-account-info">
-            <div class="ab-account-logo">${bankIconSVG()}</div>
-            <div class="ab-account-details">
-              <span class="ab-account-name">Bharatiya Payments Bank</span>
-              <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
+          <div class="ab-account-row">
+            <div class="ab-account-info">
+              <div class="ab-account-logo">${bankIconSVG()}</div>
+              <div class="ab-account-details">
+                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+              </div>
             </div>
+            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
           </div>
-          <div class="ab-radio"></div>
-        </div>
-        <div class="ab-pin-warning">
-          <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
-          <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
-          <span class="ab-pin-warning__link">Set UPI PIN</span>
+          <div class="ab-pin-warning">
+            <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
+            <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
+            <span class="ab-pin-warning__link">Set UPI PIN</span>
+          </div>
         </div>
       </div>
     </div>
@@ -884,7 +951,7 @@ function methodSelectHTML() {
           </div>
           <div class="ab-ms-option" onclick="selectMethod('aadhaar')">
             <div class="ab-ms-option__info">
-              <svg class="ab-ms-option__icon" viewBox="0 0 24 24" fill="none" width="24" height="24"><circle cx="12" cy="8" r="3.5" fill="#e54d26"/><circle cx="9" cy="14" r="1.2" fill="#e54d26"/><circle cx="15" cy="14" r="1.2" fill="#e54d26"/><circle cx="12" cy="14" r="1.2" fill="#e54d26"/><circle cx="12" cy="18" r="1.2" fill="#e54d26"/><circle cx="9" cy="18" r="1.2" fill="#e54d26"/><circle cx="15" cy="18" r="1.2" fill="#e54d26"/><circle cx="6" cy="14" r="0.8" fill="#e54d26"/><circle cx="18" cy="14" r="0.8" fill="#e54d26"/></svg>
+                        <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
               <span class="ab-ms-option__label">Aadhaar number</span>
             </div>
             <div class="ab-ms-radio ${aadhaarChecked}"></div>
@@ -937,25 +1004,34 @@ function aadhaarConsentHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card">
-          <div class="ab-account-info">
-            <div class="ab-account-logo">${bankIconSVG()}</div>
-            <div class="ab-account-details">
-              <span class="ab-account-name">Bharatiya Payments Bank</span>
-              <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+        <div class="ab-account-card" onclick="selectBankAccount(0)">
+          <div class="ab-account-row">
+            <div class="ab-account-info">
+              <div class="ab-account-logo">${bankIconSVG()}</div>
+              <div class="ab-account-details">
+                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
+              </div>
             </div>
+            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
           </div>
-          <div class="ab-radio ab-radio--checked"></div>
         </div>
-        <div class="ab-account-card">
-          <div class="ab-account-info">
-            <div class="ab-account-logo">${bankIconSVG()}</div>
-            <div class="ab-account-details">
-              <span class="ab-account-name">Bharatiya Payments Bank</span>
-              <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
+          <div class="ab-account-row">
+            <div class="ab-account-info">
+              <div class="ab-account-logo">${bankIconSVG()}</div>
+              <div class="ab-account-details">
+                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
+              </div>
             </div>
+            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
           </div>
-          <div class="ab-radio"></div>
+          <div class="ab-pin-warning">
+            <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
+            <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
+            <span class="ab-pin-warning__link">Set UPI PIN</span>
+          </div>
         </div>
       </div>
     </div>
@@ -998,7 +1074,7 @@ function aadhaarNumberHTML() {
       <div class="ab-aadhaar-input-section">
         <div class="ab-aadhaar-label-row">
           <span class="ab-aadhaar-label">AADHAAR NUMBER</span>
-          <svg class="ab-aadhaar-logo" viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="13" r="5" fill="#e54d26"/><circle cx="14" cy="23" r="1.5" fill="#e54d26"/><circle cx="20" cy="23" r="1.5" fill="#e54d26"/><circle cx="26" cy="23" r="1.5" fill="#e54d26"/><circle cx="20" cy="29" r="1.5" fill="#e54d26"/><circle cx="14" cy="29" r="1.5" fill="#e54d26"/><circle cx="26" cy="29" r="1.5" fill="#e54d26"/><circle cx="10" cy="23" r="1" fill="#e54d26"/><circle cx="30" cy="23" r="1" fill="#e54d26"/></svg>
+          <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
         </div>
         <p class="ab-aadhaar-sublabel">First 6-Digits of Aadhaar Number</p>
         <div class="ab-aadhaar-input-row">
@@ -1145,7 +1221,7 @@ const abTooltipGuide = {
 const AB_SCREEN_TOOLTIPS = {
   [S.HOME]: {
     element: "#bank-card",
-    desc: "यूपीआई पे में आपका स्वागत है",
+    get desc() { return t("home.welcome_tooltip"); },
     side: "bottom",
     radius: 16,
   },
@@ -1566,6 +1642,23 @@ function handleKeyPress(key) {
   }
 }
 
+function selectGetStartedLanguage(idx) {
+  selectedLang = idx;
+  [0, 1].forEach((i) => {
+    const card = document.getElementById("gs-lang-card-" + i);
+    const radio = card && card.querySelector(".gs-lang-card__radio");
+    if (card && radio) {
+      if (i === idx) {
+        card.classList.add("gs-lang-card--selected");
+        radio.className = "gs-lang-card__radio gs-lang-card__radio--checked";
+      } else {
+        card.classList.remove("gs-lang-card--selected");
+        radio.className = "gs-lang-card__radio";
+      }
+    }
+  });
+}
+
 function selectLanguage(idx) {
   selectedLang = idx;
   document.querySelectorAll(".lang-item").forEach((el, i) => {
@@ -1771,7 +1864,7 @@ const SCREEN_TOOLTIPS = {
   },
   [S.LANG_SELECT]: {
     element: "#lang-item-2",
-    text: "You can choose other languages apart from Hindi and English from here",
+    text: "You can choose other languages apart from Hindi and Marathi from here",
     side: "top",
   },
   [S.MOBILE_ENTRY]: {
