@@ -67,7 +67,7 @@ let addBankInputFocus = "card"; // "card" | "expiry"
 let addBankMethod = "debit"; // "debit" | "aadhaar"
 let addBankAadhaarNumber = "";
 let addBankAadhaarOtp = "";
-let skipHomeTour = false;
+// Check Balance flow
 let selectedSim = null;
 let selectedSecurity = null; // 'device' or 'passcode'
 // Check Balance flow
@@ -205,7 +205,7 @@ function landingHTML() {
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
-      <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>5.</span> Check Balance</button>
+      <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>3.</span> Check Balance</button>
       <!--
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
@@ -1246,7 +1246,6 @@ function abTourNext() {
 function startAddBankFlow() {
   abTooltipGuide.enabled = true;
   abTooltipGuide.shownForScreen = {};
-  skipHomeTour = true;
   renderScreen(S.ADD_BANK_SELECT);
 }
 
@@ -1501,11 +1500,7 @@ function handlePostRender(state) {
       wait(() => renderScreen(S.HOME), 2500);
       break;
     case S.HOME:
-      if (!skipHomeTour) {
-        wait(() => startHomeTour(), 800);
-      }
       showCbScreenTooltip(state);
-      skipHomeTour = false;
       break;
     // Add Bank Account flow
     case S.ADD_BANK_SELECT:
@@ -1963,7 +1958,6 @@ function cbTourNext() {
 function startCheckBalanceFlow() {
   cbTooltipGuide.enabled = true;
   cbTooltipGuide.shownForScreen = {};
-  skipHomeTour = true;
   renderScreen(S.HOME);
 }
 
@@ -1974,87 +1968,7 @@ function openCheckBalancePinScreen() {
 }
 
 
-// ─── Home Screen Tour ────────────────────────────────────────
-function startHomeTour() {
-  const total = 4;
-  function hf(si) {
-    let d = "";
-    for (let i = 0; i < total; i++)
-      d +=
-        '<div class="bhim-popover-dot' +
-        (i === si ? " bhim-popover-dot--active" : "") +
-        '"></div>';
-    return (
-      '<div class="bhim-popover-footer"><div class="bhim-popover-dots">' +
-      d +
-      '</div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.bhimDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="window.bhimDriver.moveNext()">Next</button></div></div>'
-    );
-  }
-  const steps = [
-    {
-      element: "#scanner-btn",
-      popover: {
-        title: "Scan & Pay",
-        description:
-          "Click on Scanner Icon to start the journey of Scan & pay." + hf(0),
-        side: "top",
-        align: "center",
-        popoverClass: "bhim-driver-popover",
-      },
-    },
-    {
-      element: "#bank-card",
-      popover: {
-        title: "Link Your Bank",
-        description:
-          "Add your bank account to start making payments instantly." + hf(1),
-        side: "bottom",
-        align: "center",
-        popoverClass: "bhim-driver-popover",
-      },
-    },
-    {
-      element: "#send-to-mobile",
-      popover: {
-        title: "Send to Mobile",
-        description:
-          "Send money to any mobile number using UPI. Fast and secure!" + hf(2),
-        side: "bottom",
-        align: "start",
-        popoverClass: "bhim-driver-popover",
-      },
-    },
-    {
-      element: "#suggested-features",
-      popover: {
-        title: "Suggested Features",
-        description:
-          "Quick access to your most used services like Recharge, FASTag, and more." +
-          hf(3),
-        side: "top",
-        align: "center",
-        popoverClass: "bhim-driver-popover",
-      },
-    },
-  ];
-  const d = window.driver.js.driver({
-    showProgress: false,
-    showButtons: [],
-    overlayColor: "rgba(0,0,0,0.65)",
-    stagePadding: 10,
-    stageRadius: 50,
-    animate: true,
-    smoothScroll: false,
-    allowClose: true,
-    popoverClass: "bhim-driver-popover",
-    steps: steps,
-    onDestroyStarted: () => {
-      d.destroy();
-    },
-  });
-  window.bhimDriver = d;
-  d.drive();
-}
+
 
 // ─── Init ────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
