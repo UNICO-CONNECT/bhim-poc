@@ -35,6 +35,14 @@ const S = Object.freeze({
   ADD_BANK_AADHAAR_OTP: "add_bank_aadhaar_otp",
   // Check Balance flow (from home)
   CHECK_BALANCE_PIN: "check_balance_pin",
+  // Scan and Pay flow
+  SCAN_1: "scan_1",
+  SCAN_2: "scan_2",
+  ENTER_AMOUNT: "enter_amount",
+  SELECT_ACCOUNT_TO_PAY: "select_account_to_pay",
+  ENTER_UPI_PIN: "enter_upi_pin",
+  PAYMENT_SUCCESS: "payment_success",
+  DEBITED_TRANSACTION: "debited_transaction",
 });
 
 // ─── Globals ─────────────────────────────────────────────────
@@ -71,6 +79,10 @@ let selectedSecurity = null; // 'device' or 'passcode'
 // Check Balance flow
 let checkBalancePinInput = "";
 let checkBalancePinMasked = true;
+// Scan and Pay flow
+let scanPayAmount = "";
+let scanPayUpiPin = "";
+let scanPayPinMasked = true;
 let balanceRevealed = false;
 
 function clearTimers() {
@@ -204,10 +216,10 @@ function landingHTML() {
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
       <!--
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
-      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
       <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
       <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>5.</span> Check Balance</button>
       -->
+      <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>3.</span> Scan and Pay</button>
     </div>
   </div>`;
 }
@@ -567,7 +579,7 @@ function homeScreenHTML() {
     <div class="bottom-nav">
       <div class="bottom-nav__bg"><svg viewBox="0 0 390 108" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28V108H0V28Z" fill="white"/><path d="M0 28C0 28 120 28 155 28C165 28 172 12 180 4C186 -2 190 0 195 0C200 0 204 -2 210 4C218 12 225 28 235 28C270 28 390 28 390 28" stroke="rgba(29,38,78,0.08)" stroke-width="1"/></svg></div>
       <div class="bottom-nav__items"><div class="bottom-nav__item"><svg viewBox="0 0 20 20" fill="none"><path d="M4 5l4.5-3.5a2 2 0 012.5 0L16 5" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/><path d="M3 8h14" stroke="#687f8f" stroke-width="1.3"/><path d="M5 8v7h3.5v-4h3v4H15V8" stroke="#687f8f" stroke-width="1.3"/><path d="M2 17h16" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">ऑफ़र</span></div><div style="width:72px"></div><div class="bottom-nav__item"><svg viewBox="0 0 18 18" fill="none"><path d="M2 5v8a2 2 0 002 2h10a2 2 0 002-2V5" stroke="#687f8f" stroke-width="1.3"/><path d="M5 2h8l3 3H2l3-3z" stroke="#687f8f" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 8h4" stroke="#687f8f" stroke-width="1.3" stroke-linecap="round"/></svg><span class="bottom-nav__label">हिस्ट्री</span></div></div>
-      <div class="scanner-fab"><button type="button" class="scanner-fab__outer scanner-fab__outer--bg" id="scanner-btn" aria-label="Scanner"></button></div>
+      <div class="scanner-fab"><button type="button" class="scanner-fab__outer scanner-fab__outer--bg" id="scanner-btn" aria-label="Scanner" onclick="renderScreen(S.SCAN_1)"></button></div>
       <div class="home-indicator"></div>
     </div>
   </div>`;
@@ -1434,10 +1446,379 @@ function renderScreen(state) {
   if (state === S.ADD_BANK_AADHAAR_NUMBER) { addBankAadhaarNumber = ""; }
   if (state === S.ADD_BANK_AADHAAR_OTP) { addBankAadhaarOtp = ""; }
   if (state === S.CHECK_BALANCE_PIN) { checkBalancePinInput = ""; }
+  // Scan and Pay flow resets
+  if (state === S.ENTER_AMOUNT) { scanPayAmount = ""; }
+  if (state === S.ENTER_UPI_PIN) { scanPayUpiPin = ""; scanPayPinMasked = true; }
 
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
   handlePostRender(state);
+}
+
+// ─── Scan and Pay Screen Renderers ──────────────────────────
+
+function scan1HTML() {
+  return `
+  <div class="screen screen-scan1">
+    <div class="scan1-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header">
+      <span class="ob-back-arrow" onclick="goBack()">←</span>
+    </div>
+    <div class="scan1-stepper">
+      <div class="scan1-stepper__line"></div>
+      <span class="scan1-stepper__star">✦</span>
+      <span class="scan1-stepper__text">SEND MONEY TO ANY UPI APP</span>
+      <span class="scan1-stepper__star">✦</span>
+      <div class="scan1-stepper__line"></div>
+    </div>
+    <div class="scan1-camera">
+      <img src="assets/images/scan_qr_bg.png" alt="" class="scan1-camera__bg"/>
+      <div class="scan1-camera__area">
+        <div class="scan1-corner scan1-corner--tl"></div>
+        <div class="scan1-corner scan1-corner--tr"></div>
+        <div class="scan1-corner scan1-corner--bl"></div>
+        <div class="scan1-corner scan1-corner--br"></div>
+        <div class="scan1-scanline"></div>
+      </div>
+      <div class="scan1-side-btns">
+        <button class="scan1-side-btn" aria-label="Flashlight">
+          <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 2v5l3-1.5v7a3 3 0 01-6 0v-7L10 7V2z" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="scan1-side-btn" aria-label="Gallery">
+          <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="2" y="3" width="16" height="14" rx="2" stroke="#0b0b0b" stroke-width="1.2"/><circle cx="7" cy="8" r="1.5" stroke="#0b0b0b" stroke-width="1"/><path d="M2 14l4-4 3 3 4-4 5 5" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="scan1-recent">
+      <div class="scan1-recent__header">
+        <div class="scan1-stepper__line"></div>
+        <span class="scan1-stepper__star">✦</span>
+        <span class="scan1-stepper__text">RECENT SCANS</span>
+        <span class="scan1-stepper__star">✦</span>
+        <div class="scan1-stepper__line"></div>
+      </div>
+      <div class="scan1-recent__list">
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--green"><img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/></div>
+          <span class="scan1-recent__name">Hari Hara Subrama...</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--yellow"><span>RS</span></div>
+          <span class="scan1-recent__name">Rakesh Sharma</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--yellow"><span>PG</span></div>
+          <span class="scan1-recent__name">Patel General...</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--pink"><span>A</span></div>
+          <span class="scan1-recent__name">Akriti Bansal</span>
+        </div>
+      </div>
+    </div>
+    <div class="scan1-footer">
+      <img src="assets/upi.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function scan2HTML() {
+  return `
+  <div class="screen screen-scan2">
+    <div class="scan2-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header">
+      <span class="ob-back-arrow" onclick="goBack()" style="cursor:pointer">←</span>
+    </div>
+    <div class="scan2-camera">
+      <img src="assets/images/scan_qr_bg.png" alt="" class="scan2-camera__bg"/>
+      <div class="scan2-camera__area">
+        <div class="scan1-corner scan1-corner--tl"></div>
+        <div class="scan1-corner scan1-corner--tr"></div>
+        <div class="scan1-corner scan1-corner--bl"></div>
+        <div class="scan1-corner scan1-corner--br"></div>
+      </div>
+    </div>
+    <div class="scan2-result">
+      <div class="scan2-result__card">
+        <div class="scan2-result__avatar scan1-avatar--green">
+          <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
+        </div>
+        <div class="scan2-result__info">
+          <span class="scan2-result__name">Rohan Rajput</span>
+          <span class="scan2-result__upi">rohan.rajput@upi</span>
+        </div>
+      </div>
+      <button class="scan2-proceed-btn" onclick="renderScreen(S.ENTER_AMOUNT)">
+        <span>Proceed</span>
+        <svg viewBox="0 0 12 12" fill="none" width="14" height="14"><path d="M4 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="scan1-recent">
+      <div class="scan1-recent__header">
+        <div class="scan1-stepper__line"></div>
+        <span class="scan1-stepper__star">✦</span>
+        <span class="scan1-stepper__text">RECENT SCANS</span>
+        <span class="scan1-stepper__star">✦</span>
+        <div class="scan1-stepper__line"></div>
+      </div>
+      <div class="scan1-recent__list">
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--green"><img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/></div>
+          <span class="scan1-recent__name">Hari Hara Subrama...</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--yellow"><span>RS</span></div>
+          <span class="scan1-recent__name">Rakesh Sharma</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--yellow"><span>PG</span></div>
+          <span class="scan1-recent__name">Patel General...</span>
+        </div>
+        <div class="scan1-recent__item">
+          <div class="scan1-avatar scan1-avatar--pink"><span>A</span></div>
+          <span class="scan1-recent__name">Akriti Bansal</span>
+        </div>
+      </div>
+    </div>
+    <div class="scan1-footer">
+      <img src="assets/upi.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function enterAmountHTML() {
+  const amountDisplay = scanPayAmount || "";
+  const hasAmount = scanPayAmount.length > 0 && parseInt(scanPayAmount) > 0;
+  const ctaClass = hasAmount ? "sp-cta-btn" : "sp-cta-btn sp-cta-btn--disabled";
+  return `
+  <div class="screen screen-enter-amount">
+    <div class="ea-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header" style="position:relative;z-index:1">
+      <span class="ob-back-arrow" onclick="goBack()" style="cursor:pointer">←</span>
+    </div>
+    <div class="ea-body">
+      <div class="ea-user-section">
+        <div class="ea-user-info">
+          <div class="ea-user-avatar scan1-avatar--green" style="width:56px;height:56px;border-radius:300px;overflow:hidden;position:relative">
+            <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
+          </div>
+          <p class="ea-user-name">Paying Rohan Rajput</p>
+        </div>
+        <div class="ea-upi-pill">
+          <img src="assets/upi.svg" alt="" class="ea-upi-pill__icon" width="24" height="12"/>
+          <span class="ea-upi-pill__text">9999999999@upi</span>
+        </div>
+      </div>
+      <div class="ea-amount-area">
+        <div class="ea-amount-display" id="ea-amount-display">
+          <span class="ea-amount-prefix">₹</span>
+          <span class="ea-amount-value" id="ea-amount-value">${amountDisplay}</span>
+          <span class="ea-amount-cursor" id="ea-amount-cursor">|</span>
+        </div>
+        <p class="ea-amount-words" id="ea-amount-words"></p>
+      </div>
+      <div class="ea-note-pill">
+        <span class="ea-note-pill__text">Note</span>
+        <span class="ea-note-pill__cursor">|</span>
+      </div>
+    </div>
+    <div class="ea-bottom">
+      <div class="ea-cta-wrap">
+        <button class="${ctaClass}" id="ea-next-btn" onclick="onEnterAmountNext()">Next</button>
+      </div>
+      <div class="ea-keyboard">${spNumpadHTML("amount")}</div>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function selectAccountHTML() {
+  return `
+  <div class="screen screen-select-account">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header">
+      <span class="ob-back-arrow" onclick="goBack()">←</span>
+      <span class="ob-page-title">Select account to pay with</span>
+    </div>
+    <div class="sa-payee-bar">
+      <div class="sa-payee-row">
+        <div class="sa-payee__avatar scan1-avatar--green">
+          <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
+        </div>
+        <div class="sa-payee__info">
+          <span class="sa-payee__name">Paying Rohan Rajput</span>
+          <span class="sa-payee__amount">₹${scanPayAmount}</span>
+        </div>
+      </div>
+    </div>
+    <div class="sa-section">
+      <p class="sa-section__title">Payment Options</p>
+      <div class="sa-account-card sa-account-card--selected">
+        <div class="sa-account__left">
+          <div class="sa-account__icon">${bankIconSVG()}</div>
+          <div class="sa-account__details">
+            <span class="sa-account__name">Bharatiya Payments Bank</span>
+            <span class="sa-account__num">***2453 Bank account</span>
+          </div>
+        </div>
+        <div class="ab-radio ab-radio--checked"></div>
+      </div>
+    </div>
+    <div class="sa-bottom">
+      <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_UPI_PIN)">Next</button>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function enterUpiPinHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const raw = i < scanPayUpiPin.length ? scanPayUpiPin[i] : "";
+    const val = raw && scanPayPinMasked ? "•" : raw;
+    const active = i === scanPayUpiPin.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="sp-pin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
+  }
+  const showLabel = scanPayPinMasked ? "Show" : "Hide";
+  return `
+  <div class="screen screen-enter-upi-pin">
+    ${statusBarSVG(true)}
+    <div class="sp-bank-header">
+      <div class="sp-bank-header__logo">
+        <img src="assets/images/bank_logo.png" alt="" class="sp-bank-header__logo-img"/>
+      </div>
+    </div>
+    <div class="sp-bank-name-bar">
+      <span class="sp-bank-name-bar__text">XXXXXXXXXXXX</span>
+      <svg class="sp-bank-name-bar__chevron" viewBox="0 0 12 12" fill="none" width="16" height="16"><path d="M3 4.5l3 3 3-3" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="sp-pin-content" id="sp-pin-content">
+      <p class="ab-pin-heading">ENTER UPI PIN</p>
+      <div class="ab-pin-row" id="sp-pin-row">${boxes}</div>
+      <p class="ab-pin-show" onclick="toggleScanPayPinMask()" role="button" tabindex="0"><span class="ab-pin-show__circle"></span> <span id="sp-pin-show-label">${showLabel}</span></p>
+    </div>
+    <div class="sp-powered-by">Powered by</div>
+    <div class="ab-pin-keyboard">${spNumpadHTML("upipin")}</div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function paymentSuccessHTML() {
+  return `
+  <div class="screen screen-payment-success">
+    <div class="ps-green-bg"></div>
+    ${statusBarSVG(false)}
+    <div class="ps-content">
+      <div class="ps-animation">
+        <img src="assets/images/success_tick.png" alt="Success" class="ps-animation__img"/>
+      </div>
+      <p class="ps-text">Payment Successful</p>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function debitedTransactionHTML() {
+  return `
+  <div class="screen screen-debited-tx">
+    ${statusBarSVG(false)}
+    <div class="dt-hero">
+      <div class="dt-hero__gradient"></div>
+      <div class="dt-hero__animation">
+        <img src="assets/images/success_tick.png" alt="" class="dt-hero__tick"/>
+      </div>
+      <div class="dt-hero__payee">
+        <svg viewBox="0 0 14 14" fill="none" width="12" height="12"><circle cx="7" cy="5" r="3" stroke="white" stroke-width="1"/><path d="M2 13c0-2.5 2.2-4.5 5-4.5S12 10.5 12 13" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
+        <span>Paid to Rohan Rajput</span>
+      </div>
+      <p class="dt-hero__amount">₹${scanPayAmount}</p>
+    </div>
+    <div class="dt-receipt">
+      <div class="dt-receipt__card">
+        <div class="dt-receipt__row">
+          <div class="dt-receipt__col">
+            <span class="dt-receipt__label">Banking Name</span>
+            <span class="dt-receipt__value">Samartha Bhandhar Gruha Udyog</span>
+          </div>
+        </div>
+        <div class="dt-receipt__row">
+          <div class="dt-receipt__col">
+            <span class="dt-receipt__label">Transaction ID</span>
+            <div class="dt-receipt__value-row">
+              <span class="dt-receipt__value">928376484322</span>
+              <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><rect x="5" y="5" width="8" height="8" rx="1" stroke="#0b0b0b" stroke-width="1"/><path d="M3 3v8h8" stroke="#0b0b0b" stroke-width="1"/></svg>
+            </div>
+          </div>
+          <div class="dt-receipt__col">
+            <span class="dt-receipt__label">Date & Time</span>
+            <span class="dt-receipt__value">9th July 24, 5:00pm</span>
+          </div>
+        </div>
+        <div class="dt-receipt__divider"></div>
+        <button class="dt-receipt__more">
+          <span>More details</span>
+          <svg viewBox="0 0 12 12" fill="none" width="14" height="14"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="dt-options">
+      <div class="dt-option">
+        <div class="dt-option__circle">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 2v20M2 12h20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/><path d="M5 5l14 14M19 5L5 19" stroke="#0b0b0b" stroke-width="1" stroke-linecap="round" opacity="0.3"/></svg>
+        </div>
+        <span class="dt-option__label">Split this<br>expense</span>
+      </div>
+      <div class="dt-option">
+        <div class="dt-option__circle">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="dt-option__label">Share<br>screenshot</span>
+      </div>
+    </div>
+    <div class="dt-ad">
+      <div class="dt-ad__bg"></div>
+      <div class="dt-ad__content">
+        <div class="dt-ad__text">
+          <span class="dt-ad__title">It's Payday!</span>
+          <span class="dt-ad__subtitle">Treat yourself with a nice meal with <strong>Swiggy</strong></span>
+        </div>
+        <div class="dt-ad__cta">Claim your <strong>20% off</strong></div>
+      </div>
+      <div class="dt-ad__image">🍜</div>
+    </div>
+    <div class="dt-footer">
+      <div class="dt-footer__buttons">
+        <button class="dt-footer__btn dt-footer__btn--outline" onclick="renderScreen(S.SCAN_1)">Send again</button>
+        <button class="dt-footer__btn dt-footer__btn--primary" onclick="renderScreen(S.HOME)">Home</button>
+      </div>
+      <div class="dt-footer__powered">
+        <img src="assets/upi.svg" alt="BHIM UPI" width="70" height="20"/>
+      </div>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+// Scan and Pay numpad helper
+function spNumpadHTML(target) {
+  const keys = [1,2,3,4,5,6,7,8,9,"del",0,"submit"];
+  let h = '<div class="ab-numpad">';
+  keys.forEach(k => {
+    if (k === "del") {
+      h += `<button class="ab-numpad__key ab-numpad__key--del" onclick="handleScanPayKey('${target}','DEL')"><svg viewBox="0 0 24 18" fill="none" width="23" height="17"><path d="M7.5 1h13A2.5 2.5 0 0 1 23 3.5v11a2.5 2.5 0 0 1-2.5 2.5h-13L1 9l6.5-8z" stroke="#0b0b0b" stroke-width="1.3"/><path d="M11 6l6 6M17 6l-6 6" stroke="#0b0b0b" stroke-width="1.3" stroke-linecap="round"/></svg></button>`;
+    } else if (k === "submit") {
+      h += `<button class="ab-numpad__key ab-numpad__key--submit" onclick="handleScanPayKey('${target}','SUBMIT')"><svg viewBox="0 0 24 24" fill="none" width="24" height="24"><circle cx="12" cy="12" r="11" fill="#1b327e"/><path d="M7 12l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    } else {
+      h += `<button class="ab-numpad__key" onclick="handleScanPayKey('${target}','${k}')">${k}</button>`;
+    }
+  });
+  h += '</div>';
+  return h;
 }
 
 function getScreenHTML(state) {
@@ -1497,6 +1878,21 @@ function getScreenHTML(state) {
       return bankSuccessHTML();
     case S.ADD_BANK_PAYMENT_METHODS:
       return paymentMethodsHTML();
+    // Scan and Pay flow
+    case S.SCAN_1:
+      return scan1HTML();
+    case S.SCAN_2:
+      return scan2HTML();
+    case S.ENTER_AMOUNT:
+      return enterAmountHTML();
+    case S.SELECT_ACCOUNT_TO_PAY:
+      return selectAccountHTML();
+    case S.ENTER_UPI_PIN:
+      return enterUpiPinHTML();
+    case S.PAYMENT_SUCCESS:
+      return paymentSuccessHTML();
+    case S.DEBITED_TRANSACTION:
+      return debitedTransactionHTML();
     default:
       return landingHTML();
   }
@@ -1540,6 +1936,13 @@ function handlePostRender(state) {
     // Add Bank Account flow
     case S.ADD_BANK_SUCCESS:
       wait(() => renderScreen(S.ADD_BANK_PAYMENT_METHODS), 2500);
+      break;
+    // Scan and Pay flow – timed transitions
+    case S.SCAN_1:
+      wait(() => renderScreen(S.SCAN_2), 3500);
+      break;
+    case S.PAYMENT_SUCCESS:
+      wait(() => renderScreen(S.DEBITED_TRANSACTION), 3000);
       break;
   }
 }
@@ -1708,11 +2111,114 @@ function goBack() {
     case S.CHECK_BALANCE_PIN:
       renderScreen(S.HOME);
       break;
+    // Scan and Pay flow back navigation
+    case S.SCAN_1:
+      renderScreen(S.HOME);
+      break;
+    case S.SCAN_2:
+      renderScreen(S.SCAN_1);
+      break;
+    case S.ENTER_AMOUNT:
+      renderScreen(S.SCAN_2);
+      break;
+    case S.SELECT_ACCOUNT_TO_PAY:
+      renderScreen(S.ENTER_AMOUNT);
+      break;
+    case S.ENTER_UPI_PIN:
+      renderScreen(S.SELECT_ACCOUNT_TO_PAY);
+      break;
   }
 }
 
 function goBackFromCheckBalancePin() {
   renderScreen(S.HOME);
+}
+
+// ─── Scan and Pay – Flow Control & UI Helpers ────────────────
+
+function handleScanPayKey(target, key) {
+  if (target === "amount") {
+    if (key === "DEL") {
+      scanPayAmount = scanPayAmount.slice(0, -1);
+    } else if (key === "SUBMIT") {
+      onEnterAmountNext();
+      return;
+    } else if (scanPayAmount.length < 7) {
+      scanPayAmount += key;
+    }
+    updateAmountUI();
+  } else if (target === "upipin") {
+    if (key === "DEL") {
+      scanPayUpiPin = scanPayUpiPin.slice(0, -1);
+      updateScanPayPinUI();
+    } else if (key === "SUBMIT") {
+      if (scanPayUpiPin.length === 4) {
+        renderScreen(S.PAYMENT_SUCCESS);
+      }
+      return;
+    } else if (scanPayUpiPin.length < 4) {
+      scanPayUpiPin += key;
+      updateScanPayPinUI();
+      if (scanPayUpiPin.length === 4) {
+        // auto-submit after short delay
+        wait(() => renderScreen(S.PAYMENT_SUCCESS), 400);
+      }
+    }
+  }
+}
+
+function onEnterAmountNext() {
+  if (scanPayAmount.length > 0 && parseInt(scanPayAmount) > 0) {
+    renderScreen(S.SELECT_ACCOUNT_TO_PAY);
+  }
+}
+
+function updateAmountUI() {
+  const valEl = document.getElementById("ea-amount-value");
+  if (valEl) valEl.textContent = scanPayAmount;
+  const cursorEl = document.getElementById("ea-amount-cursor");
+  if (cursorEl) cursorEl.style.display = scanPayAmount.length > 0 ? "none" : "";
+  const btn = document.getElementById("ea-next-btn");
+  if (btn) {
+    const hasAmount = scanPayAmount.length > 0 && parseInt(scanPayAmount) > 0;
+    btn.className = hasAmount ? "sp-cta-btn" : "sp-cta-btn sp-cta-btn--disabled";
+  }
+  const wordsEl = document.getElementById("ea-amount-words");
+  if (wordsEl) {
+    const num = parseInt(scanPayAmount) || 0;
+    wordsEl.textContent = num > 0 ? numberToWords(num) + " rupees only" : "";
+  }
+}
+
+function numberToWords(n) {
+  if (n === 0) return "zero";
+  const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  if (n < 20) return ones[n];
+  if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? " " + ones[n%10] : "");
+  if (n < 1000) return ones[Math.floor(n/100)] + " hundred" + (n%100 ? " " + numberToWords(n%100) : "");
+  if (n < 100000) return numberToWords(Math.floor(n/1000)) + " thousand" + (n%1000 ? " " + numberToWords(n%1000) : "");
+  if (n < 10000000) return numberToWords(Math.floor(n/100000)) + " lakh" + (n%100000 ? " " + numberToWords(n%100000) : "");
+  return String(n);
+}
+
+function updateScanPayPinUI() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById("sp-pin-" + i);
+    if (!d) continue;
+    const raw = i < scanPayUpiPin.length ? scanPayUpiPin[i] : "";
+    const val = raw && scanPayPinMasked ? "•" : raw;
+    d.querySelector("span").textContent = val;
+    d.className = i === scanPayUpiPin.length ? "ab-pin-digit ab-pin-digit--active" : "ab-pin-digit";
+  }
+}
+
+function toggleScanPayPinMask() {
+  scanPayPinMasked = !scanPayPinMasked;
+  updateScanPayPinUI();
+  const lbl = document.getElementById("sp-pin-show-label");
+  if (lbl) lbl.textContent = scanPayPinMasked ? "Show" : "Hide";
 }
 
 // ─── DOM Update Helpers (no re-render, just patch) ───────────
@@ -1928,6 +2434,12 @@ function startOnboarding() {
 }
 function goHome() {
   renderScreen(S.HOME);
+}
+function startScanAndPayFlow() {
+  skipHomeTour = true;
+  renderScreen(S.HOME);
+  clearTimers();
+  // User will manually click the scanner button on home screen to go to scan_1
 }
 
 // ─── Check Balance Flow (Figma-aligned tour) ──────────────────
