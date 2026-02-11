@@ -51,9 +51,11 @@ let phoneShell = null;
 let activeDriver = null;
 let timers = [];
 
-// Tooltip tour state
-let tooltipsSeen = false;
-let currentTTIdx = -1; // current tooltip index during tour
+// Tooltip guide state (non-linear, per-screen)
+const tooltipGuide = {
+  enabled: true,        // master switch – false after Skip
+  shownForScreen: {},   // tracks which screens already showed a tooltip this session
+};
 
 // Interactive input state (manual flow)
 let selectedLang = null;
@@ -214,10 +216,11 @@ function landingHTML() {
     <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
-      <!--
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
-      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
       <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>5.</span> Check Balance</button>
+      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>3.</span> Scan and Pay</button>
+      <!--
+      <button class="ob-btn ob-btn--primary" onclick="goHome()"><span>4.</span> Send to mobile</button>
       -->
       <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>3.</span> Scan and Pay</button>
     </div>
@@ -235,7 +238,7 @@ function splash2HTML() {
 function getStartedHTML(mode) {
   const isPreview = mode === "preview";
   const noAnim = isPreview ? " screen--no-anim" : "";
-  const langSectionId = isPreview ? ' id="gs-lang-section"' : '';
+  const langSectionId = ' id="gs-lang-section"';
   return `
   <div class="screen screen-get-started${noAnim}">
     <div class="gs-blue-bg"></div>
@@ -300,7 +303,7 @@ function mobileEntryHTML(mode) {
   const noAnim = isPreview ? " screen--no-anim" : "";
   const phoneDisplay = isPreview ? "9999999999" : "";
   const inputId = isPreview ? '' : ' id="mob-number"';
-  const wrapId = isPreview ? ' id="mob-input-wrap"' : '';
+  const wrapId = ' id="mob-input-wrap"';
   const btnClass = isPreview ? "ob-btn--primary" : "ob-btn--disabled";
   const btnId = isPreview ? '' : ' id="mob-proceed-btn"';
   const kb = isPreview ? staticKBHTML() : interactiveKBHTML();
@@ -348,7 +351,7 @@ function otpEntryHTML(mode) {
 function simSelectHTML(mode) {
   const isPreview = mode === "preview";
   const noAnim = isPreview ? " screen--no-anim" : "";
-  const cardsId = isPreview ? ' id="sim-cards"' : '';
+  const cardsId = ' id="sim-cards"';
   return `
   <div class="screen screen-sim${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
@@ -1146,126 +1149,74 @@ function abNumpadHTML(target) {
 
 // ─── Add Bank Account Flow Control ──────────────────────────
 
-// ─── Add Bank Account – 7-Step Tooltip Tour ─────────────────
-let addBankTourStep = 0;
-const ADD_BANK_TOUR_TOTAL = 6;
+// ─── Add Bank Account – Non-Linear Tooltip Guide ────────────
+const abTooltipGuide = {
+  enabled: true,        // master switch – false after Skip
+  shownForScreen: {},   // tracks which screens already showed a tooltip this session
+};
 
-function abTourDots(activeIdx) {
-  let d = "";
-  for (let i = 0; i < ADD_BANK_TOUR_TOTAL; i++) {
-    d += '<div class="bhim-popover-dot' + (i === activeIdx ? " bhim-popover-dot--active" : "") + '"></div>';
-  }
-  return (
-    '<div class="bhim-popover-footer"><div class="bhim-popover-dots">' + d +
-    '</div><div class="bhim-popover-buttons">' +
-    '<button class="bhim-btn-skip" onclick="abTourSkip()">Skip</button>' +
-    '<button class="bhim-btn-next" onclick="abTourNext()">Next</button>' +
-    '</div></div>'
-  );
-}
+const AB_SCREEN_TOOLTIPS = {
+  [S.HOME]: {
+    element: "#bank-card",
+    desc: "यूपीआई पे में आपका स्वागत है",
+    side: "bottom",
+    radius: 16,
+  },
+  [S.ADD_BANK_SELECT]: {
+    element: "#ab-tour-select-bank-header",
+    desc: "Select bank from the list below and link your bank account to proceed further",
+    side: "bottom",
+    radius: 12,
+  },
+  [S.ADD_BANK_METHOD_SELECT]: {
+    element: "#ab-tour-method-sheet",
+    desc: "Link your bank account via Debit Card",
+    side: "top",
+    radius: 20,
+  },
+  [S.ADD_BANK_DEBIT_CARD]: {
+    element: "#ab-tour-debit-content",
+    desc: "Enter your debit card details to link your bank account",
+    side: "bottom",
+    radius: 12,
+  },
+  [S.ADD_BANK_OTP]: {
+    element: "#ab-tour-otp-row",
+    desc: "Select bank from the list below and link your bank account to proceed further",
+    side: "bottom",
+    radius: 12,
+  },
+  [S.ADD_BANK_SET_PIN]: {
+    element: "#ab-tour-setpin-row",
+    desc: "Your bank will ask you to set a 4 or 6 digit UPI PIN (as per bank rules). This PIN is required to approve UPI payments from your account.\n\nChoose a PIN you can easily remember, keep it confidential, and never share it with anyone.\nBHIM or your bank will never ask for your UPI PIN-stay alert and secure.",
+    side: "top",
+    radius: 12,
+  },
+};
 
-function abTourSkip() {
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
-  renderScreen(S.ADD_BANK_SELECT);
-}
+function showAbScreenTooltip(state) {
+  if (!abTooltipGuide.enabled) return;
+  if (abTooltipGuide.shownForScreen[state]) return;
 
-function abTourNext() {
-  addBankTourStep++;
-  abTourShow();
-}
+  const step = AB_SCREEN_TOOLTIPS[state];
+  if (!step) return;
 
-function startAddBankFlow() {
-  addBankTourStep = 0;
-  skipHomeTour = true;
-  renderScreen(S.HOME);
-  clearTimers();
-  wait(() => abTourShow(), 600);
-}
+  abTooltipGuide.shownForScreen[state] = true;
 
-function abTourShow() {
-  // Destroy previous driver if active
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
-
-  const tourSteps = [
-    // Step 0: Home – highlight bank card
-    {
-      screen: null, // already on HOME
-      element: "#bank-card",
-      title: "",
-      desc: "यूपीआई पे में आपका स्वागत है",
-      side: "bottom",
-      radius: 16,
-    },
-    // Step 1: Select Account – highlight account list
-    {
-      screen: S.ADD_BANK_SELECT,
-      element: "#ab-tour-select-bank-header",
-      title: "",
-      desc: "Select bank from the list below and link your bank account to proceed further",
-      side: "bottom",
-      radius: 12,
-    },
-    // Step 2: Method Select – highlight bottom sheet
-    {
-      screen: S.ADD_BANK_METHOD_SELECT,
-      element: "#ab-tour-method-sheet",
-      title: "",
-      desc: "Link your bank account via Debit Card",
-      side: "top",
-      radius: 20,
-    },
-    // Step 3: Debit Card – highlight input area
-    {
-      screen: S.ADD_BANK_DEBIT_CARD,
-      element: "#ab-tour-debit-content",
-      title: "",
-      desc: "Enter your debit card details to link your bank account",
-      side: "bottom",
-      radius: 12,
-    },
-    // Step 4: OTP – highlight PIN row
-    {
-      screen: S.ADD_BANK_OTP,
-      element: "#ab-tour-otp-row",
-      title: "",
-      desc: "Select bank from the list below and link your bank account to proceed further",
-      side: "bottom",
-      radius: 12,
-    },
-    // Step 5: Set UPI PIN – highlight PIN content
-    {
-      screen: S.ADD_BANK_SET_PIN,
-      element: "#ab-tour-setpin-row",
-      title: "",
-      desc: "Your bank will ask you to set a 4 or 6 digit UPI PIN (as per bank rules). This PIN is required to approve UPI payments from your account.\n\nChoose a PIN you can easily remember, keep it confidential, and never share it with anyone.\nBHIM or your bank will never ask for your UPI PIN-stay alert and secure.",
-      side: "top",
-      radius: 12,
-    },
-  ];
-
-  if (addBankTourStep >= tourSteps.length) {
-    // Tour completed – continue normal flow
-    renderScreen(S.ADD_BANK_SUCCESS);
-    return;
-  }
-
-  const step = tourSteps[addBankTourStep];
-
-  // Navigate to appropriate screen if needed
-  if (step.screen) {
-    skipHomeTour = true;
-    renderScreen(step.screen);
-  }
-
-  // Wait for DOM to be ready and target to exist, then highlight
-  const showStep = (attempt = 0) => {
-    const targetEl = document.querySelector(step.element);
-    if (!targetEl) {
-      if (attempt < 8) {
-        wait(() => showStep(attempt + 1), 120);
-      }
+  wait(() => {
+    const el = document.querySelector(step.element);
+    if (!el) {
+      console.warn('AB tooltip target not found:', step.element, '— skipping');
       return;
     }
+
+    let body = `<div class="tt-text">${step.desc}</div>`;
+    // Buttons
+    body += '<div class="bhim-popover-footer"><div class="bhim-popover-buttons">' +
+      '<button class="bhim-btn-skip" onclick="abTourSkip()">Skip</button>' +
+      '<button class="bhim-btn-next" onclick="abTourNext()">Next</button>' +
+      '</div></div>';
+
     const dObj = window.driver.js.driver({
       showProgress: false,
       showButtons: [],
@@ -1283,17 +1234,35 @@ function abTourShow() {
     dObj.highlight({
       element: step.element,
       popover: {
-        title: step.title,
-        description: step.desc + abTourDots(addBankTourStep),
+        title: "",
+        description: body,
         side: step.side,
         align: "center",
       },
     });
     window.bhimDriver = dObj;
     activeDriver = dObj;
-  };
-  wait(() => showStep(), 400);
+  }, 400);
 }
+
+function abTourSkip() {
+  // Disable all remaining Add Bank tooltips for this session
+  abTooltipGuide.enabled = false;
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+}
+
+function abTourNext() {
+  // Close tooltip — user stays on current interactive screen
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+}
+
+function startAddBankFlow() {
+  abTooltipGuide.enabled = true;
+  abTooltipGuide.shownForScreen = {};
+  skipHomeTour = true;
+  renderScreen(S.ADD_BANK_SELECT);
+}
+
 
 function selectBankAccount(idx) {
   addBankSelectedAccount = idx;
@@ -1314,9 +1283,9 @@ function handleAddBankKey(target, key) {
       balanceRevealed = true;
       checkBalancePinInput = "";
       if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+      // Allow the "Balance visible" tooltip to show on HOME
+      cbTooltipGuide.shownForScreen[S.HOME] = false;
       renderScreen(S.HOME);
-      clearTimers();
-      wait(() => showBalanceRevealedTour(), 500);
       return;
     } else if (key !== "SUBMIT" && checkBalancePinInput.length < 4) checkBalancePinInput += String(key);
     updateCheckBalancePinUI();
@@ -1904,13 +1873,14 @@ function handlePostRender(state) {
       wait(() => renderScreen(S.SPLASH_2), 1500);
       break;
     case S.SPLASH_2:
-      wait(() => {
-        if (!tooltipsSeen) {
-          showTooltipStep(0);
-        } else {
-          renderScreen(S.GET_STARTED);
-        }
-      }, 2500);
+      wait(() => renderScreen(S.GET_STARTED), 2500);
+      break;
+    case S.GET_STARTED:
+    case S.LANG_SELECT:
+    case S.MOBILE_ENTRY:
+    case S.OTP_ENTRY:
+    case S.SIM_SELECT:
+      showScreenTooltip(state);
       break;
     case S.VERIFY_1:
       // Auto-play verification animation (non-interactive loading)
@@ -1931,9 +1901,20 @@ function handlePostRender(state) {
       if (!skipHomeTour) {
         wait(() => startHomeTour(), 800);
       }
+      showCbScreenTooltip(state);
       skipHomeTour = false;
       break;
     // Add Bank Account flow
+    case S.ADD_BANK_SELECT:
+    case S.ADD_BANK_METHOD_SELECT:
+    case S.ADD_BANK_DEBIT_CARD:
+    case S.ADD_BANK_OTP:
+    case S.ADD_BANK_SET_PIN:
+      showAbScreenTooltip(state);
+      break;
+    case S.CHECK_BALANCE_PIN:
+      showCbScreenTooltip(state);
+      break;
     case S.ADD_BANK_SUCCESS:
       wait(() => renderScreen(S.ADD_BANK_PAYMENT_METHODS), 2500);
       break;
@@ -2292,95 +2273,60 @@ function updatePasscodeUI() {
   }
 }
 
-// ─── Tooltip Tour System ─────────────────────────────────────
+// ─── Tooltip Guide System (Non-Linear, Per-Screen) ──────────
 
-const TOOLTIP_DATA = [
-  {
+const SCREEN_TOOLTIPS = {
+  [S.GET_STARTED]: {
     element: "#gs-lang-section",
     text: "You can choose your preferred language in which you want to access the app",
     side: "top",
   },
-  {
+  [S.LANG_SELECT]: {
     element: "#lang-item-2",
     text: "You can choose other languages apart from Hindi and English from here",
-    side: "bottom",
+    side: "top",
   },
-  {
+  [S.MOBILE_ENTRY]: {
     element: "#mob-input-wrap",
     text: "You need to enter the mobile number linked with your bank account so that you can link and use your bank account for UPI Payments",
     side: "bottom",
   },
-  {
+  [S.OTP_ENTRY]: {
     element: "#otp-boxes",
     text: "To ensure that your mobile number, linked with your bank account, is being used only by you, we will send an OTP on your number which will be auto fetched by your app.",
     side: "bottom",
   },
-  {
+  [S.SIM_SELECT]: {
     element: "#sim-cards",
     text: "In this step you need to confirm your SIM Card company and we will proceed with binding of your SIM and device with the app. This will ensure that no one else can use your UPI Account apart from yourself",
     side: "bottom",
   },
-  {
-    element: "#verify-steps",
-    text: "Verifying and Binding your SIM in Progress",
-    bullets: [
-      "This happens automatically in real UPI apps",
-      "User does not need to do anything here",
-    ],
-    side: "top",
-    offset: 100, // Large gap to fully clear the card
-  },
-];
+};
 
-// Screens shown behind each tooltip (reusing interactive functions in preview mode)
-const TOOLTIP_SCREENS = [
-  () => getStartedHTML("preview"),
-  () => langSelectHTML("preview"),
-  () => mobileEntryHTML("preview"),
-  () => otpEntryHTML("preview"),
-  () => simSelectHTML("preview"),
-  () => verifyHTML(3),
-];
+function showScreenTooltip(state) {
+  if (!tooltipGuide.enabled) return;
+  if (tooltipGuide.shownForScreen[state]) return;
 
-function showTooltipStep(idx) {
-  clearTimers();
-  if (activeDriver) {
-    activeDriver.destroy();
-    activeDriver = null;
-  }
+  const tt = SCREEN_TOOLTIPS[state];
+  if (!tt) return;
 
-  currentTTIdx = idx;
-  phoneShell.innerHTML = TOOLTIP_SCREENS[idx]();
+  tooltipGuide.shownForScreen[state] = true;
 
   wait(() => {
-    const tt = TOOLTIP_DATA[idx];
     const el = document.querySelector(tt.element);
     if (!el) {
-      // Element not found — skip forward so flow never gets stuck
       console.warn('Tooltip target not found:', tt.element, '— skipping');
-      if (idx < TOOLTIP_DATA.length - 1) showTooltipStep(idx + 1);
-      else endTooltipTour();
       return;
     }
 
     let body = `<div class="tt-text">${tt.text}</div>`;
     if (tt.bullets) {
       body += '<ul class="tt-bullets">';
-      tt.bullets.forEach((b) => {
-        body += "<li>" + b + "</li>";
-      });
-      body += "</ul>";
+      tt.bullets.forEach((b) => { body += '<li>' + b + '</li>'; });
+      body += '</ul>';
     }
-    // Dots
-    body += '<div class="tt-dots">';
-    for (let i = 0; i < TOOLTIP_DATA.length; i++) {
-      body +=
-        '<div class="tt-dot' + (i <= idx ? " tt-dot--active" : "") + '"></div>';
-    }
-    body += "</div>";
     // Buttons
-    body +=
-      '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">Skip</button><button class="tt-btn-next" onclick="tooltipNext()">Next</button></div>';
+    body += '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">Skip</button><button class="tt-btn-next" onclick="tooltipNext()">Next</button></div>';
 
     const dObj = window.driver.js.driver({
       showProgress: false,
@@ -2389,16 +2335,15 @@ function showTooltipStep(idx) {
       stagePadding: 8,
       stageRadius: 12,
       animate: true,
-      popoverClass: "ob-tooltip ob-tooltip-step-" + idx,
+      popoverClass: "ob-tooltip",
       allowClose: false,
     });
     dObj.highlight({
       element: tt.element,
-      popover: { 
-        description: body, 
-        side: tt.side, 
+      popover: {
+        description: body,
+        side: tt.side,
         align: "center",
-        ...(tt.offset && { offset: tt.offset, popoverOffset: tt.offset })
       },
     });
     activeDriver = dObj;
@@ -2406,25 +2351,20 @@ function showTooltipStep(idx) {
 }
 
 function tooltipNext() {
-  if (currentTTIdx < TOOLTIP_DATA.length - 1) {
-    showTooltipStep(currentTTIdx + 1);
-  } else {
-    endTooltipTour();
-  }
-}
-
-function tooltipSkip() {
-  endTooltipTour();
-}
-
-function endTooltipTour() {
-  tooltipsSeen = true;
-  currentTTIdx = -1;
+  // Close tooltip — user stays on current interactive screen
   if (activeDriver) {
     activeDriver.destroy();
     activeDriver = null;
   }
-  renderScreen(S.GET_STARTED);
+}
+
+function tooltipSkip() {
+  // Disable all remaining tooltips for this onboarding session
+  tooltipGuide.enabled = false;
+  if (activeDriver) {
+    activeDriver.destroy();
+    activeDriver = null;
+  }
 }
 
 // ─── Flow Control ────────────────────────────────────────────
@@ -2442,102 +2382,110 @@ function startScanAndPayFlow() {
   // User will manually click the scanner button on home screen to go to scan_1
 }
 
-// ─── Check Balance Flow (Figma-aligned tour) ──────────────────
-// Starts when user taps "5. Check Balance" on landing. Highlights elements
-// as in the Figma flow: bank card → bank/UPI transfer → optional scanner.
-function startCheckBalanceFlow() {
-  skipHomeTour = true;
-  renderScreen(S.HOME);
-  clearTimers();
-  wait(() => runCheckBalanceTour(), 600);
+// ─── Check Balance – Non-Linear Tooltip Guide ─────────────────
+const cbTooltipGuide = {
+  enabled: false,       // activated only when user starts CB flow
+  shownForScreen: {},   // per-screen tracking
+};
+
+function showCbScreenTooltip(state) {
+  if (!cbTooltipGuide.enabled) return;
+  if (cbTooltipGuide.shownForScreen[state]) return;
+
+  // Determine tooltip config based on state
+  let step;
+  if (state === S.HOME) {
+    if (balanceRevealed) {
+      step = {
+        element: "#bank-card",
+        desc: "Your account balance is shown here after you enter your UPI PIN.",
+        title: "Balance visible",
+        side: "bottom",
+      };
+    } else {
+      step = {
+        element: "#bank-card",
+        desc: "Tap here to enter your UPI PIN and view your account balance.",
+        title: "Check Balance",
+        side: "bottom",
+      };
+    }
+  } else if (state === S.CHECK_BALANCE_PIN) {
+    step = {
+      element: "#cb-pin-row",
+      desc: "Enter your 4-digit UPI PIN to view your account balance securely.",
+      title: "Enter UPI PIN",
+      side: "bottom",
+    };
+  }
+  if (!step) return;
+
+  cbTooltipGuide.shownForScreen[state] = true;
+
+  wait(() => {
+    const el = document.querySelector(step.element);
+    if (!el) {
+      console.warn('CB tooltip target not found:', step.element, '— skipping');
+      return;
+    }
+
+    let body = `<div class="tt-text">${step.desc}</div>`;
+    body += '<div class="bhim-popover-footer"><div class="bhim-popover-buttons">' +
+      '<button class="bhim-btn-skip" onclick="cbTourSkip()">Skip</button>' +
+      '<button class="bhim-btn-next" onclick="cbTourNext()">Next</button>' +
+      '</div></div>';
+
+    const dObj = window.driver.js.driver({
+      showProgress: false,
+      showButtons: [],
+      overlayColor: "rgba(0,0,0,0.65)",
+      stagePadding: 6,
+      stageRadius: 16,
+      animate: true,
+      smoothScroll: false,
+      allowClose: true,
+      popoverClass: "bhim-driver-popover",
+      onDestroyStarted: () => {
+        activeDriver = null;
+        dObj.destroy();
+      },
+    });
+    dObj.highlight({
+      element: step.element,
+      popover: {
+        title: step.title || "",
+        description: body,
+        side: step.side,
+        align: "center",
+      },
+    });
+    window.checkBalanceDriver = dObj;
+    activeDriver = dObj;
+  }, 400);
 }
 
-function runCheckBalanceTour() {
-  if (activeDriver) {
-    activeDriver.destroy();
-    activeDriver = null;
-  }
-  // If balance already revealed, show the "balance visible" step only
-  if (balanceRevealed) {
-    showBalanceRevealedTour();
-    return;
-  }
-  const footerHtml =
-    '<div class="bhim-popover-footer"><div class="bhim-popover-dots"><div class="bhim-popover-dot bhim-popover-dot--active"></div><div class="bhim-popover-dot"></div></div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.checkBalanceDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="openCheckBalancePinScreen()">Next</button></div></div>';
-  const d = window.driver.js.driver({
-    showProgress: false,
-    showButtons: [],
-    overlayColor: "rgba(0,0,0,0.65)",
-    stagePadding: 6,
-    stageRadius: 16,
-    animate: true,
-    smoothScroll: false,
-    allowClose: true,
-    popoverClass: "bhim-driver-popover",
-    steps: [
-      {
-        element: "#bank-card",
-        popover: {
-          title: "Check Balance",
-          description: "Tap here to enter your UPI PIN and view your account balance." + footerHtml,
-          side: "bottom",
-          align: "center",
-          popoverClass: "bhim-driver-popover",
-        },
-      },
-    ],
-    onDestroyStarted: () => {
-      activeDriver = null;
-      d.destroy();
-    },
-  });
-  window.checkBalanceDriver = d;
-  activeDriver = d;
-  d.drive();
+function cbTourSkip() {
+  cbTooltipGuide.enabled = false;
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+}
+
+function cbTourNext() {
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+}
+
+function startCheckBalanceFlow() {
+  cbTooltipGuide.enabled = true;
+  cbTooltipGuide.shownForScreen = {};
+  skipHomeTour = true;
+  renderScreen(S.HOME);
 }
 
 function openCheckBalancePinScreen() {
-  if (window.checkBalanceDriver) window.checkBalanceDriver.destroy();
-  activeDriver = null;
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
   checkBalancePinMasked = true;
   renderScreen(S.CHECK_BALANCE_PIN);
 }
 
-function showBalanceRevealedTour() {
-  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
-  const footerHtml =
-    '<div class="bhim-popover-footer"><div class="bhim-popover-dots"><div class="bhim-popover-dot"></div><div class="bhim-popover-dot bhim-popover-dot--active"></div></div><div class="bhim-popover-buttons"><button class="bhim-btn-skip" onclick="window.checkBalanceDriver.destroy()">Skip</button><button class="bhim-btn-next" onclick="window.checkBalanceDriver.destroy()">Done</button></div></div>';
-  const d = window.driver.js.driver({
-    showProgress: false,
-    showButtons: [],
-    overlayColor: "rgba(0,0,0,0.65)",
-    stagePadding: 6,
-    stageRadius: 16,
-    animate: true,
-    smoothScroll: false,
-    allowClose: true,
-    popoverClass: "bhim-driver-popover",
-    steps: [
-      {
-        element: "#bank-card",
-        popover: {
-          title: "Balance visible",
-          description: "Your account balance is shown here after you enter your UPI PIN." + footerHtml,
-          side: "bottom",
-          align: "center",
-          popoverClass: "bhim-driver-popover",
-        },
-      },
-    ],
-    onDestroyStarted: () => {
-      activeDriver = null;
-      d.destroy();
-    },
-  });
-  window.checkBalanceDriver = d;
-  activeDriver = d;
-  d.drive();
-}
 
 // ─── Home Screen Tour ────────────────────────────────────────
 function startHomeTour() {

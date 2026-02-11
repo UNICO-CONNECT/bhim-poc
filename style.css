@@ -2341,6 +2341,7 @@ body.driver-active .screen-ab-setpin,
 body.driver-active .screen-ab-confirmpin,
 body.driver-active .screen-ab-success,
 body.driver-active .screen-ab-methods,
+body.driver-active .screen-check-balance-pin,
 body.driver-active .ab-select-content,
 body.driver-active .ab-debit-content,
 body.driver-active .ab-pin-content,
@@ -2396,6 +2397,33 @@ body.driver-active #mob-input-wrap {
   border-radius: var(--r-md);
   position: relative;
   z-index: 1000000001 !important;
+}
+
+/* Step 4: Add Bank OTP - OTP Row */
+body.driver-active .screen-ab-otp .ab-pin-content {
+  z-index: auto !important;
+}
+body.driver-active #ab-tour-otp-row {
+  background: var(--c-white);
+  border-radius: var(--r-md);
+  position: relative;
+  z-index: 1000000001 !important;
+  padding: 8px;
+  margin: -8px;
+}
+
+/* Check Balance PIN Screen */
+body.driver-active #cb-pin-content {
+  z-index: auto !important;
+}
+
+body.driver-active #cb-pin-row {
+  position: relative;
+  z-index: 1000000001 !important;
+  background: var(--c-white); /* Ensure contrast against overlay */
+  border-radius: 8px;
+  padding: 10px; /* Add some breathing room */
+  margin: -10px; /* Counteract padding to keep layout stable */
 }
 
 /* Step 3: OTP Entry - OTP Boxes */
