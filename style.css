@@ -4531,3 +4531,1125 @@ body.driver-active .ab-select-content {
 .dt-footer__powered {
   padding: 8px;
 }
+
+/* =============================================================
+   SEND TO MOBILE FLOW
+   ============================================================= */
+.screen-sm-contacts,
+.screen-sm-chat,
+.screen-sm-review,
+.screen-sm-pin,
+.screen-sm-success,
+.screen-sm-receipt {
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── Contacts Screen ─────────────────────────────────────────── */
+.sm-contacts-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 16px 12px;
+  height: calc(100% - 110px);
+  overflow-y: auto;
+}
+
+.sm-search-row { padding-top: 4px; }
+
+.sm-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid #d6dce1;
+  border-radius: 100px;
+  background: #fff;
+}
+
+.sm-search-icon { flex-shrink: 0; }
+
+.sm-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: 'Figtree', sans-serif;
+  color: #0b0b0b;
+  background: transparent;
+}
+.sm-search-input::placeholder { color: #626262; }
+
+.sm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sm-section--list {
+  flex: 1;
+  min-height: 0;
+}
+
+.sm-section__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+}
+
+.sm-section__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b0b0b;
+  white-space: nowrap;
+}
+
+.sm-section__star {
+  font-size: 10px;
+  font-weight: 600;
+  color: #626262;
+}
+
+.sm-section__line {
+  flex: 1;
+  height: 1px;
+  background: #d6dce1;
+}
+
+/* Recents grid */
+.sm-recents-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sm-recents-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.sm-recent-item {
+  flex: 1;
+  max-width: 25%;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sm-recent-item__name {
+  width: 68px;
+  white-space: pre-wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #0b0b0b;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Avatar sizes */
+.sm-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.sm-avatar--md {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+
+.sm-avatar--lg {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+
+.sm-avatar--xl {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+}
+
+/* Contacts list */
+.sm-contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sm-contact-item {
+  border: none;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sm-contact-item__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sm-contact-item__name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #0b0b0b;
+  line-height: 1.3;
+}
+
+.sm-contact-item__mobile {
+  font-size: 14px;
+  color: #353535;
+  line-height: 1.4;
+}
+
+.sm-contact-item__menu {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sm-empty {
+  font-size: 14px;
+  color: #626262;
+  padding: 18px 6px;
+}
+
+/* ── Chat Screen ─────────────────────────────────────────────── */
+.screen-sm-chat {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.sm-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+.sm-chat-header .ob-back-arrow {
+  flex-shrink: 0;
+}
+
+.sm-chat-header__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sm-chat-header__name {
+  font-size: 18px;
+  font-weight: 400;
+  color: #0b0b0b;
+  line-height: 1.3;
+}
+
+.sm-chat-header__phone {
+  font-size: 14px;
+  font-weight: 300;
+  color: #0b0b0b;
+  line-height: 1.4;
+}
+
+.sm-chat-body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  padding-bottom: 110px;
+}
+
+/* Date separator */
+.sm-chat-date-sep {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sm-chat-date-sep__line {
+  flex: 1;
+  height: 1px;
+  background: #d6dce1;
+}
+
+.sm-chat-date-sep__star {
+  font-size: 10px;
+  font-weight: 600;
+  color: #626262;
+}
+
+.sm-chat-date-sep__text {
+  font-size: 14px;
+  color: #0b0b0b;
+  white-space: nowrap;
+}
+
+/* Payment bubble */
+.sm-chat-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sm-chat-bubble--payment {
+  background: rgba(241, 243, 245, 0.7);
+  border: 0.5px solid #d2d2d2;
+  border-radius: 4px 16px 16px 16px;
+  padding: 16px;
+  width: 204px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sm-chat-bubble__label {
+  font-size: 14px;
+  color: #0b0b0b;
+  line-height: 1.4;
+}
+
+.sm-chat-bubble__amount {
+  font-size: 24px;
+  font-weight: 500;
+  color: #0b0b0b;
+  line-height: 1;
+}
+
+.sm-chat-bubble__divider {
+  height: 1px;
+  background: #d6dce1;
+}
+
+.sm-chat-bubble__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sm-chat-bubble__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #353535;
+  line-height: 1.4;
+}
+
+.sm-chat-bubble__arrow {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Chat footer */
+.sm-chat-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  z-index: 1;
+}
+
+.sm-chat-footer__input-wrap {
+  flex: 1;
+  height: 40px;
+  background: #f1f3f5;
+  border: 1px solid #d6dce1;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.sm-chat-footer__input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #0b0b0b;
+  background: transparent;
+  font-family: 'Figtree', sans-serif;
+}
+.sm-chat-footer__input::placeholder { color: #626262; }
+
+.sm-chat-footer__input::-webkit-outer-spin-button,
+.sm-chat-footer__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sm-chat-footer__pay {
+  border: none;
+  border-radius: 100px;
+  padding: 12px 24px;
+  height: auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sm-chat-footer__pay--disabled {
+  background: #d6d6d6;
+  cursor: not-allowed;
+}
+
+/* ── Review Screen ───────────────────────────────────────────── */
+.screen-sm-review {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.sm-review-body {
+  flex: 1;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.sm-review-payee {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sm-review-payee__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b0b0b;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.sm-review-upi-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 4px 12px;
+}
+
+.sm-review-upi-icon { flex-shrink: 0; }
+
+.sm-review-upi-pill span {
+  font-size: 14px;
+  font-weight: 300;
+  color: #0b0b0b;
+  line-height: 1.4;
+}
+
+.sm-review-amount-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sm-review-amount {
+  font-size: 48px;
+  font-weight: 300;
+  color: #0b0b0b;
+  line-height: 1.2;
+  letter-spacing: -0.48px;
+  text-align: center;
+}
+
+.sm-review-words {
+  font-size: 14px;
+  font-weight: 400;
+  color: #353535;
+  text-align: center;
+  line-height: 1.4;
+  min-height: 20px;
+}
+
+.sm-review-comment-pill {
+  display: inline-flex;
+}
+
+.sm-review-comment-input {
+  border: 1px solid #9c9c9c;
+  border-radius: 52px;
+  background: #f1f3f5;
+  padding: 10px 20px;
+  height: 40px;
+  font-size: 14px;
+  color: #0b0b0b;
+  text-align: center;
+  outline: none;
+  font-family: 'Figtree', sans-serif;
+  min-width: 160px;
+}
+.sm-review-comment-input::placeholder { color: #626262; }
+
+/* Bottom sheet */
+.sm-review-bottom-sheet {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sm-review-sheet-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #0b0b0b;
+  padding: 12px 16px;
+  line-height: 1.3;
+  position: relative;
+}
+
+.sm-review-sheet-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #d6dce1 30%, #d6dce1 70%, transparent);
+}
+
+.sm-review-sheet-body {
+  padding: 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sm-review-bank-heading {
+  font-size: 18px;
+  font-weight: 500;
+  color: #0b0b0b;
+  line-height: 1.3;
+}
+
+.sm-review-bank-card {
+  background: #f1f3f5;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sm-review-bank-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sm-review-bank-card__info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sm-review-bank-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2b4089;
+  flex-shrink: 0;
+}
+
+.sm-review-bank-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.sm-review-bank-detail__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b0b0b;
+  line-height: 1.4;
+}
+
+.sm-review-bank-detail__acc {
+  font-size: 12px;
+  font-weight: 300;
+  color: #626262;
+  line-height: 1.4;
+}
+
+.sm-review-bank-card__arrow {
+  flex-shrink: 0;
+  transform: rotate(90deg);
+}
+
+.sm-review-bank-card__footer {
+  padding-left: 52px;
+}
+
+.sm-review-check-bal {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b0b0b;
+  text-decoration: underline;
+  text-transform: capitalize;
+}
+
+.sm-review-cta-wrap {
+  padding: 4px 16px 16px;
+}
+
+.sm-review-cta-btn {
+  width: 100%;
+  border: none;
+  border-radius: 100px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+/* ── UPI PIN Screen (Bank-Style) ─────────────────────────────── */
+.screen-sm-pin {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.sm-pin-bank-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: #f1f1f1;
+  min-height: 45px;
+}
+
+.sm-pin-bank-bar__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b0b0b;
+  font-family: 'Roboto', 'Figtree', sans-serif;
+}
+
+.sm-pin-bank-bar__upi {
+  flex-shrink: 0;
+}
+
+.sm-pin-acct-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 16px;
+  background: #1b327f;
+  min-height: 36px;
+}
+
+.sm-pin-acct-bar__text {
+  font-size: 16px;
+  font-weight: 400;
+  color: #fafafa;
+  letter-spacing: 0.3px;
+  font-family: 'Roboto', 'Figtree', sans-serif;
+}
+
+.sm-pin-acct-bar__arrow {
+  flex-shrink: 0;
+}
+
+.sm-pin-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 20px;
+}
+
+.sm-pin-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  font-family: 'Roboto', 'Figtree', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.sm-pin-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sm-pin-digit {
+  width: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sm-pin-digit__val {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0b0b0b;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', 'Figtree', sans-serif;
+}
+
+.sm-pin-digit__line {
+  width: 100%;
+  height: 3px;
+  background: #d2d2d2;
+  border-radius: 2px;
+}
+
+.sm-pin-digit--active .sm-pin-digit__line {
+  background: #1b327f;
+}
+
+.sm-pin-show {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a0a0a0;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Lato', 'Figtree', sans-serif;
+}
+
+.sm-pin-keyboard {
+  margin-top: auto;
+}
+
+/* ── Success Screen ──────────────────────────────────────────── */
+.screen-sm-success {
+  background: linear-gradient(337deg, #33A66B 14.83%, #00813E 84.8%);
+}
+
+.sm-success-wrap {
+  height: calc(100% - 84px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.sm-success-gif {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+}
+
+.sm-success-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ── Transaction Details / Receipt ───────────────────────────── */
+.screen-sm-receipt {
+  display: flex;
+  flex-direction: column;
+  background: #f1f3f5;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.screen-sm-receipt::-webkit-scrollbar {
+  display: none;
+}
+
+/* Green hero section */
+.sm-receipt-hero {
+  background: linear-gradient(180deg, #1a7a4c 0%, #22954f 60%, #2ba55a 100%);
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.sm-receipt-hero__check {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sm-receipt-hero__tick {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.sm-receipt-hero__payee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+}
+
+.sm-receipt-hero__amount {
+  font-size: 48px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: -0.48px;
+  text-align: center;
+}
+
+/* White card overlapping hero */
+.screen-sm-receipt .sm-receipt-card {
+  margin: -24px 16px 0;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 30px;
+  position: relative;
+  z-index: 1;
+  box-shadow: none;
+}
+
+.sm-receipt-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.sm-receipt-info-grid--two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sm-receipt-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sm-receipt-info-item__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #353535;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+.sm-receipt-info-item__value {
+  font-size: 14px;
+  font-weight: 400;
+  color: #0b0b0b;
+  line-height: 1.4;
+}
+
+.sm-receipt-info-item__value--copy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sm-receipt-divider {
+  height: 1px;
+  background: #e3e8ee;
+  margin: 0 0 12px;
+}
+
+.sm-receipt-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0b0b0b;
+  cursor: pointer;
+}
+
+/* Options row */
+.sm-receipt-options {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 24px 16px 16px;
+}
+
+.sm-receipt-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sm-receipt-option__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sm-receipt-option__label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #0b0b0b;
+  opacity: 0.8;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Ad banner */
+.sm-receipt-ad {
+  margin: 0 16px 12px;
+  background: linear-gradient(259deg, #651025 22%, #a6364b 70%);
+  border-radius: 16px;
+  padding: 20px 16px;
+  min-height: 120px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sm-receipt-ad__text {
+  max-width: 55%;
+}
+
+.sm-receipt-ad__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.5;
+}
+
+.sm-receipt-ad__sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.sm-receipt-ad__cta {
+  display: inline-block;
+  margin-top: 10px;
+  background: #ffc93f;
+  color: #472c08;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  line-height: 1.05;
+}
+
+/* Powered by UPI */
+.sm-receipt-powered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  font-size: 10px;
+  color: #5c5c5c;
+}
+
+.sm-receipt-powered strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0b0b0b;
+}
+
+/* Footer buttons */
+.sm-receipt-footer {
+  display: flex;
+  gap: 12px;
+  padding: 4px 16px 12px;
+}
+
+.sm-receipt-btn {
+  flex: 1;
+  height: 56px;
+  border-radius: 100px;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.sm-receipt-btn--light {
+  background: #fff;
+  border: 1px solid #d2d2d2;
+  color: #0b0b0b;
+}
+
+.sm-receipt-btn--primary {
+  color: #fff;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+}
+
+/* =============================================================
+   CUSTOM IN-FRAME COACH MARKS (Send to Mobile)
+   ============================================================= */
+
+/* Dark overlay – full phone shell, catches clicks */
+.smc-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 99998;
+  /* transparent; the spotlight box-shadow provides the dark tint */
+}
+
+/* Spotlight cutout – transparent center, massive dark shadow = overlay */
+.smc-spotlight {
+  position: absolute;
+  z-index: 99999;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+/* Tooltip card – sits inside phone shell */
+.smc-tooltip {
+  position: absolute;
+  z-index: 100000;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.smc-tooltip__title {
+  font-family: 'Figtree', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0b0b0b;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.smc-tooltip__desc {
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.smc-tooltip__btns {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Step indicator dots */
+.smc-tooltip__dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.smc-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4d4d4;
+  transition: all 0.3s ease;
+}
+
+.smc-dot--active {
+  width: 22px;
+  border-radius: 4px;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+}
+
+.smc-tooltip__skip {
+  padding: 10px 0;
+  width: 100px;
+  border: 1px solid #dcdcdc;
+  border-radius: 100px;
+  background: #fff;
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.smc-tooltip__skip:hover {
+  background: #f5f5f5;
+}
+
+.smc-tooltip__next {
+  padding: 10px 0;
+  width: 100px;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.smc-tooltip__next:hover {
+  opacity: 0.9;
+}

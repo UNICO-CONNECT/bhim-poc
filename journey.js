@@ -43,6 +43,13 @@ const S = Object.freeze({
   ENTER_UPI_PIN: "enter_upi_pin",
   PAYMENT_SUCCESS: "payment_success",
   DEBITED_TRANSACTION: "debited_transaction",
+  // Send to Mobile flow
+  SEND_MOBILE_CONTACTS: "send_mobile_contacts",
+  SEND_MOBILE_CHAT: "send_mobile_chat",
+  SEND_MOBILE_REVIEW: "send_mobile_review",
+  SEND_MOBILE_PIN: "send_mobile_pin",
+  SEND_MOBILE_SUCCESS: "send_mobile_success",
+  SEND_MOBILE_RECEIPT: "send_mobile_receipt",
 });
 
 // ─── Globals ─────────────────────────────────────────────────
@@ -50,6 +57,7 @@ let currentState = null;
 let phoneShell = null;
 let activeDriver = null;
 let timers = [];
+let skipHomeTour = false;
 
 // Tooltip guide state (non-linear, per-screen)
 const tooltipGuide = {
@@ -85,7 +93,24 @@ let checkBalancePinMasked = true;
 let scanPayAmount = "";
 let scanPayUpiPin = "";
 let scanPayPinMasked = true;
+// Send to Mobile flow
+let smSelectedContactId = null;
+let smContactSearch = "";
+let smChatAmount = "";
+let smReviewNote = "";
+let smPinInput = "";
 let balanceRevealed = false;
+
+const sendMobileContacts = [
+  { id: "c1", name: "Rohan Rajput", mobile: "9876543210", upi: "rohan.rajput@upi", avatar: "RR", color: "#75c5b1", recent: true },
+  { id: "c2", name: "Aishwarya Subramaniam", mobile: "9043028745", upi: "aishwarya.s@upi", avatar: "AS", color: "#75c5b1", recent: true },
+  { id: "c3", name: "Rakesh Sharma", mobile: "9923012345", upi: "rakesh.sharma@upi", avatar: "RS", color: "#f9e88f", recent: true },
+  { id: "c4", name: "Akriti Gupta", mobile: "9811122233", upi: "akriti.g@upi", avatar: "A", color: "#efb2b5", recent: true },
+  { id: "c5", name: "Analese Sriraman", mobile: "9898989898", upi: "analese.s@upi", avatar: "AS", color: "#75c5b1", recent: true },
+  { id: "c6", name: "Vikram Sharma", mobile: "9765432100", upi: "vikram.sharma@upi", avatar: "VS", color: "#f9e88f", recent: true },
+  { id: "c7", name: "Richa Jain", mobile: "9043028745", upi: "richa.jain@upi", avatar: "RS", color: "#f9e88f", recent: false },
+  { id: "c8", name: "Hemal Thakkar", mobile: "9043028745", upi: "hemal.thakkar@upi", avatar: "HT", color: "#75c5b1", recent: false },
+];
 
 // ─── i18n – Internationalisation helpers ─────────────────────
 let currentLang = "en"; // "en" | "hi"
@@ -276,7 +301,8 @@ function landingHTML() {
       <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
       <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
       <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>3.</span> Check Balance</button>
-      <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>4.</span> Scan and Pay</button>
+      <button class="ob-btn ob-btn--primary" onclick="startSendToMobileFlow()"><span>4.</span> Send to Mobile</button>
+      <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>5.</span> Scan and Pay</button>
     </div>
   </div>`;
 }
@@ -789,7 +815,7 @@ function setUpiPinHTML() {
   return `
   <div class="screen screen-ab-setpin">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
@@ -813,13 +839,13 @@ function confirmUpiPinHTML() {
   return `
   <div class="screen screen-ab-confirmpin">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content">
-      <p class="ab-pin-heading">ENTER OTP</p>
+      <p class="ab-pin-heading">CONFIRM NEW UPI PIN</p>
       <div class="ab-pin-row" id="ab-cpin-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("cpin")}</div>
@@ -832,12 +858,7 @@ function bankSuccessHTML() {
     ${statusBarSVG(false)}
     <div class="ab-success-content">
       <div class="ab-success-badge">
-        <svg viewBox="0 0 80 80" fill="none" width="80" height="80">
-          <path d="M40 8c-4 0-7.5 2-9.5 5l-3.5 5.5c-2 3-5 5-8.5 5.5l-6 1c-6 1-10.5 5.5-11.5 11.5l-1 6c-.5 3.5-2.5 6.5-5.5 8.5L0 55c0 0 0 0 0 0 0 0 0 0 0 0l5.5 3.5c3 2 5 5 5.5 8.5l1 6c1 6 5.5 10.5 11.5 11.5l6 1c3.5.5 6.5 2.5 8.5 5.5L40 96" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" transform="translate(4, -12) scale(0.9)"/>
-          <circle cx="40" cy="40" r="24" fill="rgba(255,255,255,0.25)"/>
-          <circle cx="40" cy="40" r="18" fill="rgba(255,255,255,0.35)"/>
-          <path d="M30 40l6 6 14-14" stroke="#166534" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <img src="assets/paymentDone.gif" alt="Success" width="110" height="80" autoplay />
       </div>
       <p class="ab-success-text">Your Bank has been added successfully!</p>
     </div>
@@ -1461,6 +1482,7 @@ function updateConfirmPinUI() {
 // ─── Main Render ─────────────────────────────────────────────
 function renderScreen(state) {
   clearTimers();
+  dismissSmCoachMark();
   if (activeDriver) {
     activeDriver.destroy();
     activeDriver = null;
@@ -1489,6 +1511,9 @@ function renderScreen(state) {
   // Scan and Pay flow resets
   if (state === S.ENTER_AMOUNT) { scanPayAmount = ""; }
   if (state === S.ENTER_UPI_PIN) { scanPayUpiPin = ""; scanPayPinMasked = true; }
+  // Send to Mobile flow resets
+  if (state === S.SEND_MOBILE_CONTACTS) { smContactSearch = ""; }
+  if (state === S.SEND_MOBILE_PIN) { smPinInput = ""; }
 
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
@@ -1844,6 +1869,313 @@ function debitedTransactionHTML() {
   </div>`;
 }
 
+// ─── Send to Mobile Screen Renderers ─────────────────────────
+function getSmSelectedContact() {
+  return sendMobileContacts.find((c) => c.id === smSelectedContactId) || sendMobileContacts[0];
+}
+
+function getFilteredSendMobileContacts() {
+  const q = smContactSearch.trim().toLowerCase();
+  if (!q) return sendMobileContacts;
+  return sendMobileContacts.filter((c) =>
+    c.name.toLowerCase().includes(q) || c.mobile.includes(q)
+  );
+}
+
+function renderSmAvatar(contact, sizeCls) {
+  const textColor = contact.color === "#f9e88f" || contact.color === "#efb2b5" ? "#000" : "#fff";
+  return `<div class="${sizeCls}" style="background:${contact.color};color:${textColor}"><span>${contact.avatar}</span></div>`;
+}
+
+function sendMobileContactsHTML() {
+  const filtered = getFilteredSendMobileContacts();
+  const recents = sendMobileContacts.filter((c) => c.recent);
+
+  // Build 4-column rows for recents grid
+  const rows = [];
+  for (let i = 0; i < recents.length; i += 4) rows.push(recents.slice(i, i + 4));
+  const recentsGridHTML = rows.map(row =>
+    `<div class="sm-recents-row">${row.map(c =>
+      `<button class="sm-recent-item" onclick="selectSendMobileContact('${c.id}')">
+        ${renderSmAvatar(c, "sm-avatar sm-avatar--md")}
+        <span class="sm-recent-item__name">${c.name.length > 14 ? c.name.slice(0, 14) + '...' : c.name}</span>
+      </button>`
+    ).join("")}${row.length === 4 ? "" : ""}</div>`
+  ).join("");
+
+  // contacts list (non-recents)
+  const contacts = filtered.filter(c => !c.recent);
+  const listHTML = contacts
+    .map(
+      (c) => `<button class="sm-contact-item" onclick="selectSendMobileContact('${c.id}')">
+        ${renderSmAvatar(c, "sm-avatar sm-avatar--lg")}
+        <div class="sm-contact-item__info">
+          <span class="sm-contact-item__name">${c.name}</span>
+          <span class="sm-contact-item__mobile">${c.mobile}</span>
+        </div>
+        <span class="sm-contact-item__menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="#626262"/><circle cx="12" cy="12" r="1.5" fill="#626262"/><circle cx="12" cy="19" r="1.5" fill="#626262"/></svg>
+        </span>
+      </button>`
+    )
+    .join("");
+
+  return `
+  <div class="screen screen-sm-contacts">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Send Money to any UPI App</span></div>
+    <div class="sm-contacts-wrap">
+      <div class="sm-search-row">
+        <div class="sm-search-pill">
+          <svg class="sm-search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M9.167 15.833a6.667 6.667 0 1 0 0-13.333 6.667 6.667 0 0 0 0 13.333ZM17.5 17.5l-3.625-3.625" stroke="#626262" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="sm-search-input" class="sm-search-input" type="text" placeholder="Search by name or mobile number" value="${smContactSearch}" oninput="updateSendMobileSearch(this.value)" />
+        </div>
+      </div>
+      <div class="sm-section">
+        <div class="sm-section__header">
+          <span class="sm-section__title">Recents</span>
+          <span class="sm-section__star">✦</span>
+          <span class="sm-section__line"></span>
+        </div>
+        <div class="sm-recents-grid">${recentsGridHTML}</div>
+      </div>
+      <div class="sm-section sm-section--list">
+        <div class="sm-section__header">
+          <span class="sm-section__title">Contacts</span>
+          <span class="sm-section__star">✦</span>
+          <span class="sm-section__line"></span>
+        </div>
+        <div class="sm-contacts-list">${listHTML || '<p class="sm-empty">No contacts found</p>'}</div>
+      </div>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function sendMobileChatHTML() {
+  const c = getSmSelectedContact();
+  const payEnabled = parseInt(smChatAmount || "0", 10) > 0;
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return `
+  <div class="screen screen-sm-chat">
+    ${statusBarSVG(true)}
+    <div class="sm-chat-header">
+      <span class="ob-back-arrow" onclick="goBack()">←</span>
+      ${renderSmAvatar(c, "sm-avatar sm-avatar--lg")}
+      <div class="sm-chat-header__info">
+        <span class="sm-chat-header__name">${c.name}</span>
+        <span class="sm-chat-header__phone">+91 ${c.mobile}</span>
+      </div>
+    </div>
+    <div class="sm-chat-body">
+      <div class="sm-chat-date-sep">
+        <span class="sm-chat-date-sep__line"></span>
+        <span class="sm-chat-date-sep__star">✦</span>
+        <span class="sm-chat-date-sep__text">${dateStr}</span>
+        <span class="sm-chat-date-sep__star">✦</span>
+        <span class="sm-chat-date-sep__line"></span>
+      </div>
+      <div class="sm-chat-bubble-wrap">
+        <div class="sm-chat-bubble--payment">
+          <p class="sm-chat-bubble__label">Payment to you</p>
+          <p class="sm-chat-bubble__amount">₹2,000</p>
+          <div class="sm-chat-bubble__divider"></div>
+          <div class="sm-chat-bubble__footer">
+            <div class="sm-chat-bubble__status">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#16a34a" fill="#16a34a"/><path d="M5.5 8l2 2 3.5-3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Paid • 3:06 PM</span>
+            </div>
+            <svg class="sm-chat-bubble__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 14l4-4-4-4" stroke="#353535" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sm-chat-footer" id="sm-chat-footer">
+      <div class="sm-chat-footer__input-wrap">
+        <input class="sm-chat-footer__input" type="number" min="1" placeholder="Enter amount" value="${smChatAmount}" oninput="updateSendMobileAmount(this.value)" />
+      </div>
+      <button class="sm-chat-footer__pay${payEnabled ? "" : " sm-chat-footer__pay--disabled"}" onclick="proceedSendMobileReview()">Pay</button>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function sendMobileReviewHTML() {
+  const c = getSmSelectedContact();
+  const amount = parseInt(smChatAmount || "0", 10);
+  const words = amount > 0 ? numberToWords(amount).replace(/\b\w/g, (m) => m.toUpperCase()) + " Rupees Only" : "";
+  return `
+  <div class="screen screen-sm-review">
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="sm-review-body">
+      <div class="sm-review-payee">
+        ${renderSmAvatar(c, "sm-avatar sm-avatar--xl")}
+        <p class="sm-review-payee__name">${c.name}</p>
+        <div class="sm-review-upi-pill">
+          <svg class="sm-review-upi-icon" width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M3.5 0.5L9.5 5.5L6.5 7L9.5 13.5L3.5 8.5L6.5 7L3.5 0.5Z" fill="#097939"/></svg>
+          <span>+91 ${c.mobile}@upi</span>
+        </div>
+      </div>
+      <div class="sm-review-amount-block">
+        <p class="sm-review-amount">₹ ${amount || ""}</p>
+        <p class="sm-review-words">${words}</p>
+      </div>
+      <div class="sm-review-comment-pill">
+        <input class="sm-review-comment-input" type="text" placeholder="Add a comment" value="${smReviewNote}" oninput="smReviewNote=this.value" />
+      </div>
+    </div>
+    <div class="sm-review-bottom-sheet">
+      <div class="sm-review-sheet-title">Select account to pay with</div>
+      <div class="sm-review-sheet-body">
+        <p class="sm-review-bank-heading">Bank account</p>
+        <div class="sm-review-bank-card">
+          <div class="sm-review-bank-card__header">
+            <div class="sm-review-bank-card__info">
+              <div class="sm-review-bank-logo">A</div>
+              <div class="sm-review-bank-detail">
+                <span class="sm-review-bank-detail__name">ABC Banking Ltd</span>
+                <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
+              </div>
+            </div>
+            <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sm-review-bank-card__footer">
+            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
+          </div>
+        </div>
+      </div>
+      <div class="sm-review-cta-wrap">
+        <button class="sm-review-cta-btn" onclick="renderScreen(S.SEND_MOBILE_PIN)">Next</button>
+      </div>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function sendMobilePinHTML() {
+  let boxes = "";
+  for (let i = 0; i < 4; i++) {
+    const v = i < smPinInput.length ? "•" : "";
+    const active = i === smPinInput.length ? " sm-pin-digit--active" : "";
+    boxes += `<div class="sm-pin-digit${active}" id="sm-pin-${i}"><span class="sm-pin-digit__val">${v}</span><div class="sm-pin-digit__line"></div></div>`;
+  }
+  return `
+  <div class="screen screen-sm-pin">
+    ${statusBarSVG(true)}
+    <div class="sm-pin-bank-bar">
+      <span class="sm-pin-bank-bar__name">IDBI Bank Limited</span>
+      <svg class="sm-pin-bank-bar__upi" width="58" height="24" viewBox="0 0 58 24" fill="none"><text x="0" y="18" font-size="12" font-weight="700" fill="#6b7280">UPI</text><text x="20" y="18" font-size="8" fill="#6b7280">UNIFIED PAYMENTS</text><text x="20" y="24" font-size="8" fill="#6b7280">INTERFACE</text></svg>
+    </div>
+    <div class="sm-pin-acct-bar">
+      <span class="sm-pin-acct-bar__text">XXXXXXXXXXXX</span>
+      <svg class="sm-pin-acct-bar__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 8l3 3 3-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="sm-pin-center">
+      <p class="sm-pin-title">ENTER UPI PIN</p>
+      <div class="sm-pin-row" id="sm-pin-row">${boxes}</div>
+      <div class="sm-pin-show">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#a0a0a0" stroke-width="1.2"/><circle cx="8" cy="8" r="2" stroke="#a0a0a0" stroke-width="1.2"/></svg>
+        <span>Show</span>
+      </div>
+    </div>
+    <div class="sm-pin-keyboard">${spNumpadHTML("smpin")}</div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function sendMobileSuccessHTML() {
+  return `
+  <div class="screen screen-sm-success">
+    ${statusBarSVG(false)}
+    <div class="sm-success-wrap" id="sm-success-wrap">
+      <img src="./assets/paymentDone.gif" alt="Payment Successful" class="sm-success-gif" />
+      <p class="sm-success-text" id="sm-success-text">Payment Successful</p>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
+function sendMobileReceiptHTML() {
+  const c = getSmSelectedContact();
+  const amount = parseInt(smChatAmount || "0", 10) || 0;
+  const txId = "SM" + Date.now().toString().slice(-10);
+  const dt = new Date();
+  const dateStr = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
+  const timeStr = dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+  return `
+  <div class="screen screen-sm-receipt">
+    ${statusBarSVG(false)}
+    <div class="sm-receipt-hero">
+      <div class="sm-receipt-hero__check">
+        <img src="./assets/tick.gif" alt="Success" class="sm-receipt-hero__tick" />
+      </div>
+      <div class="sm-receipt-hero__payee">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="#fff" stroke-width="1"/><path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg>
+        <span>Paid to ${c.name}</span>
+      </div>
+      <p class="sm-receipt-hero__amount">₹${amount}</p>
+    </div>
+    <div class="sm-receipt-card" id="sm-receipt-card">
+      <div class="sm-receipt-info-grid">
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Banking Name</span>
+          <span class="sm-receipt-info-item__value">ABC Banking Ltd</span>
+        </div>
+      </div>
+      <div class="sm-receipt-info-grid sm-receipt-info-grid--two">
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Transaction ID</span>
+          <div class="sm-receipt-info-item__value sm-receipt-info-item__value--copy">
+            <span>${txId}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="#626262" stroke-width="1.2"/><path d="M3 11V3.5A.5.5 0 013.5 3H11" stroke="#626262" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Date &amp; Time</span>
+          <span class="sm-receipt-info-item__value">${dateStr}, ${timeStr}</span>
+        </div>
+      </div>
+      <div class="sm-receipt-divider"></div>
+      <div class="sm-receipt-more">
+        <span>More details</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#0b0b0b" stroke-width="1.2"/><path d="M10 7v6M7 13l3 0" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="sm-receipt-options">
+      <div class="sm-receipt-option">
+        <div class="sm-receipt-option__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="sm-receipt-option__label">Split this<br>expense</span>
+      </div>
+      <div class="sm-receipt-option">
+        <div class="sm-receipt-option__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
+        </div>
+        <span class="sm-receipt-option__label">Share<br>screenshot</span>
+      </div>
+    </div>
+    <div class="sm-receipt-ad">
+      <div class="sm-receipt-ad__text">
+        <p class="sm-receipt-ad__title">It's Payday!</p>
+        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
+        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
+      </div>
+    </div>
+    <div class="sm-receipt-powered">
+      <span>POWERED BY</span>
+      <strong>UPI</strong>
+    </div>
+    <div class="sm-receipt-footer">
+      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SEND_MOBILE_CHAT)">Send again</button>
+      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">Home</button>
+    </div>
+    ${homeIndHTML()}
+  </div>`;
+}
+
 // Scan and Pay numpad helper
 function spNumpadHTML(target) {
   const keys = [1,2,3,4,5,6,7,8,9,"del",0,"submit"];
@@ -1933,6 +2265,19 @@ function getScreenHTML(state) {
       return paymentSuccessHTML();
     case S.DEBITED_TRANSACTION:
       return debitedTransactionHTML();
+    // Send to Mobile flow
+    case S.SEND_MOBILE_CONTACTS:
+      return sendMobileContactsHTML();
+    case S.SEND_MOBILE_CHAT:
+      return sendMobileChatHTML();
+    case S.SEND_MOBILE_REVIEW:
+      return sendMobileReviewHTML();
+    case S.SEND_MOBILE_PIN:
+      return sendMobilePinHTML();
+    case S.SEND_MOBILE_SUCCESS:
+      return sendMobileSuccessHTML();
+    case S.SEND_MOBILE_RECEIPT:
+      return sendMobileReceiptHTML();
     default:
       return landingHTML();
   }
@@ -1970,6 +2315,14 @@ function handlePostRender(state) {
       break;
     case S.HOME:
       showCbScreenTooltip(state);
+      showSendMobileTour(state);
+      const sendToMobileBtn = document.getElementById("send-to-mobile");
+      if (sendToMobileBtn) {
+        sendToMobileBtn.style.cursor = "pointer";
+        sendToMobileBtn.onclick = function () {
+          renderScreen(S.SEND_MOBILE_CONTACTS);
+        };
+      }
       break;
     // Add Bank Account flow
     case S.ADD_BANK_SELECT:
@@ -1991,6 +2344,13 @@ function handlePostRender(state) {
       break;
     case S.PAYMENT_SUCCESS:
       wait(() => renderScreen(S.DEBITED_TRANSACTION), 3000);
+      break;
+    // Send to Mobile flow
+    case S.SEND_MOBILE_CHAT:
+    case S.SEND_MOBILE_PIN:
+    case S.SEND_MOBILE_SUCCESS:
+    case S.SEND_MOBILE_RECEIPT:
+      showSendMobileTour(state);
       break;
   }
 }
@@ -2192,6 +2552,22 @@ function goBack() {
     case S.ENTER_UPI_PIN:
       renderScreen(S.SELECT_ACCOUNT_TO_PAY);
       break;
+    // Send to Mobile flow back navigation
+    case S.SEND_MOBILE_CONTACTS:
+      renderScreen(S.HOME);
+      break;
+    case S.SEND_MOBILE_CHAT:
+      renderScreen(S.SEND_MOBILE_CONTACTS);
+      break;
+    case S.SEND_MOBILE_REVIEW:
+      renderScreen(S.SEND_MOBILE_CHAT);
+      break;
+    case S.SEND_MOBILE_PIN:
+      renderScreen(S.SEND_MOBILE_REVIEW);
+      break;
+    case S.SEND_MOBILE_RECEIPT:
+      renderScreen(S.HOME);
+      break;
   }
 }
 
@@ -2227,6 +2603,21 @@ function handleScanPayKey(target, key) {
       if (scanPayUpiPin.length === 4) {
         // auto-submit after short delay
         wait(() => renderScreen(S.PAYMENT_SUCCESS), 400);
+      }
+    }
+  } else if (target === "smpin") {
+    if (key === "DEL") {
+      smPinInput = smPinInput.slice(0, -1);
+      updateSendMobilePinUI();
+    } else if (key === "SUBMIT") {
+      if (smPinInput.length === 4) {
+        renderScreen(S.SEND_MOBILE_SUCCESS);
+      }
+    } else if (smPinInput.length < 4) {
+      smPinInput += key;
+      updateSendMobilePinUI();
+      if (smPinInput.length === 4) {
+        wait(() => renderScreen(S.SEND_MOBILE_SUCCESS), 350);
       }
     }
   }
@@ -2284,6 +2675,47 @@ function toggleScanPayPinMask() {
   updateScanPayPinUI();
   const lbl = document.getElementById("sp-pin-show-label");
   if (lbl) lbl.textContent = scanPayPinMasked ? "Show" : "Hide";
+}
+
+// ─── Send to Mobile – Flow Control & UI Helpers ──────────────
+function updateSendMobileSearch(val) {
+  smContactSearch = val || "";
+  renderScreen(S.SEND_MOBILE_CONTACTS);
+}
+
+function selectSendMobileContact(contactId) {
+  smSelectedContactId = contactId;
+  smChatAmount = "";
+  smReviewNote = "";
+  smPinInput = "";
+  renderScreen(S.SEND_MOBILE_CHAT);
+}
+
+function updateSendMobileAmount(val) {
+  const digits = String(val || "").replace(/\D/g, "");
+  smChatAmount = digits.slice(0, 7);
+  const payBtn = document.querySelector(".sm-chat-footer__pay");
+  if (payBtn) {
+    const enabled = parseInt(smChatAmount || "0", 10) > 0;
+    payBtn.className = enabled ? "sm-chat-footer__pay" : "sm-chat-footer__pay sm-chat-footer__pay--disabled";
+  }
+}
+
+function proceedSendMobileReview() {
+  if (parseInt(smChatAmount || "0", 10) > 0) {
+    renderScreen(S.SEND_MOBILE_REVIEW);
+  }
+}
+
+function updateSendMobilePinUI() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById("sm-pin-" + i);
+    if (!d) continue;
+    const val = i < smPinInput.length ? "•" : "";
+    const valEl = d.querySelector(".sm-pin-digit__val");
+    if (valEl) valEl.textContent = val;
+    d.className = i === smPinInput.length ? "sm-pin-digit sm-pin-digit--active" : "sm-pin-digit";
+  }
 }
 
 // ─── DOM Update Helpers (no re-render, just patch) ───────────
@@ -2466,6 +2898,17 @@ function startScanAndPayFlow() {
   // User will manually click the scanner button on home screen to go to scan_1
 }
 
+function startSendToMobileFlow() {
+  cbTooltipGuide.enabled = false;
+  smTour.enabled = true;
+  smTour.shownForScreen = {};
+  smSelectedContactId = sendMobileContacts[0].id;
+  smChatAmount = "";
+  smReviewNote = "";
+  smPinInput = "";
+  renderScreen(S.HOME);
+}
+
 // ─── Check Balance – Non-Linear Tooltip Guide ─────────────────
 const cbTooltipGuide = {
   enabled: false,       // activated only when user starts CB flow
@@ -2567,6 +3010,117 @@ function openCheckBalancePinScreen() {
   if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
   checkBalancePinMasked = true;
   renderScreen(S.CHECK_BALANCE_PIN);
+}
+
+// ─── Send to Mobile – Guided Tour ─────────────────────────────
+const smTour = {
+  enabled: true,
+  shownForScreen: {},
+};
+
+// ─── Custom In-Frame Coach Marks (Send to Mobile) ───────────
+let smCoachNextAction = null;
+
+function dismissSmCoachMark() {
+  const els = document.querySelectorAll(".smc-overlay, .smc-spotlight, .smc-tooltip");
+  els.forEach(e => e.remove());
+  smCoachNextAction = null;
+}
+
+function smCoachNext() {
+  const action = smCoachNextAction;
+  dismissSmCoachMark();
+  if (action) action();
+}
+
+function showSendMobileTour(state) {
+  if (!smTour.enabled || smTour.shownForScreen[state]) return;
+
+  const SM_TOTAL_STEPS = 5;
+  let step = null;
+  if (state === S.HOME) {
+    step = { element: "#send-to-mobile", title: "Send to Mobile", desc: "Click here to send money.", side: "bottom", padding: 10, radius: 14, idx: 0 };
+  } else if (state === S.SEND_MOBILE_CHAT) {
+    step = { element: "#sm-chat-footer", title: "Enter Amount", desc: "Use this footer to enter the amount and tap Pay.", side: "top", padding: 8, radius: 16, idx: 1 };
+  } else if (state === S.SEND_MOBILE_PIN) {
+    step = { element: "#sm-pin-row", title: "Enter UPI PIN", desc: "Enter your 4-digit UPI PIN and tap the tick button.", side: "bottom", padding: 12, radius: 12, idx: 2 };
+  } else if (state === S.SEND_MOBILE_SUCCESS) {
+    step = { element: "#sm-success-text", title: "Payment Successful", desc: "Success message will appear once transaction is done.", side: "bottom", padding: 20, radius: 16, idx: 3, onNext: function () { renderScreen(S.SEND_MOBILE_RECEIPT); } };
+  } else if (state === S.SEND_MOBILE_RECEIPT) {
+    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { renderScreen(S.HOME); } };
+  }
+
+  if (!step) return;
+  smTour.shownForScreen[state] = true;
+
+  wait(() => {
+    const target = document.querySelector(step.element);
+    if (!target) return;
+
+    // Get positions relative to phone shell
+    const shellRect = phoneShell.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const pad = step.padding;
+
+    const spotTop = targetRect.top - shellRect.top - pad;
+    const spotLeft = targetRect.left - shellRect.left - pad;
+    const spotW = targetRect.width + pad * 2;
+    const spotH = targetRect.height + pad * 2;
+    const spotR = step.radius + pad;
+
+    // 1) Dark overlay covering entire phone shell
+    const overlay = document.createElement("div");
+    overlay.className = "smc-overlay";
+    overlay.onclick = dismissSmCoachMark;
+
+    // 2) Spotlight cutout via box-shadow
+    const spotlight = document.createElement("div");
+    spotlight.className = "smc-spotlight";
+    spotlight.style.cssText =
+      "top:" + spotTop + "px;left:" + spotLeft + "px;" +
+      "width:" + spotW + "px;height:" + spotH + "px;" +
+      "border-radius:" + spotR + "px;";
+
+    // Store onNext action if present
+    smCoachNextAction = step.onNext || null;
+
+    // 3) Tooltip
+    const tooltip = document.createElement("div");
+    tooltip.className = "smc-tooltip";
+    const descHTML = step.desc ? '<p class="smc-tooltip__desc">' + step.desc + "</p>" : "";
+
+    // Step dots
+    let dotsHTML = '<div class="smc-tooltip__dots">';
+    for (let d = 0; d < SM_TOTAL_STEPS; d++) {
+      dotsHTML += '<span class="smc-dot' + (d === step.idx ? " smc-dot--active" : "") + '"></span>';
+    }
+    dotsHTML += "</div>";
+
+    tooltip.innerHTML =
+      '<p class="smc-tooltip__title">' + step.title + "</p>" +
+      descHTML +
+      dotsHTML +
+      '<div class="smc-tooltip__btns">' +
+        '<button class="smc-tooltip__skip" onclick="dismissSmCoachMark()">Skip</button>' +
+        '<button class="smc-tooltip__next" onclick="smCoachNext()">Next</button>' +
+      "</div>";
+
+    // Position tooltip above or below the spotlight
+    if (step.side === "bottom") {
+      tooltip.style.top = (spotTop + spotH + 14) + "px";
+    } else {
+      // 'top' — position above the spotlight
+      tooltip.style.top = (spotTop - 14) + "px";
+      tooltip.style.transform = "translateY(-100%)";
+    }
+    tooltip.style.left = "16px";
+    tooltip.style.right = "16px";
+
+    // Inject into phone shell (not body!)
+    phoneShell.appendChild(overlay);
+    phoneShell.appendChild(spotlight);
+    phoneShell.appendChild(tooltip);
+  }, 300);
 }
 
 
