@@ -5310,6 +5310,7 @@ body.driver-active .ab-select-content {
 }
 
 /* Green hero section */
+
 .sm-receipt-hero {
   background: linear-gradient(180deg, #1a7a4c 0%, #22954f 60%, #2ba55a 100%);
   padding: 24px 16px 48px;
@@ -5317,6 +5318,7 @@ body.driver-active .ab-select-content {
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  height: 200px;
   position: relative;
 }
 
@@ -5343,6 +5345,14 @@ body.driver-active .ab-select-content {
   color: #fff;
 }
 
+.curve-path {
+  position: absolute;
+  bottom: -33px;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+}
+
 .sm-receipt-hero__amount {
   font-size: 48px;
   font-weight: 400;
@@ -5354,10 +5364,10 @@ body.driver-active .ab-select-content {
 
 /* White card overlapping hero */
 .screen-sm-receipt .sm-receipt-card {
-  margin: -24px 16px 0;
+  margin: 0px 16px 0;
   background: #fff;
-  border-radius: 16px;
-  padding: 24px 30px;
+  border-radius: 0 0 16px 16px;
+  padding: 40px 30px 24px 30px;
   position: relative;
   z-index: 1;
   box-shadow: none;

@@ -2114,6 +2114,7 @@ function sendMobileReceiptHTML() {
       <div class="sm-receipt-hero__payee">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="#fff" stroke-width="1"/><path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg>
         <span>Paid to ${c.name}</span>
+        <img src="./assets/curve.png" alt="Success" class="curve-path" />
       </div>
       <p class="sm-receipt-hero__amount">₹${amount}</p>
     </div>
