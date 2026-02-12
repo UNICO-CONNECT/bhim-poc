@@ -1585,7 +1585,7 @@ function scan1HTML() {
       </div>
     </div>
     <div class="scan1-footer">
-      <img src="assets/upi.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
+      <img src="assets/upi_dark_sm.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -1647,7 +1647,7 @@ function scan2HTML() {
       <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_AMOUNT)">Proceed</button>
     </div>
     <div class="scan1-footer">
-      <img src="assets/upi.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
+      <img src="assets/upi_dark_sm.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -1772,7 +1772,7 @@ function enterUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="sp-bank-header">
       <div class="sp-bank-header__logo">
-        <img src="assets/images/bank_logo.png" alt="" class="sp-bank-header__logo-img"/>
+        <img src="assets/bank_logo.png" alt="" class="sp-bank-header__logo-img"/>
       </div>
     </div>
     <div class="sp-bank-name-bar">
@@ -1784,7 +1784,9 @@ function enterUpiPinHTML() {
       <div class="ab-pin-row" id="sp-pin-row">${boxes}</div>
       <p class="ab-pin-show" onclick="toggleScanPayPinMask()" role="button" tabindex="0"><span class="ab-pin-show__circle"></span> <span id="sp-pin-show-label">${showLabel}</span></p>
     </div>
-    <div class="sp-powered-by">Powered by</div>
+    <div class="sp-powered-by">
+      <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
+    </div>
     <div class="ab-pin-keyboard">${spNumpadHTML("upipin")}</div>
     ${homeIndHTML()}
   </div>`;
@@ -1875,8 +1877,7 @@ function debitedTransactionHTML() {
       </div>
     </div>
     <div class="sm-receipt-powered">
-      <span>POWERED BY</span>
-      <strong>UPI</strong>
+      <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
     <div class="sm-receipt-footer">
       <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SCAN_1)">Send again</button>
@@ -2183,8 +2184,7 @@ function sendMobileReceiptHTML() {
       </div>
     </div>
     <div class="sm-receipt-powered">
-      <span>POWERED BY</span>
-      <strong>UPI</strong>
+        <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
     <div class="sm-receipt-footer">
       <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SEND_MOBILE_CHAT)">Send again</button>
