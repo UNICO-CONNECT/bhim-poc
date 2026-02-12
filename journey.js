@@ -93,6 +93,8 @@ let checkBalancePinMasked = true;
 let scanPayAmount = "";
 let scanPayUpiPin = "";
 let scanPayPinMasked = true;
+let scanPayPayee = { name: "Rohan Rajput", upi: "rohan.rajput@upi" };
+let scanPayNote = "";
 // Send to Mobile flow
 let smSelectedContactId = null;
 let smContactSearch = "";
@@ -1538,7 +1540,7 @@ function scan1HTML() {
       <div class="scan1-stepper__line"></div>
     </div>
     <div class="scan1-camera">
-      <img src="assets/images/scan_qr_bg.png" alt="" class="scan1-camera__bg"/>
+      <div class="scan1-camera__bg" style="background:#000"></div>
       <div class="scan1-camera__area">
         <div class="scan1-corner scan1-corner--tl"></div>
         <div class="scan1-corner scan1-corner--tr"></div>
@@ -1565,7 +1567,7 @@ function scan1HTML() {
       </div>
       <div class="scan1-recent__list">
         <div class="scan1-recent__item">
-          <div class="scan1-avatar scan1-avatar--green"><img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/></div>
+          <div class="scan1-avatar scan1-avatar--green"><img src="assets/sample_avatar_real_image.png" alt="" class="scan1-avatar__img" style="object-fit:cover"/></div>
           <span class="scan1-recent__name">Hari Hara Subrama...</span>
         </div>
         <div class="scan1-recent__item">
@@ -1597,8 +1599,15 @@ function scan2HTML() {
     <div class="ob-page-header">
       <span class="ob-back-arrow" onclick="goBack()" style="cursor:pointer">←</span>
     </div>
+    <div class="scan1-stepper">
+      <div class="scan1-stepper__line"></div>
+      <span class="scan1-stepper__star">✦</span>
+      <span class="scan1-stepper__text">SEND MONEY TO ANY UPI APP</span>
+      <span class="scan1-stepper__star">✦</span>
+      <div class="scan1-stepper__line"></div>
+    </div>
     <div class="scan2-camera">
-      <img src="assets/images/scan_qr_bg.png" alt="" class="scan2-camera__bg"/>
+      <img src="assets/sample_qr_code.png" alt="" class="scan2-camera__bg"/>
       <div class="scan2-camera__area">
         <div class="scan1-corner scan1-corner--tl"></div>
         <div class="scan1-corner scan1-corner--tr"></div>
@@ -1606,21 +1615,7 @@ function scan2HTML() {
         <div class="scan1-corner scan1-corner--br"></div>
       </div>
     </div>
-    <div class="scan2-result">
-      <div class="scan2-result__card">
-        <div class="scan2-result__avatar scan1-avatar--green">
-          <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
-        </div>
-        <div class="scan2-result__info">
-          <span class="scan2-result__name">Rohan Rajput</span>
-          <span class="scan2-result__upi">rohan.rajput@upi</span>
-        </div>
-      </div>
-      <button class="scan2-proceed-btn" onclick="renderScreen(S.ENTER_AMOUNT)">
-        <span>Proceed</span>
-        <svg viewBox="0 0 12 12" fill="none" width="14" height="14"><path d="M4 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
+    <div class="scan2-result" style="display:none"></div>
     <div class="scan1-recent">
       <div class="scan1-recent__header">
         <div class="scan1-stepper__line"></div>
@@ -1631,7 +1626,7 @@ function scan2HTML() {
       </div>
       <div class="scan1-recent__list">
         <div class="scan1-recent__item">
-          <div class="scan1-avatar scan1-avatar--green"><img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/></div>
+          <div class="scan1-avatar scan1-avatar--green"><img src="assets/sample_avatar_real_image.png" alt="" class="scan1-avatar__img" style="object-fit:cover"/></div>
           <span class="scan1-recent__name">Hari Hara Subrama...</span>
         </div>
         <div class="scan1-recent__item">
@@ -1647,6 +1642,9 @@ function scan2HTML() {
           <span class="scan1-recent__name">Akriti Bansal</span>
         </div>
       </div>
+    </div>
+    <div style="padding: 0 16px 16px;">
+      <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_AMOUNT)">Proceed</button>
     </div>
     <div class="scan1-footer">
       <img src="assets/upi.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
@@ -1670,13 +1668,13 @@ function enterAmountHTML() {
       <div class="ea-user-section">
         <div class="ea-user-info">
           <div class="ea-user-avatar scan1-avatar--green" style="width:56px;height:56px;border-radius:300px;overflow:hidden;position:relative">
-            <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
+            <img src="assets/sample_avatar_real_image.png" alt="" class="scan1-avatar__img"/>
           </div>
-          <p class="ea-user-name">Paying Rohan Rajput</p>
+          <p class="ea-user-name">Paying ${scanPayPayee.name}</p>
         </div>
         <div class="ea-upi-pill">
           <img src="assets/upi.svg" alt="" class="ea-upi-pill__icon" width="24" height="12"/>
-          <span class="ea-upi-pill__text">9999999999@upi</span>
+          <span class="ea-upi-pill__text">${scanPayPayee.upi}</span>
         </div>
       </div>
       <div class="ea-amount-area">
@@ -1688,8 +1686,10 @@ function enterAmountHTML() {
         <p class="ea-amount-words" id="ea-amount-words"></p>
       </div>
       <div class="ea-note-pill">
-        <span class="ea-note-pill__text">Note</span>
-        <span class="ea-note-pill__cursor">|</span>
+        <input type="text" class="ea-note-input" placeholder="Note" value="${scanPayNote}" 
+               oninput="scanPayNote=this.value" 
+               onfocus="document.getElementById('ea-amount-cursor').style.visibility='hidden'" 
+               onblur="document.getElementById('ea-amount-cursor').style.visibility='visible'" />
       </div>
     </div>
     <div class="ea-bottom">
@@ -1703,39 +1703,56 @@ function enterAmountHTML() {
 }
 
 function selectAccountHTML() {
+  const c = scanPayPayee;
+  const amount = parseInt(scanPayAmount || "0", 10);
+  const words = amount > 0 ? numberToWords(amount).replace(/\b\w/g, (m) => m.toUpperCase()) + " Rupees Only" : "";
+
   return `
-  <div class="screen screen-select-account">
+  <div class="screen screen-sm-review">
     ${statusBarSVG(true)}
-    <div class="ob-page-header">
-      <span class="ob-back-arrow" onclick="goBack()">←</span>
-      <span class="ob-page-title">Select account to pay with</span>
-    </div>
-    <div class="sa-payee-bar">
-      <div class="sa-payee-row">
-        <div class="sa-payee__avatar scan1-avatar--green">
-          <img src="assets/images/avatar_boy.png" alt="" class="scan1-avatar__img"/>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="sm-review-body">
+      <div class="sm-review-payee">
+        <div class="scan1-avatar scan1-avatar--green" style="width:64px;height:64px;margin:0 auto 12px;border-radius:50%;overflow:hidden">
+          <img src="assets/sample_avatar_real_image.png" alt="" class="scan1-avatar__img" style="width:100%;height:100%;object-fit:cover"/>
         </div>
-        <div class="sa-payee__info">
-          <span class="sa-payee__name">Paying Rohan Rajput</span>
-          <span class="sa-payee__amount">₹${scanPayAmount}</span>
+        <p class="sm-review-payee__name">${c.name}</p>
+        <div class="sm-review-upi-pill">
+          <svg class="sm-review-upi-icon" width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M3.5 0.5L9.5 5.5L6.5 7L9.5 13.5L3.5 8.5L6.5 7L3.5 0.5Z" fill="#097939"/></svg>
+          <span>${c.upi}</span>
         </div>
       </div>
+      <div class="sm-review-amount-block">
+        <p class="sm-review-amount">₹ ${amount || ""}</p>
+        <p class="sm-review-words">${words}</p>
+      </div>
+      <div class="sm-review-comment-pill">
+        <input class="sm-review-comment-input" type="text" placeholder="Add a comment" value="${scanPayNote}" oninput="scanPayNote=this.value" />
+      </div>
     </div>
-    <div class="sa-section">
-      <p class="sa-section__title">Payment Options</p>
-      <div class="sa-account-card sa-account-card--selected">
-        <div class="sa-account__left">
-          <div class="sa-account__icon">${bankIconSVG()}</div>
-          <div class="sa-account__details">
-            <span class="sa-account__name">Bharatiya Payments Bank</span>
-            <span class="sa-account__num">***2453 Bank account</span>
+    <div class="sm-review-bottom-sheet">
+      <div class="sm-review-sheet-title">Select account to pay with</div>
+      <div class="sm-review-sheet-body">
+        <p class="sm-review-bank-heading">Bank account</p>
+        <div class="sm-review-bank-card">
+          <div class="sm-review-bank-card__header">
+            <div class="sm-review-bank-card__info">
+              <div class="sm-review-bank-logo">${bankIconSVG()}</div>
+              <div class="sm-review-bank-detail">
+                <span class="sm-review-bank-detail__name">Bharatiya Payments Bank</span>
+                <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
+              </div>
+            </div>
+            <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sm-review-bank-card__footer">
+            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
           </div>
         </div>
-        <div class="ab-radio ab-radio--checked"></div>
       </div>
-    </div>
-    <div class="sa-bottom">
-      <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_UPI_PIN)">Next</button>
+      <div class="sm-review-cta-wrap">
+        <button class="sm-review-cta-btn" onclick="renderScreen(S.ENTER_UPI_PIN)">Pay</button>
+      </div>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -1775,95 +1792,95 @@ function enterUpiPinHTML() {
 
 function paymentSuccessHTML() {
   return `
-  <div class="screen screen-payment-success">
-    <div class="ps-green-bg"></div>
+  <div class="screen screen-ab-success">
     ${statusBarSVG(false)}
-    <div class="ps-content">
-      <div class="ps-animation">
-        <img src="assets/images/success_tick.png" alt="Success" class="ps-animation__img"/>
+    <div class="ab-success-content">
+      <div class="ab-success-badge">
+        <img src="assets/paymentDone.gif" alt="Success" width="110" height="80" autoplay />
       </div>
-      <p class="ps-text">Payment Successful</p>
+      <p class="ab-success-text">Payment successfull</p>
     </div>
-    ${homeIndHTML()}
   </div>`;
 }
 
+
+// ─── Debited Transaction (Scan & Pay Receipt) ────────────────
 function debitedTransactionHTML() {
+  const c = scanPayPayee;
+  const amount = parseInt(scanPayAmount || "0", 10) || 0;
+  const txId = "T" + Date.now().toString().slice(-10);
+  const dt = new Date();
+  const dateStr = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
+  const timeStr = dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+
   return `
-  <div class="screen screen-debited-tx">
+  <div class="screen screen-sm-receipt">
     ${statusBarSVG(false)}
-    <div class="dt-hero">
-      <div class="dt-hero__gradient"></div>
-      <div class="dt-hero__animation">
-        <img src="assets/images/success_tick.png" alt="" class="dt-hero__tick"/>
+    <div class="sm-receipt-hero">
+      <div class="sm-receipt-hero__check">
+        <img src="./assets/tick.gif" alt="Success" class="sm-receipt-hero__tick" />
       </div>
-      <div class="dt-hero__payee">
-        <svg viewBox="0 0 14 14" fill="none" width="12" height="12"><circle cx="7" cy="5" r="3" stroke="white" stroke-width="1"/><path d="M2 13c0-2.5 2.2-4.5 5-4.5S12 10.5 12 13" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
-        <span>Paid to Rohan Rajput</span>
+      <div class="sm-receipt-hero__payee">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="#fff" stroke-width="1"/><path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg>
+        <span>Paid to ${c.name}</span>
+        <img src="./assets/curve.png" alt="Success" class="curve-path" />
       </div>
-      <p class="dt-hero__amount">₹${scanPayAmount}</p>
+      <p class="sm-receipt-hero__amount">₹${amount}</p>
     </div>
-    <div class="dt-receipt">
-      <div class="dt-receipt__card">
-        <div class="dt-receipt__row">
-          <div class="dt-receipt__col">
-            <span class="dt-receipt__label">Banking Name</span>
-            <span class="dt-receipt__value">Samartha Bhandhar Gruha Udyog</span>
+    <div class="sm-receipt-card" id="sm-receipt-card">
+      <div class="sm-receipt-info-grid">
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Banking Name</span>
+          <span class="sm-receipt-info-item__value">Samartha Bhandhar Gruha Udyog</span>
+        </div>
+      </div>
+      <div class="sm-receipt-info-grid sm-receipt-info-grid--two">
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Transaction ID</span>
+          <div class="sm-receipt-info-item__value sm-receipt-info-item__value--copy">
+            <span>${txId}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="#626262" stroke-width="1.2"/><path d="M3 11V3.5A.5.5 0 013.5 3H11" stroke="#626262" stroke-width="1.2" stroke-linecap="round"/></svg>
           </div>
         </div>
-        <div class="dt-receipt__row">
-          <div class="dt-receipt__col">
-            <span class="dt-receipt__label">Transaction ID</span>
-            <div class="dt-receipt__value-row">
-              <span class="dt-receipt__value">928376484322</span>
-              <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><rect x="5" y="5" width="8" height="8" rx="1" stroke="#0b0b0b" stroke-width="1"/><path d="M3 3v8h8" stroke="#0b0b0b" stroke-width="1"/></svg>
-            </div>
-          </div>
-          <div class="dt-receipt__col">
-            <span class="dt-receipt__label">Date & Time</span>
-            <span class="dt-receipt__value">9th July 24, 5:00pm</span>
-          </div>
+        <div class="sm-receipt-info-item">
+          <span class="sm-receipt-info-item__label">Date &amp; Time</span>
+          <span class="sm-receipt-info-item__value">${dateStr}, ${timeStr}</span>
         </div>
-        <div class="dt-receipt__divider"></div>
-        <button class="dt-receipt__more">
-          <span>More details</span>
-          <svg viewBox="0 0 12 12" fill="none" width="14" height="14"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+      </div>
+      <div class="sm-receipt-divider"></div>
+      <div class="sm-receipt-more">
+        <span>More details</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#0b0b0b" stroke-width="1.2"/><path d="M10 7v6M7 13l3 0" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round"/></svg>
       </div>
     </div>
-    <div class="dt-options">
-      <div class="dt-option">
-        <div class="dt-option__circle">
-          <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 2v20M2 12h20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/><path d="M5 5l14 14M19 5L5 19" stroke="#0b0b0b" stroke-width="1" stroke-linecap="round" opacity="0.3"/></svg>
+    <div class="sm-receipt-options">
+      <div class="sm-receipt-option">
+        <div class="sm-receipt-option__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <span class="dt-option__label">Split this<br>expense</span>
+        <span class="sm-receipt-option__label">Split this<br>expense</span>
       </div>
-      <div class="dt-option">
-        <div class="dt-option__circle">
-          <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="sm-receipt-option">
+        <div class="sm-receipt-option__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
         </div>
-        <span class="dt-option__label">Share<br>screenshot</span>
+        <span class="sm-receipt-option__label">Share<br>screenshot</span>
       </div>
     </div>
-    <div class="dt-ad">
-      <div class="dt-ad__bg"></div>
-      <div class="dt-ad__content">
-        <div class="dt-ad__text">
-          <span class="dt-ad__title">It's Payday!</span>
-          <span class="dt-ad__subtitle">Treat yourself with a nice meal with <strong>Swiggy</strong></span>
-        </div>
-        <div class="dt-ad__cta">Claim your <strong>20% off</strong></div>
+    <div class="sm-receipt-ad">
+      <div class="sm-receipt-ad__text">
+        <p class="sm-receipt-ad__title">It's Payday!</p>
+        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
+        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
       </div>
-      <div class="dt-ad__image">🍜</div>
     </div>
-    <div class="dt-footer">
-      <div class="dt-footer__buttons">
-        <button class="dt-footer__btn dt-footer__btn--outline" onclick="renderScreen(S.SCAN_1)">Send again</button>
-        <button class="dt-footer__btn dt-footer__btn--primary" onclick="renderScreen(S.HOME)">Home</button>
-      </div>
-      <div class="dt-footer__powered">
-        <img src="assets/upi.svg" alt="BHIM UPI" width="70" height="20"/>
-      </div>
+    <div class="sm-receipt-powered">
+      <span>POWERED BY</span>
+      <strong>UPI</strong>
+    </div>
+    <div class="sm-receipt-footer">
+      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SCAN_1)">Send again</button>
+      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">Home</button>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -2633,8 +2650,7 @@ function onEnterAmountNext() {
 function updateAmountUI() {
   const valEl = document.getElementById("ea-amount-value");
   if (valEl) valEl.textContent = scanPayAmount;
-  const cursorEl = document.getElementById("ea-amount-cursor");
-  if (cursorEl) cursorEl.style.display = scanPayAmount.length > 0 ? "none" : "";
+  /* cursor logic removed to keep it visible */
   const btn = document.getElementById("ea-next-btn");
   if (btn) {
     const hasAmount = scanPayAmount.length > 0 && parseInt(scanPayAmount) > 0;
