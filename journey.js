@@ -1485,6 +1485,7 @@ function updateConfirmPinUI() {
 function renderScreen(state) {
   clearTimers();
   dismissSmCoachMark();
+  dismissSpCoachMark();
   if (activeDriver) {
     activeDriver.destroy();
     activeDriver = null;
@@ -1796,11 +1797,11 @@ function paymentSuccessHTML() {
   return `
   <div class="screen screen-ab-success">
     ${statusBarSVG(false)}
-    <div class="ab-success-content">
+    <div class="ab-success-content" id="sp-success-content">
       <div class="ab-success-badge">
         <img src="assets/paymentDone.gif" alt="Success" width="110" height="80" autoplay />
       </div>
-      <p class="ab-success-text">Payment successfull</p>
+      <p class="ab-success-text" id="sp-success-text">Payment Successful</p>
     </div>
   </div>`;
 }
@@ -2334,6 +2335,7 @@ function handlePostRender(state) {
     case S.HOME:
       showCbScreenTooltip(state);
       showSendMobileTour(state);
+      showScanPayTour(state);
       const sendToMobileBtn = document.getElementById("send-to-mobile");
       if (sendToMobileBtn) {
         sendToMobileBtn.style.cursor = "pointer";
@@ -2356,12 +2358,22 @@ function handlePostRender(state) {
     case S.ADD_BANK_SUCCESS:
       wait(() => renderScreen(S.ADD_BANK_PAYMENT_METHODS), 2500);
       break;
-    // Scan and Pay flow – timed transitions
+    // Scan and Pay flow – timed transitions + tooltips
     case S.SCAN_1:
       wait(() => renderScreen(S.SCAN_2), 3500);
       break;
+    case S.SCAN_2:
+    case S.ENTER_AMOUNT:
+    case S.SELECT_ACCOUNT_TO_PAY:
+    case S.ENTER_UPI_PIN:
+      showScanPayTour(state);
+      break;
     case S.PAYMENT_SUCCESS:
+      showScanPayTour(state);
       wait(() => renderScreen(S.DEBITED_TRANSACTION), 3000);
+      break;
+    case S.DEBITED_TRANSACTION:
+      showScanPayTour(state);
       break;
     // Send to Mobile flow
     case S.SEND_MOBILE_CHAT:
@@ -2910,13 +2922,21 @@ function goHome() {
 }
 function startScanAndPayFlow() {
   skipHomeTour = true;
+  // Disable other tours so only Scan & Pay tooltip shows
+  smTour.enabled = false;
+  cbTooltipGuide.enabled = false;
+  // Enable Scan & Pay tour
+  spTour.enabled = true;
+  spTour.shownForScreen = {};
   renderScreen(S.HOME);
-  clearTimers();
-  // User will manually click the scanner button on home screen to go to scan_1
+  // Note: Don't call clearTimers() here — it would cancel the tooltip's wait() timer
 }
 
 function startSendToMobileFlow() {
+  // Disable other tours so only Send to Mobile tooltip shows
   cbTooltipGuide.enabled = false;
+  spTour.enabled = false;
+  // Enable Send to Mobile tour
   smTour.enabled = true;
   smTour.shownForScreen = {};
   smSelectedContactId = sendMobileContacts[0].id;
@@ -3018,6 +3038,10 @@ function cbTourNext() {
 }
 
 function startCheckBalanceFlow() {
+  // Disable other tours so only Check Balance tooltip shows
+  smTour.enabled = false;
+  spTour.enabled = false;
+  // Enable Check Balance tour
   cbTooltipGuide.enabled = true;
   cbTooltipGuide.shownForScreen = {};
   renderScreen(S.HOME);
@@ -3142,6 +3166,181 @@ function showSendMobileTour(state) {
 
 
 
+
+// ─── Scan and Pay – Guided Tour (Custom In-Frame Coach Marks) ──
+const spTour = {
+  enabled: false,       // activated only when user starts Scan & Pay from landing
+  shownForScreen: {},   // per-screen tracking
+};
+let spCoachNextAction = null;
+
+function dismissSpCoachMark() {
+  const els = document.querySelectorAll(".spc-overlay, .spc-spotlight, .spc-tooltip");
+  els.forEach(e => e.remove());
+  spCoachNextAction = null;
+}
+
+function spCoachNext() {
+  const action = spCoachNextAction;
+  dismissSpCoachMark();
+  if (action) action();
+}
+
+function spCoachSkip() {
+  spTour.enabled = false;
+  dismissSpCoachMark();
+}
+
+function showScanPayTour(state) {
+  if (!spTour.enabled || spTour.shownForScreen[state]) return;
+
+  const SP_TOTAL_STEPS = 7;
+  let step = null;
+
+  if (state === S.HOME) {
+    step = {
+      element: "#scanner-btn",
+      title: "Click on Scanner Icon to start the journey of Scan & pay",
+      desc: "",
+      side: "top",
+      padding: 14,
+      radius: 50,
+      idx: 0,
+    };
+  } else if (state === S.SCAN_2) {
+    step = {
+      element: ".scan2-camera",
+      title: "Select any QR to send money",
+      desc: "",
+      side: "bottom",
+      padding: 10,
+      radius: 14,
+      idx: 1,
+    };
+  } else if (state === S.ENTER_AMOUNT) {
+    step = {
+      element: ".ea-body",
+      title: "Enter amount and details, purpose of sending money",
+      desc: "",
+      side: "bottom",
+      padding: 10,
+      radius: 16,
+      idx: 2,
+    };
+  } else if (state === S.SELECT_ACCOUNT_TO_PAY) {
+    step = {
+      element: ".sm-review-bottom-sheet",
+      title: "Bank selection from bottom sheet dropdown if User has multiple bank added in UPI App",
+      desc: "",
+      side: "top",
+      padding: 8,
+      radius: 20,
+      idx: 3,
+    };
+  } else if (state === S.ENTER_UPI_PIN) {
+    step = {
+      element: "#sp-pin-content",
+      title: "Enter UPI PIN to send money",
+      desc: "",
+      side: "bottom",
+      padding: 10,
+      radius: 16,
+      idx: 4,
+    };
+  } else if (state === S.PAYMENT_SUCCESS) {
+    step = {
+      element: "#sp-success-text",
+      title: "Success message will appear once transaction is done",
+      desc: "",
+      side: "bottom",
+      padding: 20,
+      radius: 16,
+      idx: 5,
+    };
+  } else if (state === S.DEBITED_TRANSACTION) {
+    step = {
+      element: "#sm-receipt-card",
+      title: "Detailed Transaction History Screen",
+      desc: "",
+      side: "bottom",
+      padding: 10,
+      radius: 20,
+      idx: 6,
+    };
+  }
+
+  if (!step) return;
+  spTour.shownForScreen[state] = true;
+
+  wait(() => {
+    const target = document.querySelector(step.element);
+    if (!target) return;
+
+    // Get positions relative to phone shell
+    const shellRect = phoneShell.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const pad = step.padding;
+
+    const spotTop = targetRect.top - shellRect.top - pad;
+    const spotLeft = targetRect.left - shellRect.left - pad;
+    const spotW = targetRect.width + pad * 2;
+    const spotH = targetRect.height + pad * 2;
+    const spotR = step.radius + pad;
+
+    // 1) Dark overlay covering entire phone shell
+    const overlay = document.createElement("div");
+    overlay.className = "spc-overlay";
+    overlay.onclick = dismissSpCoachMark;
+
+    // 2) Spotlight cutout via box-shadow
+    const spotlight = document.createElement("div");
+    spotlight.className = "spc-spotlight";
+    spotlight.style.cssText =
+      "top:" + spotTop + "px;left:" + spotLeft + "px;" +
+      "width:" + spotW + "px;height:" + spotH + "px;" +
+      "border-radius:" + spotR + "px;";
+
+    // Store onNext action if present
+    spCoachNextAction = step.onNext || null;
+
+    // 3) Tooltip
+    const tooltip = document.createElement("div");
+    tooltip.className = "spc-tooltip";
+    const descHTML = step.desc ? '<p class="spc-tooltip__desc">' + step.desc + "</p>" : "";
+
+    // Step dots
+    let dotsHTML = '<div class="spc-tooltip__dots">';
+    for (let d = 0; d < SP_TOTAL_STEPS; d++) {
+      dotsHTML += '<span class="spc-dot' + (d === step.idx ? " spc-dot--active" : "") + '"></span>';
+    }
+    dotsHTML += "</div>";
+
+    tooltip.innerHTML =
+      '<p class="spc-tooltip__title">' + step.title + "</p>" +
+      descHTML +
+      dotsHTML +
+      '<div class="spc-tooltip__btns">' +
+        '<button class="spc-tooltip__skip" onclick="spCoachSkip()">Skip</button>' +
+        '<button class="spc-tooltip__next" onclick="spCoachNext()">Next</button>' +
+      "</div>";
+
+    // Position tooltip above or below the spotlight
+    if (step.side === "bottom") {
+      tooltip.style.top = (spotTop + spotH + 14) + "px";
+    } else {
+      // 'top' — position above the spotlight
+      tooltip.style.top = (spotTop - 14) + "px";
+      tooltip.style.transform = "translateY(-100%)";
+    }
+    tooltip.style.left = "16px";
+    tooltip.style.right = "16px";
+
+    // Inject into phone shell (not body!)
+    phoneShell.appendChild(overlay);
+    phoneShell.appendChild(spotlight);
+    phoneShell.appendChild(tooltip);
+  }, 400);
+}
 
 // ─── Init ────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
