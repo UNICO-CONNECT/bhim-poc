@@ -5666,3 +5666,109 @@ body.driver-active .ab-select-content {
 .smc-tooltip__next:hover {
   opacity: 0.9;
 }
+
+/* ─── Scan & Pay Coach Marks (spc-*) ──────────────────────── */
+
+.spc-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 99998;
+}
+
+.spc-spotlight {
+  position: absolute;
+  z-index: 99999;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+.spc-tooltip {
+  position: absolute;
+  z-index: 100000;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.spc-tooltip__title {
+  font-family: 'Figtree', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0b0b0b;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.spc-tooltip__desc {
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.spc-tooltip__btns {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.spc-tooltip__dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.spc-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4d4d4;
+  transition: all 0.3s ease;
+}
+
+.spc-dot--active {
+  width: 22px;
+  border-radius: 4px;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+}
+
+.spc-tooltip__skip {
+  padding: 10px 0;
+  width: 100px;
+  border: 1px solid #dcdcdc;
+  border-radius: 100px;
+  background: #fff;
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.spc-tooltip__skip:hover {
+  background: #f5f5f5;
+}
+
+.spc-tooltip__next {
+  padding: 10px 0;
+  width: 100px;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.spc-tooltip__next:hover {
+  opacity: 0.9;
+}
