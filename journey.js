@@ -447,13 +447,13 @@ function simSelectHTML(mode) {
       <h1 class="sim-title">Lets Verify your number</h1>
       <p class="sim-subtitle">Choose a SIM card registered to your bank account</p>
       <div class="sim-cards"${cardsId}>
-        <div class="sim-card"${isPreview ? '' : ' id="sim-card-airtel" onclick="selectSim(\'airtel\')"'}>
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim1" onclick="selectSim(\'sim1\')"'}>
           <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><path d="M12 34 C16 18, 32 18, 36 34" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Airtel</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-airtel"'}></div></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Sim1</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
         </div>
-        <div class="sim-card"${isPreview ? '' : ' id="sim-card-jio" onclick="selectSim(\'jio\')"'}>
-          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Jio</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Jio</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-jio"'}></div></div>
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim2" onclick="selectSim(\'sim2\')"'}>
+          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Sim2</text></svg></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Sim2</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
         </div>
       </div>
       <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.</span></div>
@@ -2085,7 +2085,7 @@ function sendMobilePinHTML() {
     ${statusBarSVG(true)}
     <div class="sm-pin-bank-bar">
       <span class="sm-pin-bank-bar__name">Indira Bank Limited</span>
-      <svg class="sm-pin-bank-bar__upi" width="58" height="24" viewBox="0 0 58 24" fill="none"><text x="0" y="18" font-size="12" font-weight="700" fill="#6b7280">UPI</text><text x="20" y="18" font-size="8" fill="#6b7280">UNIFIED PAYMENTS</text><text x="20" y="24" font-size="8" fill="#6b7280">INTERFACE</text></svg>
+      <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" class="sm-pin-bank-bar__upi" width="46" height="20" />
     </div>
     <div class="sm-pin-acct-bar">
       <span class="sm-pin-acct-bar__text">XXXXXXXXXXXX</span>
@@ -2472,7 +2472,7 @@ function selectLanguage(idx) {
 
 function selectSim(sim) {
   selectedSim = sim;
-  ["airtel", "jio"].forEach((s) => {
+  ["sim1", "sim2"].forEach((s) => {
     const card = document.getElementById("sim-card-" + s);
     const radio = document.getElementById("sim-radio-" + s);
     if (s === sim) {
