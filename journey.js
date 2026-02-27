@@ -762,7 +762,7 @@ function debitCardHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-debit-content" id="ab-tour-debit-content">
@@ -795,7 +795,7 @@ function bankOtpHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-otp-content">
@@ -819,7 +819,7 @@ function setUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-setpin-content">
@@ -843,7 +843,7 @@ function confirmUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
+      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content">
@@ -883,7 +883,7 @@ function paymentMethodsHTML() {
         <div class="ab-methods-bank">
           <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
-            <span class="ab-account-name">Pragati Bank</span>
+            <span class="ab-account-name">Pinnacle Bank</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
         </div>
@@ -2084,7 +2084,7 @@ function sendMobilePinHTML() {
   <div class="screen screen-sm-pin">
     ${statusBarSVG(true)}
     <div class="sm-pin-bank-bar">
-      <span class="sm-pin-bank-bar__name">IDBI Bank Limited</span>
+      <span class="sm-pin-bank-bar__name">Indira Bank Limited</span>
       <svg class="sm-pin-bank-bar__upi" width="58" height="24" viewBox="0 0 58 24" fill="none"><text x="0" y="18" font-size="12" font-weight="700" fill="#6b7280">UPI</text><text x="20" y="18" font-size="8" fill="#6b7280">UNIFIED PAYMENTS</text><text x="20" y="24" font-size="8" fill="#6b7280">INTERFACE</text></svg>
     </div>
     <div class="sm-pin-acct-bar">
