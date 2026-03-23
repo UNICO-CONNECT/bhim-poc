@@ -410,7 +410,7 @@ function getStartedHTML(mode) {
       <div class="gs-lang-section"${langSectionId}>
         <p class="gs-lang-title">Choose your preferred language</p>
         <div class="gs-lang-cards">
-          ${[["हिंदी", "नमस्ते"], ["मराठी", "नमस्कार"]].map(([name, greet], i) => {
+          ${[["हिंदी", "नमस्ते"], ["English", "Hello"]].map(([name, greet], i) => {
             const sel = selectedLang === i;
             const cardCls = "gs-lang-card" + (sel ? " gs-lang-card--selected" : "");
             const radioCls = "gs-lang-card__radio" + (sel ? " gs-lang-card__radio--checked" : "");
@@ -421,8 +421,8 @@ function getStartedHTML(mode) {
       </div>
     </div>
     <div class="ob-bottom-bar">
-      <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>view all languages</button></div>
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary"${isPreview ? '' : ' onclick="proceedFromGetStarted()"'}>Proceed</button></div>
+      <!-- <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary">view all languages</button></div> -->
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview ? '' : ''}>Proceed</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -2546,18 +2546,14 @@ function handleKeyPress(key) {
 }
 
 function proceedFromGetStarted() {
-  // If Hindi (0) or Marathi (1) is selected, skip the lang select page
-  if (selectedLang !== null) {
-    currentLang = selectedLang === 0 ? "hi" : "en";
-    renderScreen(S.MOBILE_ENTRY);
-  } else {
-    renderScreen(S.LANG_SELECT);
-  }
+  if (selectedLang === null) return;
+  currentLang = selectedLang === 0 ? "hi" : "en";
+  renderScreen(S.MOBILE_ENTRY);
 }
 
 function selectGetStartedLanguage(idx) {
   selectedLang = idx;
-  // idx 0 = Hindi, idx 1 = Marathi (defaults to English)
+  // idx 0 = Hindi, idx 1 = English
   currentLang = idx === 0 ? "hi" : "en";
   [0, 1].forEach((i) => {
     const card = document.getElementById("gs-lang-card-" + i);
@@ -2572,6 +2568,12 @@ function selectGetStartedLanguage(idx) {
       }
     }
   });
+  // Enable Proceed button
+  const btn = document.getElementById("gs-proceed-btn");
+  if (btn) {
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = proceedFromGetStarted;
+  }
 }
 
 function selectLanguage(idx) {
@@ -2648,7 +2650,7 @@ function goBack() {
       renderScreen(S.GET_STARTED);
       break;
     case S.MOBILE_ENTRY:
-      renderScreen(S.LANG_SELECT);
+      renderScreen(S.GET_STARTED);
       break;
     case S.OTP_ENTRY:
       renderScreen(S.MOBILE_ENTRY);
