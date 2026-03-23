@@ -21,6 +21,7 @@ const S = Object.freeze({
   LOADING_SPLASH: "loading_splash",
   HOME: "home",
   // Add Bank Account flow
+  ADD_BANK_CHOOSE_BANK: "add_bank_choose_bank",
   ADD_BANK_SELECT: "add_bank_select",
   ADD_BANK_METHOD_SELECT: "add_bank_method_select",
   ADD_BANK_DEBIT_CARD: "add_bank_debit_card",
@@ -58,6 +59,7 @@ let phoneShell = null;
 let activeDriver = null;
 let timers = [];
 let skipHomeTour = false;
+let bankLinked = true; // false only during onboarding→add bank flow
 
 // Tooltip guide state (non-linear, per-screen)
 const tooltipGuide = {
@@ -143,6 +145,44 @@ const i18n = {
     "home.history":           "History",
     // Tooltip
     "home.welcome_tooltip":   "Welcome to UPI Pay",
+    // Onboarding – Mobile Entry
+    "mob.title":              "Enter Your Mobile Number",
+    "mob.subtitle":           "Please enter the mobile number linked to your bank account to continue using the UPI app.",
+    "mob.proceed":            "Proceed",
+    // Onboarding – OTP Entry
+    "otp.title":              "We are fetching your OTP sent on your number",
+    "otp.change":             "Change →",
+    "otp.timer":              "Auto reading OTP 1:00",
+    "otp.proceed":            "Proceed",
+    // Onboarding – SIM Select
+    "sim.title":              "Lets Verify your number",
+    "sim.subtitle":           "Choose a SIM card registered to your bank account",
+    "sim.info":               "By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.",
+    "sim.confirm":            "Confirm SIM",
+    // Onboarding – Verify
+    "verify.title":           "Verifying Your Number",
+    "verify.step1":           "Verify Mobile Number",
+    "verify.step2":           "SMS sent from your mobile",
+    "verify.step3":           "Verification completed",
+    // Onboarding – Security Select
+    "sec.title":              "Choose Your Security Method",
+    "sec.subtitle":           "Select a method to securely login to your UPI app",
+    "sec.device.name":        "Use your device lock",
+    "sec.device.desc":        "Use your existing pattern, PIN, Face ID, or Fingerprint to unlock",
+    "sec.device.footer":      "Works offline",
+    "sec.passcode.name":      "Create a 4 digit UPI passcode",
+    "sec.passcode.desc":      "UPI App Passcode is the code you set to open and access the UPI application. This is different from the UPI PIN. UPI PIN is used for transactions and will only be asked while completing a transaction",
+    "sec.passcode.footer":    "Works online",
+    "sec.next":               "Next",
+    // Onboarding – Passcode Entry
+    "pass.title":             "Register New Passcode",
+    "pass.subtitle":          "Enter & confirm a new passcode below",
+    "pass.enter":             "Enter Passcode",
+    "pass.reenter":           "Re-Enter Passcode",
+    "pass.show":              "Show",
+    "pass.proceed":           "Proceed",
+    // Onboarding – Loading
+    "loading.text":           "Loading...",
   },
   hi: {
     "home.payments_title":    "भुगतान और ट्रांसफ़र",
@@ -164,6 +204,44 @@ const i18n = {
     "home.offers":            "ऑफ़र",
     "home.history":           "हिस्ट्री",
     "home.welcome_tooltip":   "यूपीआई पे में आपका स्वागत है",
+    // Onboarding – Mobile Entry
+    "mob.title":              "अपना मोबाइल नंबर दर्ज करें",
+    "mob.subtitle":           "UPI ऐप का उपयोग जारी रखने के लिए कृपया अपने बैंक खाते से जुड़ा मोबाइल नंबर दर्ज करें।",
+    "mob.proceed":            "आगे बढ़ें",
+    // Onboarding – OTP Entry
+    "otp.title":              "हम आपके नंबर पर भेजा गया OTP प्राप्त कर रहे हैं",
+    "otp.change":             "बदलें →",
+    "otp.timer":              "OTP स्वतः पढ़ रहा है 1:00",
+    "otp.proceed":            "आगे बढ़ें",
+    // Onboarding – SIM Select
+    "sim.title":              "अपना नंबर सत्यापित करें",
+    "sim.subtitle":           "अपने बैंक खाते से जुड़ा SIM कार्ड चुनें",
+    "sim.info":               "SIM चुनकर मैं नियम और शर्तों से सहमत हूँ। सामान्य कैरियर शुल्क लागू हो सकते हैं।",
+    "sim.confirm":            "SIM की पुष्टि करें",
+    // Onboarding – Verify
+    "verify.title":           "आपका नंबर सत्यापित हो रहा है",
+    "verify.step1":           "मोबाइल नंबर सत्यापित करें",
+    "verify.step2":           "आपके मोबाइल से SMS भेजा गया",
+    "verify.step3":           "सत्यापन पूरा हुआ",
+    // Onboarding – Security Select
+    "sec.title":              "अपनी सुरक्षा विधि चुनें",
+    "sec.subtitle":           "अपने UPI ऐप में सुरक्षित लॉगिन के लिए एक विधि चुनें",
+    "sec.device.name":        "अपना डिवाइस लॉक उपयोग करें",
+    "sec.device.desc":        "अनलॉक करने के लिए अपने मौजूदा पैटर्न, PIN, Face ID, या फ़िंगरप्रिंट का उपयोग करें",
+    "sec.device.footer":      "ऑफ़लाइन काम करता है",
+    "sec.passcode.name":      "4 अंकों का UPI पासकोड बनाएं",
+    "sec.passcode.desc":      "UPI ऐप पासकोड वह कोड है जो आप UPI एप्लिकेशन खोलने और एक्सेस करने के लिए सेट करते हैं। यह UPI PIN से अलग है। UPI PIN लेनदेन के लिए उपयोग किया जाता है और केवल लेनदेन पूरा करते समय पूछा जाएगा",
+    "sec.passcode.footer":    "ऑनलाइन काम करता है",
+    "sec.next":               "आगे बढ़ें",
+    // Onboarding – Passcode Entry
+    "pass.title":             "नया पासकोड दर्ज करें",
+    "pass.subtitle":          "नीचे एक नया पासकोड दर्ज करें और पुष्टि करें",
+    "pass.enter":             "पासकोड दर्ज करें",
+    "pass.reenter":           "पासकोड पुनः दर्ज करें",
+    "pass.show":              "दिखाएं",
+    "pass.proceed":           "आगे बढ़ें",
+    // Onboarding – Loading
+    "loading.text":           "लोड हो रहा है...",
   },
 };
 
@@ -185,13 +263,12 @@ function wait(fn, ms) {
 // ─── SVG Helpers ─────────────────────────────────────────────
 function statusBarSVG(dark) {
   const c = dark ? "#080a0b" : "#ffffff";
+  const iconFile = dark ? "stat_group_black.svg" : "stat_group_white.svg";
   return `
   <div class="ob-status-bar ob-status-bar--${dark ? "dark" : "light"}">
     <span class="ob-status-bar__time" style="color:${c}">9:41</span>
     <div class="ob-status-bar__icons">
-      <svg viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx=".5" fill="${c}"/><rect x="5" y="5" width="3" height="7" rx=".5" fill="${c}"/><rect x="10" y="2" width="3" height="10" rx=".5" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx=".5" fill="${c}"/></svg>
-      <svg viewBox="0 0 16 12" fill="none"><path d="M8 11.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="${c}"/><path d="M4.5 7.5C5.5 6.2 6.7 5.5 8 5.5s2.5.7 3.5 2" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/><path d="M2 5c1.8-2 3.7-3 6-3s4.2 1 6 3" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/></svg>
-      <svg viewBox="0 0 28 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="2" stroke="${c}" stroke-opacity=".35"/><rect x="2" y="2" width="20" height="9" rx="1" fill="${c}"/><path d="M25 4.5v4a2 2 0 000-4z" fill="${c}" fill-opacity=".4"/></svg>
+      <img src="assets/iOS/${iconFile}" width="78" height="13" alt="" />
     </div>
   </div>`;
 }
@@ -332,7 +409,7 @@ function getStartedHTML(mode) {
       <div class="gs-lang-section"${langSectionId}>
         <p class="gs-lang-title">Choose your preferred language</p>
         <div class="gs-lang-cards">
-          ${[["हिंदी", "नमस्ते"], ["मराठी", "नमस्कार"]].map(([name, greet], i) => {
+          ${[["हिंदी", "नमस्ते"], ["English", "Hello"]].map(([name, greet], i) => {
             const sel = selectedLang === i;
             const cardCls = "gs-lang-card" + (sel ? " gs-lang-card--selected" : "");
             const radioCls = "gs-lang-card__radio" + (sel ? " gs-lang-card__radio--checked" : "");
@@ -343,8 +420,8 @@ function getStartedHTML(mode) {
       </div>
     </div>
     <div class="ob-bottom-bar">
-      <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>view all languages</button></div>
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>Proceed</button></div>
+      <!-- <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary">view all languages</button></div> -->
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview ? '' : ''}>Proceed</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -399,10 +476,10 @@ function mobileEntryHTML(mode) {
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="mob-content">
-      <h1 class="mob-title">Enter Your Mobile Number</h1>
-      <p class="mob-subtitle">Please enter the mobile number linked to your bank account to continue using the UPI app.</p>
+      <h1 class="mob-title">${t("mob.title")}</h1>
+      <p class="mob-subtitle">${t("mob.subtitle")}</p>
       <div class="mob-input-wrap"${wrapId}><div class="mob-flag">${indianFlagSVG()}</div><svg class="mob-dropdown" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#999" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mob-code">+91</span><div class="mob-divider"></div><span class="mob-number"${inputId}>${phoneDisplay}</span></div>
-      <div class="mob-btn-area"><button class="ob-btn ${btnClass}"${btnId}>Proceed</button></div>
+      <div class="mob-btn-area"><button class="ob-btn ${btnClass}"${btnId}>${t("mob.proceed")}</button></div>
     </div>${kb}${homeIndHTML()}
   </div>`;
 }
@@ -426,11 +503,11 @@ function otpEntryHTML(mode) {
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="otp-content">
-      <h1 class="otp-title">We are fetching your OTP sent on your number</h1>
-      <div class="otp-number-row"><span class="otp-phone">+91 ${phone}</span><span class="otp-change">Change →</span></div>
+      <h1 class="otp-title">${t("otp.title")}</h1>
+      <div class="otp-number-row"><span class="otp-phone">+91 ${phone}</span><span class="otp-change">${t("otp.change")}</span></div>
       <div class="otp-boxes" id="otp-boxes">${boxes}</div>
-      <p class="otp-timer">Auto reading OTP 1:00</p>
-      <div class="otp-btn-area"><button class="ob-btn ob-btn--disabled"${btnId}>Proceed</button></div>
+      <p class="otp-timer">${t("otp.timer")}</p>
+      <div class="otp-btn-area"><button class="ob-btn ob-btn--disabled"${btnId}>${t("otp.proceed")}</button></div>
     </div>${kb}${homeIndHTML()}
   </div>`;
 }
@@ -444,29 +521,29 @@ function simSelectHTML(mode) {
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="sim-content">
-      <h1 class="sim-title">Lets Verify your number</h1>
-      <p class="sim-subtitle">Choose a SIM card registered to your bank account</p>
+      <h1 class="sim-title">${t("sim.title")}</h1>
+      <p class="sim-subtitle">${t("sim.subtitle")}</p>
       <div class="sim-cards"${cardsId}>
-        <div class="sim-card"${isPreview ? '' : ' id="sim-card-airtel" onclick="selectSim(\'airtel\')"'}>
-          <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><path d="M12 34 C16 18, 32 18, 36 34" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Airtel</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-airtel"'}></div></div>
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim1" onclick="selectSim(\'sim1\')"'}>
+          <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 1</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
         </div>
-        <div class="sim-card"${isPreview ? '' : ' id="sim-card-jio" onclick="selectSim(\'jio\')"'}>
-          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Jio</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Jio</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-jio"'}></div></div>
+        <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim2" onclick="selectSim(\'sim2\')"'}>
+          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 2</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
         </div>
       </div>
-      <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.</span></div>
+      <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">${t("sim.info")}</span></div>
     </div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled"${isPreview ? '' : ' id="sim-confirm-btn"'}>Confirm SIM</button></div>${homeIndHTML()}</div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled"${isPreview ? '' : ' id="sim-confirm-btn"'}>${t("sim.confirm")}</button></div>${homeIndHTML()}</div>
   </div>`;
 }
 
 function verifyHTML(step) {
   const steps = [
-    { text: "Verify Mobile Number", active: step >= 1 },
-    { text: "SMS sent from your mobile", active: step >= 2 },
-    { text: "Verification completed", active: step >= 3 },
+    { text: t("verify.step1"), active: step >= 1 },
+    { text: t("verify.step2"), active: step >= 2 },
+    { text: t("verify.step3"), active: step >= 3 },
   ];
   let sh = "";
   steps.forEach((s, i) => {
@@ -479,7 +556,7 @@ function verifyHTML(step) {
   });
   return `
   <div class="screen screen-verify screen--no-anim">${statusBarSVG(true)}<div class="verify-overlay"></div>
-    <div class="verify-sheet"><h2 class="verify-sheet__title">Verifying Your Number</h2><div class="verify-steps" id="verify-steps">${sh}</div></div>${homeIndHTML()}
+    <div class="verify-sheet"><h2 class="verify-sheet__title">${t("verify.title")}</h2><div class="verify-steps" id="verify-steps">${sh}</div></div>${homeIndHTML()}
   </div>`;
 }
 
@@ -490,8 +567,8 @@ function securitySelectHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="sec-content">
-      <h1 class="sec-title">Choose Your Security Method</h1>
-      <p class="sec-subtitle">Select a method to securely login to your UPI app</p>
+      <h1 class="sec-title">${t("sec.title")}</h1>
+      <p class="sec-subtitle">${t("sec.subtitle")}</p>
       <div class="sec-options">
         <!-- Device Lock Card -->
         <div class="sec-option" id="sec-opt-device" onclick="selectSecurity('device')">
@@ -505,15 +582,15 @@ function securitySelectHTML() {
               <div class="lang-radio" id="sec-radio-device"></div>
             </div>
             <div class="sec-card__body">
-              <h3 class="sec-card__name">Use your device lock</h3>
-              <p class="sec-card__desc">Use your existing pattern, PIN, Face ID, or Fingerprint to unlock</p>
+              <h3 class="sec-card__name">${t("sec.device.name")}</h3>
+              <p class="sec-card__desc">${t("sec.device.desc")}</p>
             </div>
           </div>
           <div class="sec-footer sec-footer--blue">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M1.16325 0.873142C0.857801 1.01755 0.729785 1.36814 0.873065 1.66795C0.955601 1.84068 22.1797 23.0611 22.3432 23.1345C22.5604 23.2318 22.859 23.1729 23.0198 23.001C23.1796 22.8301 23.2276 22.5534 23.1338 22.344C23.0956 22.2587 21.7995 20.9499 16.9854 16.1351C12.9867 12.1356 10.8975 10.03 10.9204 10.0219C10.9396 10.0152 11.1208 9.99847 11.3232 9.98481C12.6296 9.89654 13.897 10.0587 15.1552 10.475C16.6196 10.9595 17.8299 11.6843 18.9547 12.7504C19.1047 12.8925 19.2616 13.0274 19.3033 13.0501C19.4069 13.1063 19.7341 13.1073 19.8352 13.0517C20.1193 12.8954 20.2443 12.5461 20.118 12.2613C20.047 12.1013 19.5111 11.5906 18.9592 11.1573C17.6368 10.119 16.0526 9.37421 14.3992 9.01358C13.0019 8.70878 11.5273 8.67732 10.0604 8.92097L9.81345 8.96198L8.57836 7.72706C7.89904 7.04784 7.34325 6.48578 7.34325 6.47805C7.34325 6.46308 7.75941 6.33077 8.1809 6.21173C9.001 5.9801 9.97051 5.81078 10.9192 5.73353C11.3676 5.69702 12.6307 5.69702 13.0792 5.73353C15.2621 5.91117 17.218 6.51247 19.1392 7.59653C20.1262 8.1534 21.0044 8.81333 21.9898 9.73853C22.2856 10.0162 22.3964 10.08 22.5832 10.08C22.9052 10.08 23.1836 9.80203 23.183 9.48125C23.1826 9.26057 23.1123 9.14772 22.7702 8.81918C20.3615 6.50585 17.2251 5.01194 13.9312 4.60913C13.2294 4.52328 12.8376 4.50146 11.9992 4.50146C10.9388 4.50146 10.2233 4.56069 9.28636 4.72608C8.37038 4.88777 7.20283 5.20757 6.5291 5.48131L6.38932 5.53812L4.0883 3.2346C2.23859 1.3829 1.76371 0.919846 1.66725 0.873742C1.50662 0.797014 1.32477 0.796798 1.16325 0.873142ZM3.22307 7.27531C3.0791 7.30049 3.02027 7.3361 2.64859 7.62324C1.73332 8.33033 0.968345 9.02121 0.871769 9.22795C0.650897 9.7008 1.10707 10.2101 1.60372 10.0451C1.69943 10.0133 1.78216 9.95215 1.97627 9.76963C2.31602 9.45017 2.69846 9.12158 3.08894 8.81359C3.72477 8.31206 3.77805 8.26711 3.83243 8.18633C4.0108 7.92122 3.93352 7.55407 3.65894 7.36217C3.54875 7.28515 3.37029 7.24961 3.22307 7.27531ZM6.30347 10.3293C5.84742 10.4992 4.12814 11.8522 3.92263 12.2029C3.84832 12.3296 3.82274 12.5224 3.86126 12.6649C3.92755 12.9102 4.1817 13.1042 4.43599 13.1036C4.63859 13.1032 4.75391 13.0337 5.13914 12.6801C5.64417 12.2165 6.18503 11.7951 6.61554 11.5298C6.90635 11.3507 6.95334 11.3088 7.02251 11.1674C7.21288 10.7783 6.95994 10.3363 6.52898 10.3049C6.4485 10.299 6.3587 10.3087 6.30347 10.3293ZM9.66055 13.408C9.57398 13.4326 9.1294 13.6479 8.94962 13.7523C8.31076 14.1231 7.55985 14.7388 7.43702 14.9926C7.33442 15.2045 7.37327 15.4788 7.5305 15.6528C7.69538 15.8353 7.91018 15.8979 8.14123 15.8307C8.24947 15.7993 8.31436 15.7553 8.48687 15.5967C8.96286 15.1589 9.33664 14.8991 9.85168 14.6478C10.2242 14.4661 10.3404 14.3695 10.4013 14.1908C10.4981 13.9067 10.3995 13.635 10.1394 13.4691C10.0644 13.4213 10.0071 13.4065 9.87542 13.4014C9.78292 13.3977 9.68622 13.4007 9.66055 13.408ZM11.6632 17.3308C10.9741 17.4096 10.2585 17.8203 9.82804 18.3839C8.91844 19.575 9.13943 21.2856 10.3209 22.1986C11.5533 23.1511 13.3212 22.896 14.2201 21.636C15.12 20.3744 14.7978 18.6187 13.5112 17.7739C12.9415 17.3998 12.3338 17.2541 11.6632 17.3308ZM11.8312 18.53C11.6243 18.5496 11.4942 18.5878 11.2983 18.6864C11.1078 18.7824 10.8403 19.0251 10.712 19.2185C10.5236 19.5023 10.433 19.9165 10.4854 20.2542C10.5419 20.6187 10.6706 20.8702 10.9365 21.1358C11.5216 21.7204 12.4768 21.7204 13.062 21.1358C13.3249 20.8732 13.4542 20.6231 13.5119 20.2655C13.5663 19.9287 13.4743 19.5013 13.2865 19.2185C13.2373 19.1444 13.1218 19.0128 13.0299 18.926C12.7029 18.6176 12.3031 18.4855 11.8312 18.53Z" fill="white"/>
 </svg>
-            <span>Works offline</span>
+            <span>${t("sec.device.footer")}</span>
           </div>
         </div>
         <!-- Passcode Card -->
@@ -528,21 +605,21 @@ function securitySelectHTML() {
               <div class="lang-radio" id="sec-radio-passcode"></div>
             </div>
             <div class="sec-card__body">
-              <h3 class="sec-card__name">Create a 4 digit UPI passcode</h3>
-              <p class="sec-card__desc">UPI App Passcode is the code you set to open and access the UPI application. This is different from the UPI PIN. UPI PIN is used for transactions and will only be asked while completing a transaction</p>
+              <h3 class="sec-card__name">${t("sec.passcode.name")}</h3>
+              <p class="sec-card__desc">${t("sec.passcode.desc")}</p>
             </div>
           </div>
           <div class="sec-footer sec-footer--green">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M11.4127 2.87019C9.80469 2.9516 8.54178 3.17933 7.14074 3.64052C5.42068 4.20673 3.84134 5.04805 2.42474 6.15279C1.73884 6.68768 0.957879 7.41389 0.873351 7.59541C0.679479 8.01173 1.00672 8.48312 1.46099 8.44193C1.53798 8.43495 1.63634 8.41095 1.67961 8.38856C1.72286 8.36619 1.9163 8.20009 2.1095 8.01944C3.23889 6.96327 4.26285 6.24411 5.55674 5.59827C7.28536 4.73547 9.04295 4.24952 10.9687 4.10194C11.7168 4.04461 12.9132 4.07271 13.6927 4.16593C16.4877 4.5001 19.1894 5.67711 21.2887 7.47514C21.4273 7.59385 21.6988 7.83877 21.892 8.01944C22.0852 8.20009 22.2786 8.36619 22.3219 8.38856C22.3651 8.41095 22.4635 8.43495 22.5405 8.44193C22.9947 8.48312 23.322 8.01173 23.1281 7.59541C23.0436 7.41389 22.2626 6.68768 21.5767 6.15279C19.1905 4.29188 16.312 3.16649 13.2967 2.91562C12.8827 2.88116 11.7401 2.85361 11.4127 2.87019ZM11.1127 7.16458C9.42899 7.30251 7.83009 7.80111 6.36393 8.64541C5.56151 9.10748 4.81077 9.67832 4.12658 10.3466C3.95783 10.5115 3.91266 10.5714 3.87758 10.6773C3.73653 11.1026 4.05254 11.502 4.50153 11.466C4.69463 11.4505 4.76351 11.4077 5.08192 11.1056C5.99087 10.2431 6.91456 9.63526 8.05768 9.14729C10.2842 8.19685 12.7647 8.07824 15.071 8.81199C16.5339 9.2774 17.8522 10.0653 18.9906 11.1544C19.2578 11.4102 19.368 11.4707 19.5675 11.4715C19.8028 11.4723 19.9876 11.3635 20.0992 11.1585C20.1755 11.0183 20.1907 10.8254 20.1379 10.668C20.0627 10.4441 19.1816 9.65588 18.4191 9.13037C16.2749 7.65262 13.6794 6.95429 11.1127 7.16458ZM11.6287 11.3181C10.9164 11.3888 10.4895 11.4795 9.92474 11.6806C9.47747 11.8398 8.96169 12.0965 8.59274 12.3434C8.09267 12.6782 7.51518 13.1922 7.42818 13.38C7.36525 13.5159 7.36835 13.7576 7.43466 13.8856C7.54955 14.1073 7.79634 14.2491 8.02624 14.2253C8.20454 14.2069 8.28153 14.1611 8.54795 13.9146C9.23015 13.2836 9.96484 12.8829 10.8469 12.6608C11.593 12.473 12.5044 12.473 13.2506 12.6608C14.142 12.8853 14.9061 13.306 15.5887 13.9483C15.8392 14.184 15.9056 14.218 16.1167 14.2191C16.306 14.2201 16.4108 14.1798 16.5352 14.0582C16.7025 13.8946 16.759 13.6765 16.6931 13.4497C16.6575 13.3273 16.6264 13.2847 16.4327 13.0933C15.4919 12.1637 14.2454 11.5555 12.8887 11.3641C12.6253 11.3269 11.8316 11.298 11.6287 11.3181ZM11.7205 15.6975C10.4823 15.8174 9.46041 16.8091 9.29034 18.0557C9.17303 18.9157 9.49768 19.8228 10.1335 20.4115C11.4637 21.643 13.604 21.2723 14.429 19.6675C14.7208 19.0999 14.8089 18.4056 14.6651 17.808C14.5012 17.1267 14.0809 16.5161 13.5202 16.1446C13.1446 15.8957 12.7052 15.7405 12.2505 15.6963C11.9876 15.6708 11.9969 15.6708 11.7205 15.6975ZM11.6167 16.9338C11.3498 17.0039 11.139 17.13 10.9204 17.3502C10.6352 17.6375 10.5054 17.9173 10.4753 18.3094C10.418 19.055 10.9396 19.7502 11.6767 19.9109C12.4629 20.0823 13.2676 19.5934 13.4791 18.816C13.5364 18.6052 13.5364 18.2066 13.479 18.0134C13.3221 17.4846 12.8923 17.0642 12.3737 16.9323C12.1937 16.8866 11.7935 16.8874 11.6167 16.9338Z" fill="white"/>
 </svg>
-            <span>Works online</span>
+            <span>${t("sec.passcode.footer")}</span>
           </div>
         </div>
       </div>
     </div>
     <div class="ob-bottom-bar">
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled" id="sec-next-btn">Next</button></div>
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--disabled" id="sec-next-btn">${t("sec.next")}</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -560,18 +637,18 @@ function passcodeEntryHTML() {
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
     <div class="ob-page-header">${backArrowHTML()}</div>
     <div class="pass-content">
-      <h1 class="pass-title">Register New Passcode</h1>
-      <p class="pass-subtitle">Enter & confirm a new passcode below</p>
-      <div class="pass-section"><p class="pass-label">Enter Passcode</p><div class="pass-boxes">${eBoxes}</div></div>
-      <div class="pass-section"><p class="pass-label">Re-Enter Passcode</p><div class="pass-boxes">${cBoxes}</div></div>
-      <p class="pass-show">Show</p>
-      <div class="pass-btn-area"><button class="ob-btn ob-btn--disabled" id="pass-confirm-btn">Proceed</button></div>
+      <h1 class="pass-title">${t("pass.title")}</h1>
+      <p class="pass-subtitle">${t("pass.subtitle")}</p>
+      <div class="pass-section"><p class="pass-label">${t("pass.enter")}</p><div class="pass-boxes">${eBoxes}</div></div>
+      <div class="pass-section"><p class="pass-label">${t("pass.reenter")}</p><div class="pass-boxes">${cBoxes}</div></div>
+      <p class="pass-show">${t("pass.show")}</p>
+      <div class="pass-btn-area"><button class="ob-btn ob-btn--disabled" id="pass-confirm-btn">${t("pass.proceed")}</button></div>
     </div>${interactiveKBHTML()}${homeIndHTML()}
   </div>`;
 }
 
 function loadingSplashHTML() {
-  return `<div class="screen screen-loading-splash"><div class="ob-tricolor"></div>${statusBarSVG(true)}<div class="loading-content">${upiLogoDarkSVG(140, 58, "upi_dark_lg.svg")}<p class="loading-text">Loading...</p></div></div>`;
+  return `<div class="screen screen-loading-splash"><div class="ob-tricolor"></div>${statusBarSVG(true)}<div class="loading-content">${upiLogoDarkSVG(140, 58, "upi_dark_lg.svg")}<p class="loading-text">${t("loading.text")}</p></div></div>`;
 }
 
 // ─── Check Balance: Enter UPI PIN screen ─────────────────────
@@ -590,7 +667,7 @@ function checkBalancePinHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBackFromCheckBalancePin()">←</span><span class="ob-page-title">Enter UPI</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">Bharatiya Payments Bank</span>
-      <span class="ab-bank-bar__num">XXXXXXXX***2453</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="cb-pin-content">
       <p class="ab-pin-heading">ENTER UPI PIN</p>
@@ -604,24 +681,37 @@ function checkBalancePinHTML() {
 
 // ─── Home Screen HTML (Check balance UI from Figma) ──────────
 function homeScreenHTML() {
-  const bannerText = "Beat the heat with Swiggy 50%";
   const upiId = "***2776@upi";
-  const bankCardLeft = `
-    <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
-    <div class="bank-card__details">
-      <span class="bank-card__name">Bharatiya Payments Bank</span>
-      <span class="bank-card__account">***2453 Bank account</span>
-    </div>
-    <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const bankCardRight = balanceRevealed
-    ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
-    : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
-  const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
-  const bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  let bankCardHTML;
+  if (bankLinked) {
+    const bankCardLeft = `
+      <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
+      <div class="bank-card__details">
+        <span class="bank-card__name">${selectedBankName()}</span>
+        <span class="bank-card__account">***2453 Bank account</span>
+      </div>
+      <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const bankCardRight = balanceRevealed
+      ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
+      : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
+    bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  } else {
+    bankCardHTML = `<div class="bank-card bank-card--add" id="bank-card" onclick="startAddBankFlow()">
+      <div class="bank-card__info">
+        <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
+        <div class="bank-card__details">
+          <span class="bank-card__name">Add Bank Account</span>
+          <span class="bank-card__account">Link your bank to start using UPI</span>
+        </div>
+      </div>
+      <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none" style="transform:rotate(-90deg)"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  }
 
   return `
   <div class="screen screen--no-anim" style="display:block">
-    <div class="status-bar"><span class="status-bar__time">9:41</span><div class="status-bar__icons"><svg viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#080a0b"/><rect x="5" y="5" width="3" height="7" rx="0.5" fill="#080a0b"/><rect x="10" y="2" width="3" height="10" rx="0.5" fill="#080a0b"/><rect x="15" y="0" width="3" height="12" rx="0.5" fill="#080a0b"/></svg><svg viewBox="0 0 16 12" fill="none"><path d="M8 11.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="#080a0b"/><path d="M4.5 7.5C5.5 6.2 6.7 5.5 8 5.5s2.5.7 3.5 2" stroke="#080a0b" stroke-width="1.2" stroke-linecap="round"/><path d="M2 5c1.8-2 3.7-3 6-3s4.2 1 6 3" stroke="#080a0b" stroke-width="1.2" stroke-linecap="round"/></svg><svg viewBox="0 0 28 13" fill="none"><rect x="0.5" y="0.5" width="23" height="12" rx="2" stroke="#080a0b" stroke-opacity="0.35"/><rect x="2" y="2" width="20" height="9" rx="1" fill="#080a0b"/><path d="M25 4.5v4a2 2 0 000-4z" fill="#080a0b" fill-opacity="0.4"/></svg></div></div>
+    <div class="status-bar"><span class="status-bar__time">9:41</span><div class="status-bar__icons"><img src="assets/iOS/stat_group_black.svg" width="78" height="13" alt="" /></div></div>
     <div class="header">
       <div class="avatar">RS<div class="avatar__qr-badge"><svg viewBox="0 0 12 12" fill="none"><rect x="0" y="0" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="7" y="0" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="0" y="7" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="2" y="2" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="9" y="2" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="2" y="9" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="8" y="8" width="4" height="4" rx="0.5" stroke="#0b0b0b" stroke-width="0.8"/></svg></div></div>
       <div class="mode-switch"><div class="mode-switch__tab mode-switch__tab--active"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" fill="#f47920"/><path d="M3 17.5c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="#f47920" stroke-width="1.5" stroke-linecap="round"/></svg><span>Me</span></div><div class="mode-switch__tab mode-switch__tab--icon-only"><svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="3" fill="#999"/><circle cx="14" cy="7" r="2.5" fill="#999"/><path d="M1 17c0-3 2.5-5 6-5s6 2 6 5" stroke="#999" stroke-width="1.2" stroke-linecap="round"/><path d="M13 17c0-2.5 1.8-4 4-4s4 1.5 4 4" stroke="#999" stroke-width="1" stroke-linecap="round" opacity="0.6"/></svg></div></div>
@@ -629,7 +719,6 @@ function homeScreenHTML() {
     </div>
     <div class="content">
       <div class="home-upi-row">
-        <div class="ticker-banner ticker-banner--dashed"><div class="ticker-banner__pill"><span class="ticker-banner__emoji">🎉</span><span class="ticker-banner__text">${bannerText}</span></div></div>
         <div class="home-upi-id"><span class="home-upi-id__masked">${upiId}</span><button type="button" class="home-upi-id__icon" aria-label="Toggle visibility"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 4C4 4 1 10 1 10s3 6 9 6 9-6 9-6-3-6-9-6z" stroke="#666" stroke-width="1.2"/><circle cx="10" cy="10" r="2.5" stroke="#666" stroke-width="1.2"/></svg></button><button type="button" class="home-upi-id__icon" aria-label="Copy"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="6" y="6" width="10" height="10" rx="1" stroke="#666" stroke-width="1.2"/><path d="M4 4v10h10" stroke="#666" stroke-width="1.2"/></svg></button></div>
       </div>
       ${bankCardHTML}
@@ -655,15 +744,6 @@ function homeScreenHTML() {
           <div class="feature-item"><div class="feature-item__icon"><span>📲</span></div><span class="feature-item__label">${t("home.mobile_postpaid")}</span></div>
         </div>
       </div>
-      <div class="promo-cards"><div class="promo-card"><div class="promo-card__icon">🪙</div><span class="promo-card__text">${t("home.cashback_offers")}</span></div><div class="promo-card"><div class="promo-card__icon">🎁</div><span class="promo-card__text">${t("home.refer_friend")}</span></div></div>
-      <div class="ad-banner"><div class="ad-banner__content"><div class="ad-banner__title">It's Payday!</div><div class="ad-banner__subtitle">Treat yourself with a nice meal with <strong>Swiggy</strong></div><div class="ad-banner__cta">Claim your <strong>20% off</strong></div></div><div class="ad-banner__image">🍜</div></div>
-      <div class="explore-section"><h2 class="explore-section__title">Explore more with BHIM</h2>
-        <div class="explore-cards">
-          <div class="explore-card"><div class="explore-card__icon">🎁</div><p class="explore-card__text">Show your love with a surprise gift, instantly delivered!</p><div class="explore-card__divider"></div><span class="explore-card__link">My Gifts <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="explore-card"><div class="explore-card__icon">📊</div><p class="explore-card__text" style="padding-top:4px"><span style="font-size:32px;font-weight:400">₹44,871</span><br><span style="font-size:12px;color:#e33838">↑ 7%</span> <span style="font-size:12px;color:#0b0b0b"> increase from last month</span></p><div class="explore-card__divider"></div><span class="explore-card__link">View Analytics <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="explore-card"><div class="explore-card__icon">🧾</div><p class="explore-card__text">Tired of keeping a track of your group expenses?</p><div class="explore-card__divider"></div><span class="explore-card__link">Split an Expense <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-        </div>
-      </div>
       <div style="height:30px"></div>
     </div>
     <div class="bottom-nav">
@@ -677,14 +757,63 @@ function homeScreenHTML() {
 
 // ─── Add Bank Account Screen Renderers ───────────────────────
 
+let chooseBankSelected = 0;
+
+const bankList = [
+  "Bharatiya Payments Bank",
+  "JanSeva Bank",
+  "Saral Bank Ltd",
+  "Nagrik Bank",
+  "Vikas Bank Ltd",
+  "Pragati Bank",
+];
+
+function chooseBankHTML() {
+  let bankItems = "";
+  bankList.forEach((name, i) => {
+    bankItems += `
+      <div class="ab-choose-bank-item${chooseBankSelected === i ? " ab-choose-bank-item--selected" : ""}" onclick="selectChooseBank(${i})">
+        <div class="ab-choose-bank-item__icon">${bankIconSVG()}</div>
+        <span class="ab-choose-bank-item__name">${name}</span>
+      </div>`;
+  });
+
+  return `
+  <div class="screen screen-ab-choose-bank">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="ab-select-content">
+      <h1 class="ab-title">Choose your bank</h1>
+      <p class="ab-subtitle">Select which bank you have an account with</p>
+      <div class="ab-choose-bank-search">
+        <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="9" cy="9" r="6.5" stroke="#9ca3af" stroke-width="1.4"/><path d="M14 14l4 4" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="ab-choose-bank-search__text">Search/Select Bank for bill payment</span>
+      </div>
+      <div class="ab-choose-bank-list">${bankItems}</div>
+    </div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
+  </div>`;
+}
+
+function selectedBankName() {
+  return bankList[chooseBankSelected];
+}
+
+function selectChooseBank(idx) {
+  chooseBankSelected = idx;
+  document.querySelectorAll(".ab-choose-bank-item").forEach((el, i) => {
+    el.classList.toggle("ab-choose-bank-item--selected", i === idx);
+  });
+}
+
 function bankIconSVG() {
   return '<svg viewBox="0 0 18 18" fill="none" width="18" height="18"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg>';
 }
 
 function selectBankHTML() {
   const accounts = [
-    { name: "Bharatiya Payments Bank", ifsc: "BPB1234IN" },
-    { name: "Bharatiya Payments Bank", ifsc: "HDF1234IN", needsPin: true },
+    { name: selectedBankName(), ifsc: "HDF1234IN", needsPin: true },
   ];
   let accountList = "";
   accounts.forEach((acc, i) => {
@@ -717,13 +846,13 @@ function selectBankHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Choose your bank</h1>
+      <h1 class="ab-title">Which account?</h1>
       <p class="ab-subtitle">Select which bank you have an account with</p>
       <div class="ab-bank-header" id="ab-tour-select-bank-header">
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -762,8 +891,8 @@ function debitCardHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-debit-content" id="ab-tour-debit-content">
       <div class="ab-debit-section">
@@ -795,8 +924,8 @@ function bankOtpHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-otp-content">
       <p class="ab-pin-heading">ENTER OTP</p>
@@ -819,8 +948,8 @@ function setUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-setpin-content">
       <p class="ab-pin-heading">ENTER NEW UPI PIN</p>
@@ -843,8 +972,8 @@ function confirmUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">HDFC Bank Ltd</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content">
       <p class="ab-pin-heading">CONFIRM NEW UPI PIN</p>
@@ -855,6 +984,7 @@ function confirmUpiPinHTML() {
 }
 
 function bankSuccessHTML() {
+  bankLinked = true;
   return `
   <div class="screen screen-ab-success">
     ${statusBarSVG(false)}
@@ -883,14 +1013,14 @@ function paymentMethodsHTML() {
         <div class="ab-methods-bank">
           <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
-            <span class="ab-account-name">Pragati Bank</span>
+            <span class="ab-account-name">Pinnacle Bank</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
         </div>
         <div class="ab-methods-bank">
           <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
-            <span class="ab-account-name">Bharatiya Payments Bank</span>
+            <span class="ab-account-name">${selectedBankName()}</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
         </div>
@@ -906,7 +1036,7 @@ function paymentMethodsHTML() {
       <div class="ab-toast__icon">
         <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <span class="ab-toast__text">Your Bharatiya Payments Bank has been added successfully!</span>
+      <span class="ab-toast__text">Your ${selectedBankName()} has been added successfully!</span>
       <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">Close</span>
     </div>
     ${homeIndHTML()}
@@ -929,7 +1059,7 @@ function methodSelectHTML() {
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -937,28 +1067,16 @@ function methodSelectHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card" onclick="selectBankAccount(0)">
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
             <div class="ab-account-info">
               <div class="ab-account-logo">${bankIconSVG()}</div>
               <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
-                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
-              </div>
-            </div>
-            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
-          </div>
-        </div>
-        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
-          <div class="ab-account-row">
-            <div class="ab-account-info">
-              <div class="ab-account-logo">${bankIconSVG()}</div>
-              <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-name">${selectedBankName()}</span>
                 <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
               </div>
             </div>
-            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
+            <div class="ab-radio ab-radio--checked"></div>
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
@@ -1028,7 +1146,7 @@ function aadhaarConsentHTML() {
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -1036,28 +1154,16 @@ function aadhaarConsentHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card" onclick="selectBankAccount(0)">
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
             <div class="ab-account-info">
               <div class="ab-account-logo">${bankIconSVG()}</div>
               <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
-                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
-              </div>
-            </div>
-            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
-          </div>
-        </div>
-        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
-          <div class="ab-account-row">
-            <div class="ab-account-info">
-              <div class="ab-account-logo">${bankIconSVG()}</div>
-              <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-name">${selectedBankName()}</span>
                 <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
               </div>
             </div>
-            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
+            <div class="ab-radio ab-radio--checked"></div>
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
@@ -1071,7 +1177,7 @@ function aadhaarConsentHTML() {
     <div class="ab-ms-overlay">
       <div class="ab-ms-sheet ab-ms-sheet--consent">
         <div class="ab-ms-handle"></div>
-        <p class="ab-consent-text">I hereby give my consent to <strong>Bharatiya Payments BANK</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
+        <p class="ab-consent-text">I hereby give my consent to <strong>${selectedBankName()}</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
         <div class="ab-ms-buttons">
           <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Cancel</button>
           <button class="ab-ms-btn ab-ms-btn--proceed" onclick="renderScreen(S.ADD_BANK_AADHAAR_NUMBER)">Accept</button>
@@ -1097,7 +1203,7 @@ function aadhaarNumberHTML() {
     <div class="ab-bank-bar">
       <div class="ab-bank-bar__left">
         <div class="ab-bank-bar__icon">${bankIconSVG()}</div>
-        <span class="ab-bank-bar__name">Bharatiya Payments Bank- XXXX2657</span>
+        <span class="ab-bank-bar__name">${selectedBankName()} - *** 2453</span>
       </div>
     </div>
     <div class="ab-aadhaar-content">
@@ -1253,7 +1359,7 @@ const abTooltipGuide = {
 const AB_SCREEN_TOOLTIPS = {
   [S.HOME]: {
     element: "#bank-card",
-    get desc() { return t("home.welcome_tooltip"); },
+    desc: "Link your bank account to start making UPI payments",
     side: "bottom",
     radius: 16,
   },
@@ -1354,7 +1460,7 @@ function abTourNext() {
 function startAddBankFlow() {
   abTooltipGuide.enabled = true;
   abTooltipGuide.shownForScreen = {};
-  renderScreen(S.ADD_BANK_SELECT);
+  renderScreen(S.ADD_BANK_CHOOSE_BANK);
 }
 
 
@@ -1502,6 +1608,7 @@ function renderScreen(state) {
     passcodeConfirm = "";
   }
   // Add Bank Account flow resets
+  if (state === S.ADD_BANK_CHOOSE_BANK) { chooseBankSelected = 0; }
   if (state === S.ADD_BANK_SELECT) { addBankSelectedAccount = 0; }
   if (state === S.ADD_BANK_DEBIT_CARD) { addBankCardDigits = ""; addBankExpiry = ""; addBankInputFocus = "card"; }
   if (state === S.ADD_BANK_METHOD_SELECT) { addBankMethod = "debit"; }
@@ -1521,6 +1628,12 @@ function renderScreen(state) {
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
   handlePostRender(state);
+
+  // Show/hide demo nav bar
+  const demoNav = document.querySelector(".demo-nav");
+  const demoDisclaimer = document.querySelector(".demo-disclaimer");
+  if (demoNav) demoNav.style.display = state === S.LANDING ? "none" : "flex";
+  if (demoDisclaimer) demoDisclaimer.style.display = state === S.LANDING ? "none" : "block";
 }
 
 // ─── Scan and Pay Screen Renderers ──────────────────────────
@@ -1747,7 +1860,7 @@ function selectAccountHTML() {
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
           </div>
         </div>
       </div>
@@ -1859,22 +1972,15 @@ function debitedTransactionHTML() {
     <div class="sm-receipt-options">
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Split this<br>expense</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
-      </div>
-    </div>
-    <div class="sm-receipt-ad">
-      <div class="sm-receipt-ad__text">
-        <p class="sm-receipt-ad__title">It's Payday!</p>
-        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
-        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
       </div>
     </div>
     <div class="sm-receipt-powered">
@@ -2054,14 +2160,14 @@ function sendMobileReviewHTML() {
             <div class="sm-review-bank-card__info">
               <div class="sm-review-bank-logo">A</div>
               <div class="sm-review-bank-detail">
-                <span class="sm-review-bank-detail__name">ABC Banking Ltd</span>
+                <span class="sm-review-bank-detail__name">${selectedBankName()}</span>
                 <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
               </div>
             </div>
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
           </div>
         </div>
       </div>
@@ -2084,8 +2190,8 @@ function sendMobilePinHTML() {
   <div class="screen screen-sm-pin">
     ${statusBarSVG(true)}
     <div class="sm-pin-bank-bar">
-      <span class="sm-pin-bank-bar__name">IDBI Bank Limited</span>
-      <svg class="sm-pin-bank-bar__upi" width="58" height="24" viewBox="0 0 58 24" fill="none"><text x="0" y="18" font-size="12" font-weight="700" fill="#6b7280">UPI</text><text x="20" y="18" font-size="8" fill="#6b7280">UNIFIED PAYMENTS</text><text x="20" y="24" font-size="8" fill="#6b7280">INTERFACE</text></svg>
+      <span class="sm-pin-bank-bar__name">Indira Bank Limited</span>
+      <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" class="sm-pin-bank-bar__upi" width="46" height="20" />
     </div>
     <div class="sm-pin-acct-bar">
       <span class="sm-pin-acct-bar__text">XXXXXXXXXXXX</span>
@@ -2112,7 +2218,6 @@ function sendMobileSuccessHTML() {
       <img src="./assets/paymentDone.gif" alt="Payment Successful" class="sm-success-gif" />
       <p class="sm-success-text" id="sm-success-text">Payment Successful</p>
     </div>
-    ${homeIndHTML()}
   </div>`;
 }
 
@@ -2141,7 +2246,7 @@ function sendMobileReceiptHTML() {
       <div class="sm-receipt-info-grid">
         <div class="sm-receipt-info-item">
           <span class="sm-receipt-info-item__label">Banking Name</span>
-          <span class="sm-receipt-info-item__value">ABC Banking Ltd</span>
+          <span class="sm-receipt-info-item__value">${selectedBankName()}</span>
         </div>
       </div>
       <div class="sm-receipt-info-grid sm-receipt-info-grid--two">
@@ -2166,22 +2271,15 @@ function sendMobileReceiptHTML() {
     <div class="sm-receipt-options">
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Split this<br>expense</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
-      </div>
-    </div>
-    <div class="sm-receipt-ad">
-      <div class="sm-receipt-ad__text">
-        <p class="sm-receipt-ad__title">It's Payday!</p>
-        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
-        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
       </div>
     </div>
     <div class="sm-receipt-powered">
@@ -2247,6 +2345,8 @@ function getScreenHTML(state) {
     case S.HOME:
       return homeScreenHTML();
     // Add Bank Account flow
+    case S.ADD_BANK_CHOOSE_BANK:
+      return chooseBankHTML();
     case S.ADD_BANK_SELECT:
       return selectBankHTML();
     case S.ADD_BANK_METHOD_SELECT:
@@ -2333,9 +2433,13 @@ function handlePostRender(state) {
       wait(() => renderScreen(S.HOME), 2500);
       break;
     case S.HOME:
-      showCbScreenTooltip(state);
-      showSendMobileTour(state);
-      showScanPayTour(state);
+      if (!bankLinked) {
+        showAbScreenTooltip(state);
+      } else {
+        showCbScreenTooltip(state);
+        showSendMobileTour(state);
+        showScanPayTour(state);
+      }
       const sendToMobileBtn = document.getElementById("send-to-mobile");
       if (sendToMobileBtn) {
         sendToMobileBtn.style.cursor = "pointer";
@@ -2345,6 +2449,7 @@ function handlePostRender(state) {
       }
       break;
     // Add Bank Account flow
+    case S.ADD_BANK_CHOOSE_BANK:
     case S.ADD_BANK_SELECT:
     case S.ADD_BANK_METHOD_SELECT:
     case S.ADD_BANK_DEBIT_CARD:
@@ -2378,9 +2483,15 @@ function handlePostRender(state) {
     // Send to Mobile flow
     case S.SEND_MOBILE_CHAT:
     case S.SEND_MOBILE_PIN:
-    case S.SEND_MOBILE_SUCCESS:
     case S.SEND_MOBILE_RECEIPT:
       showSendMobileTour(state);
+      break;
+    case S.SEND_MOBILE_SUCCESS:
+      if (smTour.enabled) {
+        showSendMobileTour(state);
+      } else {
+        wait(() => renderScreen(S.SEND_MOBILE_RECEIPT), 2500);
+      }
       break;
   }
 }
@@ -2432,8 +2543,16 @@ function handleKeyPress(key) {
   }
 }
 
+function proceedFromGetStarted() {
+  if (selectedLang === null) return;
+  currentLang = selectedLang === 0 ? "hi" : "en";
+  renderScreen(S.MOBILE_ENTRY);
+}
+
 function selectGetStartedLanguage(idx) {
   selectedLang = idx;
+  // idx 0 = Hindi, idx 1 = English
+  currentLang = idx === 0 ? "hi" : "en";
   [0, 1].forEach((i) => {
     const card = document.getElementById("gs-lang-card-" + i);
     const radio = card && card.querySelector(".gs-lang-card__radio");
@@ -2447,10 +2566,18 @@ function selectGetStartedLanguage(idx) {
       }
     }
   });
+  // Enable Proceed button
+  const btn = document.getElementById("gs-proceed-btn");
+  if (btn) {
+    btn.className = "ob-btn ob-btn--primary";
+    btn.onclick = proceedFromGetStarted;
+  }
 }
 
 function selectLanguage(idx) {
   selectedLang = idx;
+  // idx 0 = Hindi, everything else defaults to English
+  currentLang = idx === 0 ? "hi" : "en";
   document.querySelectorAll(".lang-item").forEach((el, i) => {
     if (i === idx) {
       el.classList.add("lang-item--selected");
@@ -2472,7 +2599,7 @@ function selectLanguage(idx) {
 
 function selectSim(sim) {
   selectedSim = sim;
-  ["airtel", "jio"].forEach((s) => {
+  ["sim1", "sim2"].forEach((s) => {
     const card = document.getElementById("sim-card-" + s);
     const radio = document.getElementById("sim-radio-" + s);
     if (s === sim) {
@@ -2521,7 +2648,7 @@ function goBack() {
       renderScreen(S.GET_STARTED);
       break;
     case S.MOBILE_ENTRY:
-      renderScreen(S.LANG_SELECT);
+      renderScreen(S.GET_STARTED);
       break;
     case S.OTP_ENTRY:
       renderScreen(S.MOBILE_ENTRY);
@@ -2536,8 +2663,11 @@ function goBack() {
       renderScreen(S.SECURITY_SELECT);
       break;
     // Add Bank Account flow back navigation
-    case S.ADD_BANK_SELECT:
+    case S.ADD_BANK_CHOOSE_BANK:
       renderScreen(S.HOME);
+      break;
+    case S.ADD_BANK_SELECT:
+      renderScreen(S.ADD_BANK_CHOOSE_BANK);
       break;
     case S.ADD_BANK_METHOD_SELECT:
       renderScreen(S.ADD_BANK_SELECT);
@@ -2915,6 +3045,7 @@ function tooltipSkip() {
 // ─── Flow Control ────────────────────────────────────────────
 
 function startOnboarding() {
+  bankLinked = false;
   renderScreen(S.SPLASH_1);
 }
 function goHome() {
@@ -3074,6 +3205,14 @@ function smCoachNext() {
   if (action) action();
 }
 
+function smCoachSkip() {
+  smTour.enabled = false;
+  const action = smCoachNextAction;
+  dismissSmCoachMark();
+  // On screens that auto-advance via onNext (e.g. Payment Successful), still navigate
+  if (action) action();
+}
+
 function showSendMobileTour(state) {
   if (!smTour.enabled || smTour.shownForScreen[state]) return;
 
@@ -3088,7 +3227,7 @@ function showSendMobileTour(state) {
   } else if (state === S.SEND_MOBILE_SUCCESS) {
     step = { element: "#sm-success-text", title: "Payment Successful", desc: "Success message will appear once transaction is done.", side: "bottom", padding: 20, radius: 16, idx: 3, onNext: function () { renderScreen(S.SEND_MOBILE_RECEIPT); } };
   } else if (state === S.SEND_MOBILE_RECEIPT) {
-    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { renderScreen(S.HOME); } };
+    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { if (activeDriver) { activeDriver.destroy(); activeDriver = null; } } };
   }
 
   if (!step) return;
@@ -3142,7 +3281,7 @@ function showSendMobileTour(state) {
       descHTML +
       dotsHTML +
       '<div class="smc-tooltip__btns">' +
-        '<button class="smc-tooltip__skip" onclick="dismissSmCoachMark()">Skip</button>' +
+        '<button class="smc-tooltip__skip" onclick="smCoachSkip()">Skip</button>' +
         '<button class="smc-tooltip__next" onclick="smCoachNext()">Next</button>' +
       "</div>";
 
@@ -3340,6 +3479,96 @@ function showScanPayTour(state) {
     phoneShell.appendChild(spotlight);
     phoneShell.appendChild(tooltip);
   }, 400);
+}
+
+// ─── Demo Navigation (Previous / Next) ───────────────────────
+const FLOW_SEQUENCES = {
+  onboarding: [
+    S.SPLASH_1, S.GET_STARTED, S.MOBILE_ENTRY, S.OTP_ENTRY,
+    S.SIM_SELECT, S.VERIFY_1, S.SECURITY_SELECT, S.PASSCODE_ENTRY,
+    S.LOADING_SPLASH, S.HOME,
+  ],
+  addBank: [
+    S.ADD_BANK_CHOOSE_BANK, S.ADD_BANK_SELECT, S.ADD_BANK_METHOD_SELECT,
+    S.ADD_BANK_DEBIT_CARD, S.ADD_BANK_OTP, S.ADD_BANK_SET_PIN,
+    S.ADD_BANK_CONFIRM_PIN, S.ADD_BANK_SUCCESS, S.ADD_BANK_PAYMENT_METHODS,
+  ],
+  checkBalance: [
+    S.HOME, S.CHECK_BALANCE_PIN,
+  ],
+  scanPay: [
+    S.HOME, S.SCAN_1, S.SCAN_2, S.ENTER_AMOUNT,
+    S.SELECT_ACCOUNT_TO_PAY, S.ENTER_UPI_PIN, S.PAYMENT_SUCCESS,
+    S.DEBITED_TRANSACTION,
+  ],
+  sendMobile: [
+    S.HOME, S.SEND_MOBILE_CONTACTS, S.SEND_MOBILE_CHAT,
+    S.SEND_MOBILE_REVIEW, S.SEND_MOBILE_PIN, S.SEND_MOBILE_SUCCESS,
+    S.SEND_MOBILE_RECEIPT,
+  ],
+};
+
+function getCurrentFlow() {
+  for (const [name, seq] of Object.entries(FLOW_SEQUENCES)) {
+    const idx = seq.indexOf(currentState);
+    if (idx !== -1) return { name, seq, idx };
+  }
+  return null;
+}
+
+function demoNext() {
+  if (!currentState || currentState === S.LANDING) return;
+
+  // Dismiss any active tooltips/coach marks first
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  const smEls = document.querySelectorAll(".smc-overlay, .smc-spotlight, .smc-tooltip");
+  smEls.forEach(e => e.remove());
+  const spEls = document.querySelectorAll(".spc-overlay, .spc-spotlight, .spc-tooltip");
+  spEls.forEach(e => e.remove());
+
+  // Try to find and click the primary action button on the current screen
+  // Look for enabled primary buttons (not disabled ones)
+  const selectors = [
+    ".ob-btn--primary:not(.ob-btn--disabled)",  // onboarding proceed/confirm buttons
+    ".ab-ms-btn--proceed",                       // method select proceed
+    ".sm-review-cta-btn",                        // send mobile Pay/Next
+    ".sp-cta-btn",                               // scan & pay proceed
+    "#gs-proceed-btn:not(.ob-btn--disabled)",    // get started proceed
+  ];
+
+  for (const sel of selectors) {
+    const btn = phoneShell.querySelector(sel);
+    if (btn && btn.onclick) {
+      btn.click();
+      return;
+    }
+  }
+
+  // For screens that auto-advance (splash, verify, loading), jump to next in flow
+  const autoAdvanceScreens = [
+    S.SPLASH_1, S.SPLASH_2, S.VERIFY_1, S.VERIFY_2, S.VERIFY_3,
+    S.LOADING_SPLASH, S.ADD_BANK_SUCCESS, S.SEND_MOBILE_SUCCESS,
+  ];
+  if (autoAdvanceScreens.includes(currentState)) {
+    const flow = getCurrentFlow();
+    if (flow && flow.idx < flow.seq.length - 1) {
+      clearTimers();
+      renderScreen(flow.seq[flow.idx + 1]);
+    }
+  }
+}
+
+function demoPrevious() {
+  if (!currentState || currentState === S.LANDING) return;
+  const flow = getCurrentFlow();
+  if (!flow) return;
+  const { seq, idx } = flow;
+  if (idx > 0) {
+    if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+    dismissSmCoachMark();
+    dismissSpCoachMark();
+    renderScreen(seq[idx - 1]);
+  }
 }
 
 // ─── Init ────────────────────────────────────────────────────

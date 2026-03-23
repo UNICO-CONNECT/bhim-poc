@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Inter:wght@600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Driver.js CSS -->
   <link rel="stylesheet" href="driver.css" />
@@ -20,8 +20,15 @@
 
   <!-- ===== Single Page App Container ===== -->
   <div id="app-container">
-    <div id="phone-shell">
-      <!-- Dynamic screens injected by journey.js -->
+    <div id="phone-wrapper">
+      <div id="phone-shell">
+        <!-- Dynamic screens injected by journey.js -->
+      </div>
+      <p class="demo-disclaimer">This is only a demo. Any action here will not result in a real payment.</p>
+      <div class="demo-nav">
+        <button class="demo-nav__btn demo-nav__btn--prev" onclick="demoPrevious()">Previous</button>
+        <button class="demo-nav__btn demo-nav__btn--next" onclick="demoNext()">Next</button>
+      </div>
     </div>
   </div>
 

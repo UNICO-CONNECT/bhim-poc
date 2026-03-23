@@ -37,8 +37,8 @@
   --c-accent: #2563eb;
 
   /* Misc */
-  --c-red-airtel: #e40000;
-  --c-blue-jio: #1a3f8e;
+  --c-red-sim1: #e40000;
+  --c-blue-sim2: #1a3f8e;
   --c-overlay: rgba(0, 0, 0, 0.55);
 
   /* Dimensions */
@@ -97,8 +97,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
-  padding: 20px 0;
+  height: 100vh;
+  overflow: hidden;
+  padding: 10px 0 0;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -109,14 +110,68 @@ body {
   overflow: hidden;
 }
 
+#phone-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  max-height: 100vh;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.demo-disclaimer {
+  font-family: var(--font);
+  font-size: 13px;
+  color: #0b0b0b;
+  text-align: center;
+  margin: 14px 0 8px;
+  max-width: var(--phone-w);
+  line-height: 1.4;
+}
+
+.demo-nav {
+  display: flex;
+  justify-content: space-between;
+  width: var(--phone-w);
+  gap: 12px;
+}
+
+.demo-nav__btn {
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 28px;
+  border-radius: 100px;
+  cursor: pointer;
+  border: none;
+}
+
+.demo-nav__btn--prev {
+  background: #fff;
+  border: 1px solid #d2d2d2;
+  color: #0b0b0b;
+}
+
+.demo-nav__btn--next {
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  color: #fff;
+}
+
+.demo-nav__btn:hover {
+  opacity: 0.85;
+}
+
 /* ===== Phone Shell ===== */
 #phone-shell {
   width: var(--phone-w);
   height: var(--phone-h);
+  max-height: calc(100vh - 100px);
   background: var(--c-white);
   position: relative;
   overflow: hidden;
   border-radius: 40px;
+  flex-shrink: 1;
   /* box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15); */
 }
 
@@ -207,9 +262,11 @@ body {
 }
 
 .ob-status-bar__time {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.3px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0px;
 }
 
 .ob-status-bar--dark .ob-status-bar__time,
@@ -1583,10 +1640,12 @@ body {
 }
 
 .status-bar__time {
-  font-weight: 700;
-  font-size: 16px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0px;
   color: #080a0b;
-  letter-spacing: -0.3px;
 }
 
 .status-bar__icons {
@@ -1706,7 +1765,7 @@ body {
 
 .content {
   overflow-y: auto;
-  height: calc(844px - 44px - 76px - 108px);
+  flex: 1;
   padding-bottom: 20px;
   scroll-behavior: smooth;
 }
@@ -1809,6 +1868,10 @@ body {
 }
 
 /* Check balance UI (Figma): card with divider + Check balance btn or balance amount */
+.bank-card--add {
+  cursor: pointer;
+}
+
 .bank-card--with-check {
   display: flex;
   align-items: stretch;
@@ -4084,15 +4147,19 @@ body.driver-active .ab-select-content {
 .screen-scan2 > * { position: relative; z-index: 1; }
 
 .scan2-camera {
-  position: relative; width: 100%; height: 395px;
-  overflow: hidden; background: #000;
+  position: relative; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px 0;
+  overflow: hidden; background: #fff;
 }
 .scan2-camera__bg {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 254px; height: 254px; object-fit: contain;
+  position: relative; z-index: 1;
 }
 .scan2-camera__area {
-  position: absolute; left: 39px; top: 39px;
-  width: 312px; height: 312px;
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px; height: 280px;
 }
 
 /* Result card */
@@ -5139,6 +5206,12 @@ body.driver-active .ab-select-content {
   text-transform: capitalize;
 }
 
+.sm-review-check-bal--disabled {
+  color: #b0b0b0;
+  pointer-events: none;
+  cursor: default;
+}
+
 .sm-review-cta-wrap {
   padding: 0 16px;
 }
@@ -5365,9 +5438,9 @@ body.driver-active .ab-select-content {
   text-align: center;
 }
 
-/* White card overlapping hero */
+/* White card starting right after the curve */
 .screen-sm-receipt .sm-receipt-card {
-  margin: 0px 16px 0;
+  margin: 0 16px 0;
   background: #fff;
   border-radius: 0 0 16px 16px;
   padding: 40px 30px 24px 30px;
@@ -5530,6 +5603,7 @@ body.driver-active .ab-select-content {
   display: flex;
   gap: 12px;
   padding: 4px 16px 12px;
+  margin-top: auto;
 }
 
 .sm-receipt-btn {
@@ -5769,6 +5843,96 @@ body.driver-active .ab-select-content {
   cursor: pointer;
 }
 
+/* ─── Grey out non-functional elements ─────────────────────── */
+.icon-grid__item:not([onclick]):not(#send-to-mobile) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.feature-item {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.bottom-nav__item {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.notification-btn {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.mode-switch__tab:not(.mode-switch__tab--active) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.home-upi-id__icon {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.bank-card__chevron {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .spc-tooltip__next:hover {
   opacity: 0.9;
+}
+
+/* ─── Choose Your Bank Screen ─────────────────────────────── */
+.ab-choose-bank-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 28px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.ab-choose-bank-search__text {
+  font-family: var(--font);
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.ab-choose-bank-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ab-choose-bank-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.ab-choose-bank-item--selected {
+  background: #f8f8ff;
+  border-radius: 10px;
+}
+
+.ab-choose-bank-item__icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f3f5;
+  border-radius: 50%;
+}
+
+.ab-choose-bank-item__name {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 15px;
+  color: #0b0b0b;
 }
