@@ -526,12 +526,12 @@ function simSelectHTML(mode) {
       <p class="sim-subtitle">${t("sim.subtitle")}</p>
       <div class="sim-cards"${cardsId}>
         <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim1" onclick="selectSim(\'sim1\')"'}>
-          <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><path d="M12 34 C16 18, 32 18, 36 34" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Sim1</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
+          <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 1</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
         </div>
         <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim2" onclick="selectSim(\'sim2\')"'}>
-          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Sim2</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Sim2</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
+          <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 2</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
         </div>
       </div>
       <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">${t("sim.info")}</span></div>
