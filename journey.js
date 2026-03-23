@@ -1984,13 +1984,6 @@ function debitedTransactionHTML() {
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
       </div>
     </div>
-    <div class="sm-receipt-ad">
-      <div class="sm-receipt-ad__text">
-        <p class="sm-receipt-ad__title">It's Payday!</p>
-        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
-        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
-      </div>
-    </div>
     <div class="sm-receipt-powered">
       <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
