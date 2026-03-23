@@ -1973,13 +1973,13 @@ function debitedTransactionHTML() {
     <div class="sm-receipt-options">
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Split this<br>expense</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
       </div>
@@ -2272,13 +2272,13 @@ function sendMobileReceiptHTML() {
     <div class="sm-receipt-options">
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3.27 13.6L12 22.33l8.73-8.73M12 2v20" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Split this<br>expense</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="#0b0b0b" stroke-width="1.5"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
       </div>
