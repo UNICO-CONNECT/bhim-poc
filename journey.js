@@ -345,7 +345,7 @@ function getStartedHTML(mode) {
     </div>
     <div class="ob-bottom-bar">
       <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>view all languages</button></div>
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary"${isPreview ? '' : ' onclick="renderScreen(S.LANG_SELECT)"'}>Proceed</button></div>
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary"${isPreview ? '' : ' onclick="proceedFromGetStarted()"'}>Proceed</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -2459,6 +2459,15 @@ function handleKeyPress(key) {
       }
       updateDebitCardUI();
       break;
+  }
+}
+
+function proceedFromGetStarted() {
+  // If Hindi (0) or Marathi (1) is selected, skip the lang select page
+  if (selectedLang !== null) {
+    renderScreen(S.MOBILE_ENTRY);
+  } else {
+    renderScreen(S.LANG_SELECT);
   }
 }
 
