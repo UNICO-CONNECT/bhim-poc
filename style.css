@@ -1761,7 +1761,7 @@ body {
 
 .content {
   overflow-y: auto;
-  height: calc(844px - 44px - 76px - 108px);
+  flex: 1;
   padding-bottom: 20px;
   scroll-behavior: smooth;
 }
