@@ -681,7 +681,6 @@ function checkBalancePinHTML() {
 
 // ─── Home Screen HTML (Check balance UI from Figma) ──────────
 function homeScreenHTML() {
-  const bannerText = "Beat the heat with Swiggy 50%";
   const upiId = "***2776@upi";
   const bankCardLeft = `
     <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
@@ -706,7 +705,6 @@ function homeScreenHTML() {
     </div>
     <div class="content">
       <div class="home-upi-row">
-        <div class="ticker-banner ticker-banner--dashed"><div class="ticker-banner__pill"><span class="ticker-banner__emoji">🎉</span><span class="ticker-banner__text">${bannerText}</span></div></div>
         <div class="home-upi-id"><span class="home-upi-id__masked">${upiId}</span><button type="button" class="home-upi-id__icon" aria-label="Toggle visibility"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 4C4 4 1 10 1 10s3 6 9 6 9-6 9-6-3-6-9-6z" stroke="#666" stroke-width="1.2"/><circle cx="10" cy="10" r="2.5" stroke="#666" stroke-width="1.2"/></svg></button><button type="button" class="home-upi-id__icon" aria-label="Copy"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="6" y="6" width="10" height="10" rx="1" stroke="#666" stroke-width="1.2"/><path d="M4 4v10h10" stroke="#666" stroke-width="1.2"/></svg></button></div>
       </div>
       ${bankCardHTML}
@@ -730,15 +728,6 @@ function homeScreenHTML() {
           <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/electric.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">${t("home.electricity")}</span></div>
           <div class="feature-item"><div class="feature-item__icon"><img src="assets/home/dish3d.png" alt="" class="feature-item__img"/></div><span class="feature-item__label">${t("home.dth")}</span></div>
           <div class="feature-item"><div class="feature-item__icon"><span>📲</span></div><span class="feature-item__label">${t("home.mobile_postpaid")}</span></div>
-        </div>
-      </div>
-      <div class="promo-cards"><div class="promo-card"><div class="promo-card__icon">🪙</div><span class="promo-card__text">${t("home.cashback_offers")}</span></div><div class="promo-card"><div class="promo-card__icon">🎁</div><span class="promo-card__text">${t("home.refer_friend")}</span></div></div>
-      <div class="ad-banner"><div class="ad-banner__content"><div class="ad-banner__title">It's Payday!</div><div class="ad-banner__subtitle">Treat yourself with a nice meal with <strong>Swiggy</strong></div><div class="ad-banner__cta">Claim your <strong>20% off</strong></div></div><div class="ad-banner__image">🍜</div></div>
-      <div class="explore-section"><h2 class="explore-section__title">Explore more with BHIM</h2>
-        <div class="explore-cards">
-          <div class="explore-card"><div class="explore-card__icon">🎁</div><p class="explore-card__text">Show your love with a surprise gift, instantly delivered!</p><div class="explore-card__divider"></div><span class="explore-card__link">My Gifts <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="explore-card"><div class="explore-card__icon">📊</div><p class="explore-card__text" style="padding-top:4px"><span style="font-size:32px;font-weight:400">₹44,871</span><br><span style="font-size:12px;color:#e33838">↑ 7%</span> <span style="font-size:12px;color:#0b0b0b"> increase from last month</span></p><div class="explore-card__divider"></div><span class="explore-card__link">View Analytics <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="explore-card"><div class="explore-card__icon">🧾</div><p class="explore-card__text">Tired of keeping a track of your group expenses?</p><div class="explore-card__divider"></div><span class="explore-card__link">Split an Expense <svg viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         </div>
       </div>
       <div style="height:30px"></div>
@@ -2215,7 +2204,6 @@ function sendMobileSuccessHTML() {
       <img src="./assets/paymentDone.gif" alt="Payment Successful" class="sm-success-gif" />
       <p class="sm-success-text" id="sm-success-text">Payment Successful</p>
     </div>
-    ${homeIndHTML()}
   </div>`;
 }
 
