@@ -5835,6 +5835,42 @@ body.driver-active .ab-select-content {
   cursor: pointer;
 }
 
+/* ─── Grey out non-functional elements ─────────────────────── */
+.icon-grid__item:not([onclick]):not(#send-to-mobile) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.feature-item {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.bottom-nav__item {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.notification-btn {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.mode-switch__tab:not(.mode-switch__tab--active) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.home-upi-id__icon {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.bank-card__chevron {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .spc-tooltip__next:hover {
   opacity: 0.9;
 }
