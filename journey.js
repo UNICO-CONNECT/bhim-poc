@@ -1629,6 +1629,12 @@ function renderScreen(state) {
   phoneShell.innerHTML = getScreenHTML(state);
   currentState = state;
   handlePostRender(state);
+
+  // Show/hide demo nav bar
+  const demoNav = document.querySelector(".demo-nav");
+  const demoDisclaimer = document.querySelector(".demo-disclaimer");
+  if (demoNav) demoNav.style.display = state === S.LANDING ? "none" : "flex";
+  if (demoDisclaimer) demoDisclaimer.style.display = state === S.LANDING ? "none" : "block";
 }
 
 // ─── Scan and Pay Screen Renderers ──────────────────────────
@@ -3481,6 +3487,96 @@ function showScanPayTour(state) {
     phoneShell.appendChild(spotlight);
     phoneShell.appendChild(tooltip);
   }, 400);
+}
+
+// ─── Demo Navigation (Previous / Next) ───────────────────────
+const FLOW_SEQUENCES = {
+  onboarding: [
+    S.SPLASH_1, S.GET_STARTED, S.MOBILE_ENTRY, S.OTP_ENTRY,
+    S.SIM_SELECT, S.VERIFY_1, S.SECURITY_SELECT, S.PASSCODE_ENTRY,
+    S.LOADING_SPLASH, S.HOME,
+  ],
+  addBank: [
+    S.ADD_BANK_CHOOSE_BANK, S.ADD_BANK_SELECT, S.ADD_BANK_METHOD_SELECT,
+    S.ADD_BANK_DEBIT_CARD, S.ADD_BANK_OTP, S.ADD_BANK_SET_PIN,
+    S.ADD_BANK_CONFIRM_PIN, S.ADD_BANK_SUCCESS, S.ADD_BANK_PAYMENT_METHODS,
+  ],
+  checkBalance: [
+    S.HOME, S.CHECK_BALANCE_PIN,
+  ],
+  scanPay: [
+    S.HOME, S.SCAN_1, S.SCAN_2, S.ENTER_AMOUNT,
+    S.SELECT_ACCOUNT_TO_PAY, S.ENTER_UPI_PIN, S.PAYMENT_SUCCESS,
+    S.DEBITED_TRANSACTION,
+  ],
+  sendMobile: [
+    S.HOME, S.SEND_MOBILE_CONTACTS, S.SEND_MOBILE_CHAT,
+    S.SEND_MOBILE_REVIEW, S.SEND_MOBILE_PIN, S.SEND_MOBILE_SUCCESS,
+    S.SEND_MOBILE_RECEIPT,
+  ],
+};
+
+function getCurrentFlow() {
+  for (const [name, seq] of Object.entries(FLOW_SEQUENCES)) {
+    const idx = seq.indexOf(currentState);
+    if (idx !== -1) return { name, seq, idx };
+  }
+  return null;
+}
+
+function demoNext() {
+  if (!currentState || currentState === S.LANDING) return;
+
+  // Dismiss any active tooltips/coach marks first
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  const smEls = document.querySelectorAll(".smc-overlay, .smc-spotlight, .smc-tooltip");
+  smEls.forEach(e => e.remove());
+  const spEls = document.querySelectorAll(".spc-overlay, .spc-spotlight, .spc-tooltip");
+  spEls.forEach(e => e.remove());
+
+  // Try to find and click the primary action button on the current screen
+  // Look for enabled primary buttons (not disabled ones)
+  const selectors = [
+    ".ob-btn--primary:not(.ob-btn--disabled)",  // onboarding proceed/confirm buttons
+    ".ab-ms-btn--proceed",                       // method select proceed
+    ".sm-review-cta-btn",                        // send mobile Pay/Next
+    ".sp-cta-btn",                               // scan & pay proceed
+    "#gs-proceed-btn:not(.ob-btn--disabled)",    // get started proceed
+  ];
+
+  for (const sel of selectors) {
+    const btn = phoneShell.querySelector(sel);
+    if (btn && btn.onclick) {
+      btn.click();
+      return;
+    }
+  }
+
+  // For screens that auto-advance (splash, verify, loading), jump to next in flow
+  const autoAdvanceScreens = [
+    S.SPLASH_1, S.SPLASH_2, S.VERIFY_1, S.VERIFY_2, S.VERIFY_3,
+    S.LOADING_SPLASH, S.ADD_BANK_SUCCESS, S.SEND_MOBILE_SUCCESS,
+  ];
+  if (autoAdvanceScreens.includes(currentState)) {
+    const flow = getCurrentFlow();
+    if (flow && flow.idx < flow.seq.length - 1) {
+      clearTimers();
+      renderScreen(flow.seq[flow.idx + 1]);
+    }
+  }
+}
+
+function demoPrevious() {
+  if (!currentState || currentState === S.LANDING) return;
+  const flow = getCurrentFlow();
+  if (!flow) return;
+  const { seq, idx } = flow;
+  if (idx > 0) {
+    if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+    dismissSmCoachMark();
+    dismissSpCoachMark();
+    renderScreen(seq[idx - 1]);
+  }
 }
 
 // ─── Init ────────────────────────────────────────────────────
