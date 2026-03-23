@@ -667,7 +667,7 @@ function checkBalancePinHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBackFromCheckBalancePin()">←</span><span class="ob-page-title">Enter UPI</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">Bharatiya Payments Bank</span>
-      <span class="ab-bank-bar__num">XXXXXXXX***2453</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="cb-pin-content">
       <p class="ab-pin-heading">ENTER UPI PIN</p>
@@ -878,7 +878,7 @@ function debitCardHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-debit-content" id="ab-tour-debit-content">
       <div class="ab-debit-section">
@@ -911,7 +911,7 @@ function bankOtpHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-otp-content">
       <p class="ab-pin-heading">ENTER OTP</p>
@@ -935,7 +935,7 @@ function setUpiPinHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-setpin-content">
       <p class="ab-pin-heading">ENTER NEW UPI PIN</p>
@@ -959,7 +959,7 @@ function confirmUpiPinHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
-      <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content">
       <p class="ab-pin-heading">CONFIRM NEW UPI PIN</p>
@@ -1188,7 +1188,7 @@ function aadhaarNumberHTML() {
     <div class="ab-bank-bar">
       <div class="ab-bank-bar__left">
         <div class="ab-bank-bar__icon">${bankIconSVG()}</div>
-        <span class="ab-bank-bar__name">${selectedBankName()}- XXXX2657</span>
+        <span class="ab-bank-bar__name">${selectedBankName()} - *** 2453</span>
       </div>
     </div>
     <div class="ab-aadhaar-content">
