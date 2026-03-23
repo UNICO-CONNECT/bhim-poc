@@ -1850,7 +1850,7 @@ function selectAccountHTML() {
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
           </div>
         </div>
       </div>
@@ -2157,14 +2157,14 @@ function sendMobileReviewHTML() {
             <div class="sm-review-bank-card__info">
               <div class="sm-review-bank-logo">A</div>
               <div class="sm-review-bank-detail">
-                <span class="sm-review-bank-detail__name">ABC Banking Ltd</span>
+                <span class="sm-review-bank-detail__name">${selectedBankName()}</span>
                 <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
               </div>
             </div>
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
           </div>
         </div>
       </div>
@@ -2244,7 +2244,7 @@ function sendMobileReceiptHTML() {
       <div class="sm-receipt-info-grid">
         <div class="sm-receipt-info-item">
           <span class="sm-receipt-info-item__label">Banking Name</span>
-          <span class="sm-receipt-info-item__value">ABC Banking Ltd</span>
+          <span class="sm-receipt-info-item__value">${selectedBankName()}</span>
         </div>
       </div>
       <div class="sm-receipt-info-grid sm-receipt-info-grid--two">

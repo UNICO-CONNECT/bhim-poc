@@ -5139,6 +5139,12 @@ body.driver-active .ab-select-content {
   text-transform: capitalize;
 }
 
+.sm-review-check-bal--disabled {
+  color: #b0b0b0;
+  pointer-events: none;
+  cursor: default;
+}
+
 .sm-review-cta-wrap {
   padding: 0 16px;
 }
