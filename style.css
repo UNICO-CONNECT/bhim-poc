@@ -262,9 +262,11 @@ body {
 }
 
 .ob-status-bar__time {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.3px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0px;
 }
 
 .ob-status-bar--dark .ob-status-bar__time,
@@ -1638,10 +1640,12 @@ body {
 }
 
 .status-bar__time {
-  font-weight: 700;
-  font-size: 16px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0px;
   color: #080a0b;
-  letter-spacing: -0.3px;
 }
 
 .status-bar__icons {
