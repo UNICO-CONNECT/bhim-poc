@@ -5772,3 +5772,57 @@ body.driver-active .ab-select-content {
 .spc-tooltip__next:hover {
   opacity: 0.9;
 }
+
+/* ─── Choose Your Bank Screen ─────────────────────────────── */
+.ab-choose-bank-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 28px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.ab-choose-bank-search__text {
+  font-family: var(--font);
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.ab-choose-bank-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ab-choose-bank-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.ab-choose-bank-item--selected {
+  background: #f8f8ff;
+  border-radius: 10px;
+}
+
+.ab-choose-bank-item__icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f3f5;
+  border-radius: 50%;
+}
+
+.ab-choose-bank-item__name {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 15px;
+  color: #0b0b0b;
+}

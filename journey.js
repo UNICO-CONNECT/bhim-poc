@@ -21,6 +21,7 @@ const S = Object.freeze({
   LOADING_SPLASH: "loading_splash",
   HOME: "home",
   // Add Bank Account flow
+  ADD_BANK_CHOOSE_BANK: "add_bank_choose_bank",
   ADD_BANK_SELECT: "add_bank_select",
   ADD_BANK_METHOD_SELECT: "add_bank_method_select",
   ADD_BANK_DEBIT_CARD: "add_bank_debit_card",
@@ -677,14 +678,63 @@ function homeScreenHTML() {
 
 // ─── Add Bank Account Screen Renderers ───────────────────────
 
+let chooseBankSelected = 0;
+
+const bankList = [
+  "Bharatiya Payments Bank",
+  "JanSeva Bank",
+  "Saral Bank Ltd",
+  "Nagrik Bank",
+  "Vikas Bank Ltd",
+  "Pragati Bank",
+];
+
+function chooseBankHTML() {
+  let bankItems = "";
+  bankList.forEach((name, i) => {
+    bankItems += `
+      <div class="ab-choose-bank-item${chooseBankSelected === i ? " ab-choose-bank-item--selected" : ""}" onclick="selectChooseBank(${i})">
+        <div class="ab-choose-bank-item__icon">${bankIconSVG()}</div>
+        <span class="ab-choose-bank-item__name">${name}</span>
+      </div>`;
+  });
+
+  return `
+  <div class="screen screen-ab-choose-bank">
+    <div class="ab-gradient-bg"></div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
+    <div class="ab-select-content">
+      <h1 class="ab-title">Choose your bank</h1>
+      <p class="ab-subtitle">Select which bank you have an account with</p>
+      <div class="ab-choose-bank-search">
+        <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="9" cy="9" r="6.5" stroke="#9ca3af" stroke-width="1.4"/><path d="M14 14l4 4" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="ab-choose-bank-search__text">Search/Select Bank for bill payment</span>
+      </div>
+      <div class="ab-choose-bank-list">${bankItems}</div>
+    </div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
+  </div>`;
+}
+
+function selectedBankName() {
+  return bankList[chooseBankSelected];
+}
+
+function selectChooseBank(idx) {
+  chooseBankSelected = idx;
+  document.querySelectorAll(".ab-choose-bank-item").forEach((el, i) => {
+    el.classList.toggle("ab-choose-bank-item--selected", i === idx);
+  });
+}
+
 function bankIconSVG() {
   return '<svg viewBox="0 0 18 18" fill="none" width="18" height="18"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg>';
 }
 
 function selectBankHTML() {
   const accounts = [
-    { name: "Bharatiya Payments Bank", ifsc: "BPB1234IN" },
-    { name: "Bharatiya Payments Bank", ifsc: "HDF1234IN", needsPin: true },
+    { name: selectedBankName(), ifsc: "HDF1234IN", needsPin: true },
   ];
   let accountList = "";
   accounts.forEach((acc, i) => {
@@ -717,13 +767,13 @@ function selectBankHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Choose your bank</h1>
+      <h1 class="ab-title">Which account?</h1>
       <p class="ab-subtitle">Select which bank you have an account with</p>
       <div class="ab-bank-header" id="ab-tour-select-bank-header">
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -762,7 +812,7 @@ function debitCardHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-debit-content" id="ab-tour-debit-content">
@@ -795,7 +845,7 @@ function bankOtpHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-otp-content">
@@ -819,7 +869,7 @@ function setUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-setpin-content">
@@ -843,7 +893,7 @@ function confirmUpiPinHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">Horizon Bank Ltd</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">658568XXXXXXXX55</span>
     </div>
     <div class="ab-pin-content">
@@ -890,7 +940,7 @@ function paymentMethodsHTML() {
         <div class="ab-methods-bank">
           <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
-            <span class="ab-account-name">Bharatiya Payments Bank</span>
+            <span class="ab-account-name">${selectedBankName()}</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
         </div>
@@ -906,7 +956,7 @@ function paymentMethodsHTML() {
       <div class="ab-toast__icon">
         <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <span class="ab-toast__text">Your Bharatiya Payments Bank has been added successfully!</span>
+      <span class="ab-toast__text">Your ${selectedBankName()} has been added successfully!</span>
       <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">Close</span>
     </div>
     ${homeIndHTML()}
@@ -929,7 +979,7 @@ function methodSelectHTML() {
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -937,28 +987,16 @@ function methodSelectHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card" onclick="selectBankAccount(0)">
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
             <div class="ab-account-info">
               <div class="ab-account-logo">${bankIconSVG()}</div>
               <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
-                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
-              </div>
-            </div>
-            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
-          </div>
-        </div>
-        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
-          <div class="ab-account-row">
-            <div class="ab-account-info">
-              <div class="ab-account-logo">${bankIconSVG()}</div>
-              <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-name">${selectedBankName()}</span>
                 <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
               </div>
             </div>
-            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
+            <div class="ab-radio ab-radio--checked"></div>
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
@@ -1028,7 +1066,7 @@ function aadhaarConsentHTML() {
         <div class="ab-bank-header__info">
           <div class="ab-account-logo">${bankIconSVG()}</div>
           <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">Bharatiya Payments Bank</span>
+            <span class="ab-bank-header__name">${selectedBankName()}</span>
             <span class="ab-bank-header__num">*** 2453</span>
           </div>
         </div>
@@ -1036,28 +1074,16 @@ function aadhaarConsentHTML() {
       </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
-        <div class="ab-account-card" onclick="selectBankAccount(0)">
+        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
             <div class="ab-account-info">
               <div class="ab-account-logo">${bankIconSVG()}</div>
               <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
-                <span class="ab-account-ifsc">IFSC - BPB1234IN</span>
-              </div>
-            </div>
-            <div class="ab-radio${addBankSelectedAccount === 0 ? " ab-radio--checked" : ""}"></div>
-          </div>
-        </div>
-        <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(1)">
-          <div class="ab-account-row">
-            <div class="ab-account-info">
-              <div class="ab-account-logo">${bankIconSVG()}</div>
-              <div class="ab-account-details">
-                <span class="ab-account-name">Bharatiya Payments Bank</span>
+                <span class="ab-account-name">${selectedBankName()}</span>
                 <span class="ab-account-ifsc">IFSC - HDF1234IN</span>
               </div>
             </div>
-            <div class="ab-radio${addBankSelectedAccount === 1 ? " ab-radio--checked" : ""}"></div>
+            <div class="ab-radio ab-radio--checked"></div>
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
@@ -1071,7 +1097,7 @@ function aadhaarConsentHTML() {
     <div class="ab-ms-overlay">
       <div class="ab-ms-sheet ab-ms-sheet--consent">
         <div class="ab-ms-handle"></div>
-        <p class="ab-consent-text">I hereby give my consent to <strong>Bharatiya Payments BANK</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
+        <p class="ab-consent-text">I hereby give my consent to <strong>${selectedBankName()}</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
         <div class="ab-ms-buttons">
           <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Cancel</button>
           <button class="ab-ms-btn ab-ms-btn--proceed" onclick="renderScreen(S.ADD_BANK_AADHAAR_NUMBER)">Accept</button>
@@ -1097,7 +1123,7 @@ function aadhaarNumberHTML() {
     <div class="ab-bank-bar">
       <div class="ab-bank-bar__left">
         <div class="ab-bank-bar__icon">${bankIconSVG()}</div>
-        <span class="ab-bank-bar__name">Bharatiya Payments Bank- XXXX2657</span>
+        <span class="ab-bank-bar__name">${selectedBankName()}- XXXX2657</span>
       </div>
     </div>
     <div class="ab-aadhaar-content">
@@ -1354,7 +1380,7 @@ function abTourNext() {
 function startAddBankFlow() {
   abTooltipGuide.enabled = true;
   abTooltipGuide.shownForScreen = {};
-  renderScreen(S.ADD_BANK_SELECT);
+  renderScreen(S.ADD_BANK_CHOOSE_BANK);
 }
 
 
@@ -1502,6 +1528,7 @@ function renderScreen(state) {
     passcodeConfirm = "";
   }
   // Add Bank Account flow resets
+  if (state === S.ADD_BANK_CHOOSE_BANK) { chooseBankSelected = 0; }
   if (state === S.ADD_BANK_SELECT) { addBankSelectedAccount = 0; }
   if (state === S.ADD_BANK_DEBIT_CARD) { addBankCardDigits = ""; addBankExpiry = ""; addBankInputFocus = "card"; }
   if (state === S.ADD_BANK_METHOD_SELECT) { addBankMethod = "debit"; }
@@ -2247,6 +2274,8 @@ function getScreenHTML(state) {
     case S.HOME:
       return homeScreenHTML();
     // Add Bank Account flow
+    case S.ADD_BANK_CHOOSE_BANK:
+      return chooseBankHTML();
     case S.ADD_BANK_SELECT:
       return selectBankHTML();
     case S.ADD_BANK_METHOD_SELECT:
@@ -2345,6 +2374,7 @@ function handlePostRender(state) {
       }
       break;
     // Add Bank Account flow
+    case S.ADD_BANK_CHOOSE_BANK:
     case S.ADD_BANK_SELECT:
     case S.ADD_BANK_METHOD_SELECT:
     case S.ADD_BANK_DEBIT_CARD:
@@ -2536,8 +2566,11 @@ function goBack() {
       renderScreen(S.SECURITY_SELECT);
       break;
     // Add Bank Account flow back navigation
-    case S.ADD_BANK_SELECT:
+    case S.ADD_BANK_CHOOSE_BANK:
       renderScreen(S.HOME);
+      break;
+    case S.ADD_BANK_SELECT:
+      renderScreen(S.ADD_BANK_CHOOSE_BANK);
       break;
     case S.ADD_BANK_METHOD_SELECT:
       renderScreen(S.ADD_BANK_SELECT);
