@@ -59,6 +59,7 @@ let phoneShell = null;
 let activeDriver = null;
 let timers = [];
 let skipHomeTour = false;
+let bankLinked = true; // false only during onboarding→add bank flow
 
 // Tooltip guide state (non-linear, per-screen)
 const tooltipGuide = {
@@ -682,18 +683,32 @@ function checkBalancePinHTML() {
 // ─── Home Screen HTML (Check balance UI from Figma) ──────────
 function homeScreenHTML() {
   const upiId = "***2776@upi";
-  const bankCardLeft = `
-    <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
-    <div class="bank-card__details">
-      <span class="bank-card__name">Bharatiya Payments Bank</span>
-      <span class="bank-card__account">***2453 Bank account</span>
-    </div>
-    <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const bankCardRight = balanceRevealed
-    ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
-    : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
-  const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
-  const bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  let bankCardHTML;
+  if (bankLinked) {
+    const bankCardLeft = `
+      <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
+      <div class="bank-card__details">
+        <span class="bank-card__name">${selectedBankName()}</span>
+        <span class="bank-card__account">***2453 Bank account</span>
+      </div>
+      <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const bankCardRight = balanceRevealed
+      ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
+      : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
+    bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  } else {
+    bankCardHTML = `<div class="bank-card bank-card--add" id="bank-card" onclick="startAddBankFlow()">
+      <div class="bank-card__info">
+        <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
+        <div class="bank-card__details">
+          <span class="bank-card__name">Add Bank Account</span>
+          <span class="bank-card__account">Link your bank to start using UPI</span>
+        </div>
+      </div>
+      <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none" style="transform:rotate(-90deg)"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
+  }
 
   return `
   <div class="screen screen--no-anim" style="display:block">
@@ -970,6 +985,7 @@ function confirmUpiPinHTML() {
 }
 
 function bankSuccessHTML() {
+  bankLinked = true;
   return `
   <div class="screen screen-ab-success">
     ${statusBarSVG(false)}
@@ -1344,7 +1360,7 @@ const abTooltipGuide = {
 const AB_SCREEN_TOOLTIPS = {
   [S.HOME]: {
     element: "#bank-card",
-    get desc() { return t("home.welcome_tooltip"); },
+    desc: "Link your bank account to start making UPI payments",
     side: "bottom",
     radius: 16,
   },
@@ -2419,9 +2435,13 @@ function handlePostRender(state) {
       wait(() => renderScreen(S.HOME), 2500);
       break;
     case S.HOME:
-      showCbScreenTooltip(state);
-      showSendMobileTour(state);
-      showScanPayTour(state);
+      if (!bankLinked) {
+        showAbScreenTooltip(state);
+      } else {
+        showCbScreenTooltip(state);
+        showSendMobileTour(state);
+        showScanPayTour(state);
+      }
       const sendToMobileBtn = document.getElementById("send-to-mobile");
       if (sendToMobileBtn) {
         sendToMobileBtn.style.cursor = "pointer";
@@ -3025,6 +3045,7 @@ function tooltipSkip() {
 // ─── Flow Control ────────────────────────────────────────────
 
 function startOnboarding() {
+  bankLinked = false;
   renderScreen(S.SPLASH_1);
 }
 function goHome() {

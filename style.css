@@ -1809,6 +1809,10 @@ body {
 }
 
 /* Check balance UI (Figma): card with divider + Check balance btn or balance amount */
+.bank-card--add {
+  cursor: pointer;
+}
+
 .bank-card--with-check {
   display: flex;
   align-items: stretch;
