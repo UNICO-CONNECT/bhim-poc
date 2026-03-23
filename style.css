@@ -5536,6 +5536,7 @@ body.driver-active .ab-select-content {
   display: flex;
   gap: 12px;
   padding: 4px 16px 12px;
+  margin-top: auto;
 }
 
 .sm-receipt-btn {
