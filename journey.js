@@ -2280,13 +2280,6 @@ function sendMobileReceiptHTML() {
         <span class="sm-receipt-option__label">Share<br>screenshot</span>
       </div>
     </div>
-    <div class="sm-receipt-ad">
-      <div class="sm-receipt-ad__text">
-        <p class="sm-receipt-ad__title">It's Payday!</p>
-        <p class="sm-receipt-ad__sub">Treat yourself with a nice meal with <strong>Swiggy</strong></p>
-        <span class="sm-receipt-ad__cta">Claim your <strong>20% off</strong></span>
-      </div>
-    </div>
     <div class="sm-receipt-powered">
         <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
@@ -2484,9 +2477,15 @@ function handlePostRender(state) {
     // Send to Mobile flow
     case S.SEND_MOBILE_CHAT:
     case S.SEND_MOBILE_PIN:
-    case S.SEND_MOBILE_SUCCESS:
     case S.SEND_MOBILE_RECEIPT:
       showSendMobileTour(state);
+      break;
+    case S.SEND_MOBILE_SUCCESS:
+      if (smTour.enabled) {
+        showSendMobileTour(state);
+      } else {
+        wait(() => renderScreen(S.SEND_MOBILE_RECEIPT), 2500);
+      }
       break;
   }
 }
@@ -3197,6 +3196,14 @@ function smCoachNext() {
   if (action) action();
 }
 
+function smCoachSkip() {
+  smTour.enabled = false;
+  const action = smCoachNextAction;
+  dismissSmCoachMark();
+  // On screens that auto-advance via onNext (e.g. Payment Successful), still navigate
+  if (action) action();
+}
+
 function showSendMobileTour(state) {
   if (!smTour.enabled || smTour.shownForScreen[state]) return;
 
@@ -3211,7 +3218,7 @@ function showSendMobileTour(state) {
   } else if (state === S.SEND_MOBILE_SUCCESS) {
     step = { element: "#sm-success-text", title: "Payment Successful", desc: "Success message will appear once transaction is done.", side: "bottom", padding: 20, radius: 16, idx: 3, onNext: function () { renderScreen(S.SEND_MOBILE_RECEIPT); } };
   } else if (state === S.SEND_MOBILE_RECEIPT) {
-    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { renderScreen(S.HOME); } };
+    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { if (activeDriver) { activeDriver.destroy(); activeDriver = null; } } };
   }
 
   if (!step) return;
@@ -3265,7 +3272,7 @@ function showSendMobileTour(state) {
       descHTML +
       dotsHTML +
       '<div class="smc-tooltip__btns">' +
-        '<button class="smc-tooltip__skip" onclick="dismissSmCoachMark()">Skip</button>' +
+        '<button class="smc-tooltip__skip" onclick="smCoachSkip()">Skip</button>' +
         '<button class="smc-tooltip__next" onclick="smCoachNext()">Next</button>' +
       "</div>";
 

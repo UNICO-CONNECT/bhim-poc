@@ -5371,9 +5371,9 @@ body.driver-active .ab-select-content {
   text-align: center;
 }
 
-/* White card overlapping hero */
+/* White card starting right after the curve */
 .screen-sm-receipt .sm-receipt-card {
-  margin: 0px 16px 0;
+  margin: 0 16px 0;
   background: #fff;
   border-radius: 0 0 16px 16px;
   padding: 40px 30px 24px 30px;
