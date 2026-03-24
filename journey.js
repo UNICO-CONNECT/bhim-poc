@@ -847,23 +847,13 @@ function selectBankHTML() {
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
       <h1 class="ab-title">Which account?</h1>
-      <p class="ab-subtitle">Select which bank you have an account with</p>
-      <div class="ab-bank-header" id="ab-tour-select-bank-header">
-        <div class="ab-bank-header__info">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
-          <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">${selectedBankName()}</span>
-            <span class="ab-bank-header__num">*** 2453</span>
-          </div>
-        </div>
-        <span class="ab-bank-header__change">Change bank →</span>
-      </div>
+      <p class="ab-subtitle">Choose the account that you would want to use</p>
       <div class="ab-section-label">
         <span>Select your account</span>
         <span class="ab-section-label__star">✦</span>
         <div class="ab-section-label__line"></div>
       </div>
-      <div class="ab-account-list">${accountList}</div>
+      <div class="ab-account-list" id="ab-tour-select-account">${accountList}</div>
     </div>
     <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
   </div>`;
@@ -1046,7 +1036,7 @@ function paymentMethodsHTML() {
 // ─── Method Selection Bottom Sheet ────────────────────────────
 function methodSelectHTML() {
   const debitChecked = addBankMethod === "debit" ? "ab-ms-radio--checked" : "";
-  const aadhaarChecked = addBankMethod === "aadhaar" ? "ab-ms-radio--checked" : "";
+
   return `
   <div class="screen screen-ab-method-select">
     <div class="ab-gradient-bg"></div>
@@ -1055,16 +1045,6 @@ function methodSelectHTML() {
     <div class="ab-select-content">
       <h1 class="ab-title">Which account?</h1>
       <p class="ab-subtitle">Choose the account that you would want to use</p>
-      <div class="ab-bank-header">
-        <div class="ab-bank-header__info">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
-          <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">${selectedBankName()}</span>
-            <span class="ab-bank-header__num">*** 2453</span>
-          </div>
-        </div>
-        <span class="ab-bank-header__change">Change bank →</span>
-      </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
         <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
@@ -1099,13 +1079,7 @@ function methodSelectHTML() {
             </div>
             <div class="ab-ms-radio ${debitChecked}"></div>
           </div>
-          <div class="ab-ms-option" onclick="selectMethod('aadhaar')">
-            <div class="ab-ms-option__info">
-                        <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
-              <span class="ab-ms-option__label">Aadhaar number</span>
-            </div>
-            <div class="ab-ms-radio ${aadhaarChecked}"></div>
-          </div>
+          <!-- Aadhaar option removed -->
         </div>
         <div class="ab-ms-buttons">
           <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_SELECT)">Cancel</button>
@@ -1142,16 +1116,6 @@ function aadhaarConsentHTML() {
     <div class="ab-select-content">
       <h1 class="ab-title">Which account?</h1>
       <p class="ab-subtitle">Choose the account that you would want to use</p>
-      <div class="ab-bank-header">
-        <div class="ab-bank-header__info">
-          <div class="ab-account-logo">${bankIconSVG()}</div>
-          <div class="ab-bank-header__details">
-            <span class="ab-bank-header__name">${selectedBankName()}</span>
-            <span class="ab-bank-header__num">*** 2453</span>
-          </div>
-        </div>
-        <span class="ab-bank-header__change">Change bank →</span>
-      </div>
       <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
         <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
@@ -1364,8 +1328,8 @@ const AB_SCREEN_TOOLTIPS = {
     radius: 16,
   },
   [S.ADD_BANK_SELECT]: {
-    element: "#ab-tour-select-bank-header",
-    desc: "Select bank from the list below and link your bank account to proceed further",
+    element: "#ab-tour-select-account",
+    desc: "Select this account and set your UPI PIN to link your bank account",
     side: "bottom",
     radius: 12,
   },
