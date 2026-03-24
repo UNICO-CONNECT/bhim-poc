@@ -1003,13 +1003,6 @@ function paymentMethodsHTML() {
         <div class="ab-methods-bank">
           <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
           <div class="ab-methods-bank__details">
-            <span class="ab-account-name">Pinnacle Bank</span>
-            <span class="ab-account-ifsc">XXXX53</span>
-          </div>
-        </div>
-        <div class="ab-methods-bank">
-          <div class="ab-methods-bank__icon">${bankIconSVG()}</div>
-          <div class="ab-methods-bank__details">
             <span class="ab-account-name">${selectedBankName()}</span>
             <span class="ab-account-ifsc">XXXX53</span>
           </div>
@@ -1848,13 +1841,12 @@ function enterUpiPinHTML() {
   return `
   <div class="screen screen-enter-upi-pin">
     ${statusBarSVG(true)}
-    <div class="sp-bank-header">
-      <div class="sp-bank-header__logo">
-        <img src="assets/bank_logo.png" alt="" class="sp-bank-header__logo-img"/>
-      </div>
+    <div class="sm-pin-bank-bar">
+      <span class="sm-pin-bank-bar__name">${selectedBankName()}</span>
+      <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" class="sm-pin-bank-bar__upi" width="46" height="20" />
     </div>
     <div class="sp-bank-name-bar">
-      <span class="sp-bank-name-bar__text">XXXXXXXXXXXX</span>
+      <span class="sp-bank-name-bar__text">XXXXXXXXXXXX2453</span>
       <svg class="sp-bank-name-bar__chevron" viewBox="0 0 12 12" fill="none" width="16" height="16"><path d="M3 4.5l3 3 3-3" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div class="sp-pin-content" id="sp-pin-content">
@@ -2154,11 +2146,11 @@ function sendMobilePinHTML() {
   <div class="screen screen-sm-pin">
     ${statusBarSVG(true)}
     <div class="sm-pin-bank-bar">
-      <span class="sm-pin-bank-bar__name">Indira Bank Limited</span>
+      <span class="sm-pin-bank-bar__name">${selectedBankName()}</span>
       <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" class="sm-pin-bank-bar__upi" width="46" height="20" />
     </div>
     <div class="sm-pin-acct-bar">
-      <span class="sm-pin-acct-bar__text">XXXXXXXXXXXX</span>
+      <span class="sm-pin-acct-bar__text">XXXXXXXXXXXX2453</span>
       <svg class="sm-pin-acct-bar__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 8l3 3 3-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div class="sm-pin-center">
