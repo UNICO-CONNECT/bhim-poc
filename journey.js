@@ -1029,6 +1029,7 @@ function paymentMethodsHTML() {
 // ─── Method Selection Bottom Sheet ────────────────────────────
 function methodSelectHTML() {
   const debitChecked = addBankMethod === "debit" ? "ab-ms-radio--checked" : "";
+  const aadhaarChecked = addBankMethod === "aadhaar" ? "ab-ms-radio--checked" : "";
 
   return `
   <div class="screen screen-ab-method-select">
@@ -1072,7 +1073,13 @@ function methodSelectHTML() {
             </div>
             <div class="ab-ms-radio ${debitChecked}"></div>
           </div>
-          <!-- Aadhaar option removed -->
+          <div class="ab-ms-option" onclick="selectMethod('aadhaar')">
+            <div class="ab-ms-option__info">
+                      <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
+              <span class="ab-ms-option__label">Aadhaar number</span>
+            </div>
+            <div class="ab-ms-radio ${aadhaarChecked}"></div>
+          </div>
         </div>
         <div class="ab-ms-buttons">
           <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_SELECT)">Cancel</button>
@@ -1200,42 +1207,23 @@ function aadhaarOtpHTML() {
   let boxes = "";
   for (let i = 0; i < 6; i++) {
     const val = i < addBankAadhaarOtp.length ? addBankAadhaarOtp[i] : "";
-    const active = i === addBankAadhaarOtp.length ? " ab-aadh-otp-digit--active" : "";
-    boxes += `<div class="ab-aadh-otp-digit${active}" id="ab-aadhotp-${i}"><span>${val}</span></div>`;
+    const active = i === addBankAadhaarOtp.length ? " ab-pin-digit--active" : "";
+    boxes += `<div class="ab-pin-digit${active}" id="ab-aadhotp-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
   }
   return `
   <div class="screen screen-ab-aadhaar-otp">
-    <div class="ab-aadhaar-otp-header">
-      ${statusBarSVG(false)}
-      <div class="ab-aadhaar-otp-topbar">
-        <span class="ab-aadhaar-otp-cancel" onclick="goBack()">CANCEL</span>
-        <div class="ab-aadhaar-otp-upi">
-          <svg viewBox="0 0 40 16" fill="none" width="40" height="16"><text x="0" y="13" font-family="Arial" font-weight="bold" font-size="14" fill="white">UPI</text></svg>
-        </div>
-      </div>
-      <div class="ab-aadhaar-otp-bankbar">
-        <span class="ab-aadhaar-otp-bankname">Bharatiya Payments BANK</span>
-      </div>
-      <div class="ab-aadhaar-otp-acctbar">
-        <span class="ab-aadhaar-otp-acctnum">XXXXXXXXXXXX</span>
-        <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><polyline points="12,4 6,10 12,16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
+    ${statusBarSVG(true)}
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter Aadhaar OTP</span></div>
+    <div class="ab-bank-bar">
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
+      <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
-    <div class="ab-aadhaar-otp-body">
-      <p class="ab-aadhaar-otp-title">ENTER 6 DIGIT OTP</p>
-      <div class="ab-aadhaar-otp-row" id="ab-aadhotp-row">${boxes}</div>
-      <p class="ab-aadhaar-otp-msg">AADHAAR-OTP has been sent to your registered mobile number via SMS</p>
-      <span class="ab-aadhaar-otp-timer">0s</span>
+    <div class="ab-pin-content">
+      <p class="ab-pin-heading">ENTER 6 DIGIT OTP</p>
+      <div class="ab-pin-row" id="ab-aadhotp-row">${boxes}</div>
+      <p style="text-align:center;font-size:13px;color:#888;margin-top:16px;line-height:1.4">AADHAAR-OTP has been sent to your registered mobile number via SMS</p>
     </div>
-    <div class="ab-aadhaar-otp-keyboard">
-      <div class="ab-aadhaar-otp-numpad">
-        ${[1,2,3,4,5,6,7,8,9,"del",0,"submit"].map(k => {
-          if (k === "del") return '<button class="ab-aadhaar-otp-numpad__key ab-aadhaar-otp-numpad__key--del" onclick="handleAadhaarOtpKey(\'DEL\')">⌫</button>';
-          if (k === "submit") return '<button class="ab-aadhaar-otp-numpad__key ab-aadhaar-otp-numpad__key--submit" onclick="handleAadhaarOtpKey(\'SUBMIT\')">SUBMIT</button>';
-          return '<button class="ab-aadhaar-otp-numpad__key" onclick="handleAadhaarOtpKey(\'' + k + '\')">'+k+'</button>';
-        }).join("")}
-      </div>
-    </div>
+    <div class="ab-pin-keyboard">${abNumpadHTML("aadhotp")}</div>
   </div>`;
 }
 
@@ -1283,7 +1271,7 @@ function updateAadhaarOtpUI() {
     const el = document.getElementById("ab-aadhotp-" + i);
     if (el) {
       el.querySelector("span").textContent = i < addBankAadhaarOtp.length ? addBankAadhaarOtp[i] : "";
-      el.classList.toggle("ab-aadh-otp-digit--active", i === addBankAadhaarOtp.length);
+      el.className = i === addBankAadhaarOtp.length ? "ab-pin-digit ab-pin-digit--active" : "ab-pin-digit";
     }
   }
 }
@@ -1463,6 +1451,11 @@ function handleAddBankKey(target, key) {
     else if (key === "SUBMIT" && addBankConfirmPin.length === 4) { renderScreen(S.ADD_BANK_SUCCESS); return; }
     else if (key !== "SUBMIT" && addBankConfirmPin.length < 4) addBankConfirmPin += key;
     updateConfirmPinUI();
+  } else if (target === "aadhotp") {
+    if (key === "DEL") addBankAadhaarOtp = addBankAadhaarOtp.slice(0, -1);
+    else if (key === "SUBMIT" && addBankAadhaarOtp.length === 6) { renderScreen(S.ADD_BANK_SET_PIN); return; }
+    else if (key !== "SUBMIT" && addBankAadhaarOtp.length < 6) addBankAadhaarOtp += key;
+    updateAadhaarOtpUI();
   }
 }
 
