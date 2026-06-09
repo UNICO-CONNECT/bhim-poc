@@ -117,7 +117,17 @@ const sendMobileContacts = [
 ];
 
 // ─── i18n – Internationalisation helpers ─────────────────────
-let currentLang = "en"; // "en" | "hi"
+const LANG_STORAGE_KEY = "bhim.lang";
+function loadStoredLang() {
+  try {
+    const v = localStorage.getItem(LANG_STORAGE_KEY);
+    return (v === "hi" || v === "en") ? v : "en";
+  } catch (e) { return "en"; }
+}
+function persistLang(lang) {
+  try { localStorage.setItem(LANG_STORAGE_KEY, lang); } catch (e) {}
+}
+let currentLang = loadStoredLang(); // "en" | "hi"
 
 const i18n = {
   en: {
@@ -143,6 +153,13 @@ const i18n = {
     // Home – Bottom nav
     "home.offers":            "Offers",
     "home.history":           "History",
+    // Home – Header & bank card
+    "home.me":                "Me",
+    "home.add_bank.title":    "Add Bank Account",
+    "home.add_bank.subtitle": "Link your bank to start using UPI",
+    "home.bank_account":      "Bank account",
+    "home.balance":           "Balance",
+    "home.check_balance":     "Check balance",
     // Tooltip
     "home.welcome_tooltip":   "Welcome to UPI Pay",
     // Onboarding – Mobile Entry
@@ -159,6 +176,11 @@ const i18n = {
     "sim.subtitle":           "Choose a SIM card registered to your bank account",
     "sim.info":               "By selecting a SIM I agree to the Terms and Conditions. Regular carrier chargers may apply.",
     "sim.confirm":            "Confirm SIM",
+    // Onboarding – SIM card labels
+    "sim.card1.name":         "Tele 1",
+    "sim.card1.slot":         "SIM 1",
+    "sim.card2.name":         "Tele 2",
+    "sim.card2.slot":         "SIM 2",
     // Onboarding – Verify
     "verify.title":           "Verifying Your Number",
     "verify.step1":           "Verify Mobile Number",
@@ -181,8 +203,167 @@ const i18n = {
     "pass.reenter":           "Re-Enter Passcode",
     "pass.show":              "Show",
     "pass.proceed":           "Proceed",
+    "pass.confirm":           "Confirm Passcode",
     // Onboarding – Loading
     "loading.text":           "Loading...",
+    // ─── Add Bank Account Flow ───
+    // Common buttons / labels
+    "ab.confirm":             "Confirm",
+    "ab.cancel":              "Cancel",
+    "ab.proceed":             "Proceed",
+    "ab.show":                "Show",
+    "ab.set_upi_pin":         "Set UPI PIN",
+    "ab.pin_warning":         "4 digit UPI PIN not set",
+    // Choose Bank
+    "ab.choose_bank.title":   "Choose your bank",
+    "ab.choose_bank.subtitle":"Select which bank you have an account with",
+    "ab.choose_bank.search":  "Search/Select Bank for bill payment",
+    // Select Account
+    "ab.select.title":        "Which account?",
+    "ab.select.subtitle":     "Choose the account that you would want to use",
+    "ab.select.section":      "Select your account",
+    // Method Select
+    "ab.method.title":        "Choose option to set UPI PIN",
+    "ab.method.debit":        "Debit Card",
+    "ab.method.aadhaar":      "Aadhaar number",
+    // Debit Card
+    "ab.debit.last6":         "LAST 6 DIGIT OF DEBIT CARD",
+    "ab.debit.valid":         "Valid Upto",
+    // OTP / Set PIN / Confirm PIN
+    "ab.otp.header":          "Enter OTP",
+    "ab.otp.heading":         "ENTER OTP",
+    "ab.setpin.heading":      "ENTER NEW UPI PIN",
+    "ab.confirmpin.heading":  "CONFIRM NEW UPI PIN",
+    // Success
+    "ab.success.text":        "Your Bank has been added successfully!",
+    // Payment Methods
+    "ab.methods.title":       "Payment Methods",
+    "ab.methods.bank":        "Bank Account",
+    "ab.methods.add":         "Add new bank account",
+    "ab.methods.toast":       "Your {bank} has been added successfully!",
+    "ab.methods.close":       "Close",
+    // Bank list
+    "ab.bank.bhartiya":       "Bharatiya Payments Bank",
+    "ab.bank.janseva":        "JanSeva Bank",
+    "ab.bank.saral":          "Saral Bank Ltd",
+    "ab.bank.nagrik":         "Nagrik Bank",
+    "ab.bank.vikas":          "Vikas Bank Ltd",
+    "ab.bank.pragati":        "Pragati Bank",
+    // Aadhaar Consent
+    "ab.consent.text":        "I hereby give my consent to <strong>{bank}</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.",
+    "ab.consent.accept":      "Accept",
+    // Aadhaar Number Entry
+    "ab.aadh_num.title":      "Create 4-digit UPI PIN using your Aadhaar details",
+    "ab.aadh_num.desc":       "Your PIN will be securely saved with your Bank. You will need to enter this PIN every time you make a payment using your Bank Account.",
+    "ab.aadh_num.label":      "AADHAAR NUMBER",
+    "ab.aadh_num.sublabel":   "First 6-Digits of Aadhaar Number",
+    "ab.aadh_num.go":         "Go",
+    // Aadhaar OTP
+    "ab.aadh_otp.header":     "Enter Aadhaar OTP",
+    "ab.aadh_otp.heading":    "ENTER 6 DIGIT OTP",
+    "ab.aadh_otp.note":       "AADHAAR-OTP has been sent to your registered mobile number via SMS",
+    // ─── Scan & Pay Flow ───
+    "sp.send_money":          "SEND MONEY TO ANY UPI APP",
+    "sp.recent_scans":        "RECENT SCANS",
+    "sp.proceed":             "Proceed",
+    "sp.paying":              "Paying {name}",
+    "sp.note":                "Note",
+    "sp.next":                "Next",
+    "sp.add_comment":         "Add a comment",
+    "sp.select_account":      "Select account to pay with",
+    "sp.bank_account":        "Bank account",
+    "sp.check_balance":       "Check Balance",
+    "sp.default":             "DEFAULT",
+    "sp.pay":                 "Pay",
+    "sp.rupees_only":         "Rupees Only",
+    "sp.only":                "Only",
+    // Enter UPI PIN
+    "sp.enter_pin_heading":   "ENTER UPI PIN",
+    "sp.show":                "Show",
+    "sp.hide":                "Hide",
+    // Payment Success
+    "sp.payment_success":     "Payment Successful",
+    // Receipt
+    "sp.paid_to":             "Paid to {name}",
+    "sp.banking_name":        "Banking Name",
+    "sp.txn_id":              "Transaction ID",
+    "sp.datetime":            "Date & Time",
+    "sp.more_details":        "More details",
+    "sp.split_expense":       "Split this<br>expense",
+    "sp.share_screenshot":    "Share<br>screenshot",
+    "sp.send_again":          "Send again",
+    "sp.home":                "Home",
+    // ─── Check Balance Flow ───
+    "cb.page_title":          "Enter UPI",
+    "cb.enter_pin_heading":   "ENTER UPI PIN",
+    // ─── Landing menu ───
+    "landing.start_onboarding": "Start Onboarding Flow",
+    "landing.add_bank":         "Add Bank Account",
+    "landing.check_balance":    "Check Balance",
+    "landing.send_mobile":      "Send to Mobile",
+    "landing.scan_pay":         "Scan and Pay",
+    // ─── Send to Mobile Flow ───
+    "sm.contacts.header":     "Send Money to any UPI App",
+    "sm.contacts.search":     "Search by name or mobile number",
+    "sm.contacts.recents":    "Recents",
+    "sm.contacts.contacts":   "Contacts",
+    "sm.contacts.empty":      "No contacts found",
+    "sm.chat.payment_to_you": "Payment to you",
+    "sm.chat.paid":           "Paid",
+    "sm.chat.enter_amount":   "Enter amount",
+    "sm.chat.pay":            "Pay",
+    "sm.review.sending_to":   "Sending money to {name}",
+    "sm.review.next":         "Next",
+    "sm.pin.heading":         "ENTER UPI PIN",
+    "sm.success.text":        "Payment Successful",
+    "sm.send_again":          "Send again",
+    // ─── Tooltip / Tour text ───
+    // Common
+    "tt.skip":                "Skip",
+    "tt.next":                "Next",
+    // Onboarding tooltips
+    "tt.ob.lang_pref":        "You can choose your preferred language in which you want to access the app",
+    "tt.ob.lang_others":      "You can choose other languages apart from Hindi and Marathi from here",
+    "tt.ob.mobile":           "You need to enter the mobile number linked with your bank account so that you can link and use your bank account for UPI Payments",
+    "tt.ob.otp":              "To ensure that your mobile number, linked with your bank account, is being used only by you, we will send an OTP on your number which will be auto fetched by your app.",
+    "tt.ob.sim":              "In this step you need to confirm your SIM Card company and we will proceed with binding of your SIM and device with the app. This will ensure that no one else can use your UPI Account apart from yourself",
+    // Add Bank tooltips
+    "tt.ab.home":             "Welcome to UPI Pay! Link your bank account to start making payments",
+    "tt.ab.choose_bank":      "Choose a bank from the list below and link your bank account to proceed further",
+    "tt.ab.select":           "Confirm the bank account linked to your selected bank and proceed to set your UPI PIN",
+    "tt.ab.method":           "Link your bank account via Debit Card and keep your debit card handy to fill the details on the upcoming screen",
+    "tt.ab.debit":            "Enter your debit card details to link your bank account",
+    "tt.ab.otp":              "Enter the OTP to link or add your bank account",
+    "tt.ab.consent":          "User needs to give consent to their bank for Aadhaar authentication",
+    "tt.ab.aadh_num":         "Enter your Aadhaar details here",
+    "tt.ab.aadh_otp":         "An OTP will be sent to the user's registered mobile number via SMS",
+    "tt.ab.success":          "Success message will appear once the bank account is linked or added",
+    "tt.ab.setpin":           "Your bank will ask you to set a 4 or 6 digit UPI PIN (as per bank rules). This PIN is required to approve UPI payments from your account.\n\nChoose a PIN you can easily remember, keep it confidential, and never share it with anyone.\nUPI or your bank will never ask for your UPI PIN — stay alert and stay secure.",
+    // Check Balance tooltips
+    "tt.cb.bal_visible.title":"Balance visible",
+    "tt.cb.bal_visible.desc": "Your account balance is shown here after you enter your UPI PIN.",
+    "tt.cb.check.title":      "Check Balance",
+    "tt.cb.check.desc":       "Tap here to enter your UPI PIN and view your account balance.",
+    "tt.cb.pin.title":        "Enter UPI PIN",
+    "tt.cb.pin.desc":         "Enter your 4-digit UPI PIN to view your account balance securely.",
+    // Send to Mobile tour
+    "tt.sm.home.title":       "Send to Mobile",
+    "tt.sm.home.desc":        "Click here to send money.",
+    "tt.sm.amount.title":     "Enter Amount",
+    "tt.sm.amount.desc":      "Use this footer to enter the amount and tap Pay.",
+    "tt.sm.pin.title":        "Enter UPI PIN",
+    "tt.sm.pin.desc":         "Enter your 4-digit UPI PIN and tap the tick button.",
+    "tt.sm.success.title":    "Payment Successful",
+    "tt.sm.success.desc":     "Success message will appear once transaction is done.",
+    "tt.sm.receipt.title":    "Detailed Transaction History Screen",
+    // Scan & Pay tour
+    "tt.sp.start":            "Click on Scanner Icon to start the journey of Scan & pay",
+    "tt.sp.select_qr":        "Select any QR to send money",
+    "tt.sp.amount":           "Enter amount and details, purpose of sending money",
+    "tt.sp.bank":             "Bank selection from bottom sheet dropdown if User has multiple bank added in UPI App",
+    "tt.sp.pin":              "Enter UPI PIN to send money",
+    "tt.sp.success":          "Success message will appear once transaction is done",
+    "tt.sp.receipt":          "Detailed Transaction History Screen",
   },
   hi: {
     "home.payments_title":    "भुगतान और ट्रांसफ़र",
@@ -203,21 +384,33 @@ const i18n = {
     "home.refer_friend":      "दोस्त को रेफ़र करें",
     "home.offers":            "ऑफ़र",
     "home.history":           "हिस्ट्री",
+    // Home – Header & bank card
+    "home.me":                "मैं",
+    "home.add_bank.title":    "अपना बैंक खाता अभी जोड़ें",
+    "home.add_bank.subtitle": "यूपीआई शुरू करने के लिए अपना बैंक लिंक करें",
+    "home.bank_account":      "बैंक खाता",
+    "home.balance":           "बैलेंस",
+    "home.check_balance":     "बैलेंस देखें",
     "home.welcome_tooltip":   "यूपीआई पे में आपका स्वागत है",
     // Onboarding – Mobile Entry
     "mob.title":              "अपना मोबाइल नंबर दर्ज करें",
-    "mob.subtitle":           "UPI ऐप का उपयोग जारी रखने के लिए कृपया अपने बैंक खाते से जुड़ा मोबाइल नंबर दर्ज करें।",
+    "mob.subtitle":           "कृपया यूपीआई ऐप का उपयोग जारी रखने के लिए अपने बैंक खाते से जुड़ा मोबाइल नंबर दर्ज करें",
     "mob.proceed":            "आगे बढ़ें",
     // Onboarding – OTP Entry
-    "otp.title":              "हम आपके नंबर पर भेजा गया OTP प्राप्त कर रहे हैं",
+    "otp.title":              "हम आपके नंबर पर भेजा गया ओटीपी प्राप्त कर रहे हैं",
     "otp.change":             "बदलें →",
-    "otp.timer":              "OTP स्वतः पढ़ रहा है 1:00",
+    "otp.timer":              "ओटीपी अपने आप पढ़ेगा 1:00",
     "otp.proceed":            "आगे बढ़ें",
     // Onboarding – SIM Select
-    "sim.title":              "अपना नंबर सत्यापित करें",
-    "sim.subtitle":           "अपने बैंक खाते से जुड़ा SIM कार्ड चुनें",
-    "sim.info":               "SIM चुनकर मैं नियम और शर्तों से सहमत हूँ। सामान्य कैरियर शुल्क लागू हो सकते हैं।",
-    "sim.confirm":            "SIM की पुष्टि करें",
+    "sim.title":              "चलो आपका नंबर वेरिफाई करते हैं",
+    "sim.subtitle":           "अपने बैंक खाते से जुड़ा सिम कार्ड चुनें",
+    "sim.info":               "सिम चुनते ही मैं नियम और शर्तों से सहमत हूँ। सामान्य कैरियर चार्ज लग सकते हैं।",
+    "sim.confirm":            "सिम कन्फर्म करें",
+    // Onboarding – SIM card labels
+    "sim.card1.name":         "दूरसंचार 1",
+    "sim.card1.slot":         "सिम 1",
+    "sim.card2.name":         "दूरसंचार 2",
+    "sim.card2.slot":         "सिम 2",
     // Onboarding – Verify
     "verify.title":           "आपका नंबर सत्यापित हो रहा है",
     "verify.step1":           "मोबाइल नंबर सत्यापित करें",
@@ -234,14 +427,172 @@ const i18n = {
     "sec.passcode.footer":    "ऑनलाइन काम करता है",
     "sec.next":               "आगे बढ़ें",
     // Onboarding – Passcode Entry
-    "pass.title":             "नया पासकोड दर्ज करें",
-    "pass.subtitle":          "नीचे एक नया पासकोड दर्ज करें और पुष्टि करें",
-    "pass.enter":             "पासकोड दर्ज करें",
-    "pass.reenter":           "पासकोड पुनः दर्ज करें",
+    "pass.title":             "नया पासकोड रजिस्टर करें",
+    "pass.subtitle":          "नीचे नया पासकोड डालें और कन्फर्म करें",
+    "pass.enter":             "पासकोड डालें",
+    "pass.reenter":           "पासकोड दोबारा डालें",
     "pass.show":              "दिखाएं",
-    "pass.proceed":           "आगे बढ़ें",
+    "pass.proceed":           "पासकोड कन्फर्म करें",
+    "pass.confirm":           "पासकोड कन्फर्म करें",
     // Onboarding – Loading
     "loading.text":           "लोड हो रहा है...",
+    // ─── Add Bank Account Flow ───
+    "ab.confirm":             "कन्फर्म करें",
+    "ab.cancel":              "रद्द करो",
+    "ab.proceed":             "आगे बढ़ें",
+    "ab.show":                "देखें",
+    "ab.set_upi_pin":         "यूपीआई पिन सेट करें",
+    "ab.pin_warning":         "4 अंकों का यूपीआई पिन सेट नहीं है",
+    // Choose Bank
+    "ab.choose_bank.title":   "अपना बैंक चुनें",
+    "ab.choose_bank.subtitle":"जिस बैंक में आपका खाता है, उसे सिलेक्ट करें",
+    "ab.choose_bank.search":  "बिल भुगतान के लिए बैंक खोजें/चुनें",
+    // Select Account
+    "ab.select.title":        "कौन सा खाता?",
+    "ab.select.subtitle":     "वह खाता चुनें जिसे आप इस्तेमाल करना चाहते हैं",
+    "ab.select.section":      "अपना खाता चुनें",
+    // Method Select
+    "ab.method.title":        "यूपीआई पिन सेट करने के लिए विकल्प चुनें",
+    "ab.method.debit":        "डेबिट कार्ड",
+    "ab.method.aadhaar":      "आधार नंबर",
+    // Debit Card
+    "ab.debit.last6":         "डेबिट कार्ड के आखिरी 6 अंक",
+    "ab.debit.valid":         "मान्य समाप्ति तक",
+    // OTP / Set PIN / Confirm PIN
+    "ab.otp.header":          "ओटीपी दर्ज करें",
+    "ab.otp.heading":         "ओटीपी दर्ज करें",
+    "ab.setpin.heading":      "नया यूपीआई पिन दर्ज करें",
+    "ab.confirmpin.heading":  "नया यूपीआई पिन कन्फर्म करें",
+    // Success
+    "ab.success.text":        "आपका बैंक सफलतापूर्वक जोड़ दिया गया है!",
+    // Payment Methods
+    "ab.methods.title":       "भुगतान के तरीके",
+    "ab.methods.bank":        "बैंक खाता",
+    "ab.methods.add":         "नया बैंक खाता जोड़ें",
+    "ab.methods.toast":       "आपका {bank} सफलतापूर्वक जोड़ दिया गया है!",
+    "ab.methods.close":       "बंद करें",
+    // Bank list
+    "ab.bank.bhartiya":       "भारतीय पेमेंट्स बैंक",
+    "ab.bank.janseva":        "जनसेवा बैंक",
+    "ab.bank.saral":          "सरल बैंक लिमिटेड",
+    "ab.bank.nagrik":         "नागरिक बैंक",
+    "ab.bank.vikas":          "विकास बैंक लिमिटेड",
+    "ab.bank.pragati":        "प्रगति बैंक",
+    // Aadhaar Consent
+    "ab.consent.text":        "मैं <strong>{bank}</strong> को अपनी सहमति देता/देती हूँ कि वे मेरे आधार नंबर को आधार आधारित प्रमाणीकरण के लिए एकत्रित और उपयोग कर सकते हैं, ताकि मुझे यूपीआई आधारित भुगतान सुविधाएँ प्रदान की जा सकें। मैं समझता हूँ कि मेरा आधार नंबर केवल मेरी पहचान की पुष्टि करने के लिए आधार प्रमाणीकरण प्रणाली के माध्यम से ऊपर बताए गए उद्देश्य के लिए उपयोग किया जाएगा।",
+    "ab.consent.accept":      "स्वीकार करें",
+    // Aadhaar Number Entry
+    "ab.aadh_num.title":      "4-अंकों का यूपीआई पिन अपने आधार विवरण का उपयोग करके बनाएं",
+    "ab.aadh_num.desc":       "आपका पिन सुरक्षित रूप से आपके बैंक में सेव होगा। आपको हर बार भुगतान करते समय यह पिन दर्ज करना होगा जब आप अपने बैंक खाते का उपयोग करेंगे।",
+    "ab.aadh_num.label":      "आधार नंबर",
+    "ab.aadh_num.sublabel":   "आधार नंबर के पहले 6 अंक",
+    "ab.aadh_num.go":         "जाएं",
+    // Aadhaar OTP
+    "ab.aadh_otp.header":     "आधार ओटीपी दर्ज करें",
+    "ab.aadh_otp.heading":    "6 अंकों का ओटीपी दर्ज करें",
+    "ab.aadh_otp.note":       "आधार-ओटीपी आपके रजिस्टर्ड मोबाइल नंबर पर एसएमएस के ज़रिए भेज दिया गया है",
+    // ─── Scan & Pay Flow ───
+    "sp.send_money":          "किसी भी यूपीआई ऐप पर पैसे भेजें",
+    "sp.recent_scans":        "हाल ही में किए गए स्कैन",
+    "sp.proceed":             "आगे बढ़ें",
+    "sp.paying":              "{name} को भुगतान कर रहे हैं",
+    "sp.note":                "यह किस काम के लिए है?",
+    "sp.next":                "अगला",
+    "sp.add_comment":         "एक टिप्पणी जोड़ें",
+    "sp.select_account":      "भुगतान करने के लिए खाता चुनें",
+    "sp.bank_account":        "बैंक खाता",
+    "sp.check_balance":       "बैलेंस देखें",
+    "sp.default":             "DEFAULT",
+    "sp.pay":                 "अगला",
+    "sp.rupees_only":         "रुपये",
+    "sp.only":                "केवल",
+    // Enter UPI PIN
+    "sp.enter_pin_heading":   "यूपीआई पिन दर्ज करें",
+    "sp.show":                "देखें",
+    "sp.hide":                "छुपाएं",
+    // Payment Success
+    "sp.payment_success":     "आपका भुगतान सफल रहा!",
+    // Receipt
+    "sp.paid_to":             "{name} को भुगतान किया",
+    "sp.banking_name":        "बैंक का नाम",
+    "sp.txn_id":              "लेन-देन आईडी",
+    "sp.datetime":            "तारीख और समय",
+    "sp.more_details":        "और जानकारी",
+    "sp.split_expense":       "इस खर्च को<br>बाँटें",
+    "sp.share_screenshot":    "स्क्रीनशॉट<br>शेयर करें",
+    "sp.send_again":          "फिर से भेजें",
+    "sp.home":                "होम",
+    // ─── Check Balance Flow ───
+    "cb.page_title":          "यूपीआई पिन",
+    "cb.enter_pin_heading":   "यूपीआई पिन दर्ज करें",
+    // ─── Landing menu ───
+    "landing.start_onboarding": "ऑनबोर्डिंग शुरू करें",
+    "landing.add_bank":         "बैंक खाता जोड़ें",
+    "landing.check_balance":    "बैलेंस देखें",
+    "landing.send_mobile":      "मोबाइल पर भेजें",
+    "landing.scan_pay":         "स्कैन और भुगतान",
+    // ─── Send to Mobile Flow ───
+    "sm.contacts.header":     "किसी भी यूपीआई ऐप पर पैसे भेजें",
+    "sm.contacts.search":     "नाम या मोबाइल नंबर से खोजें",
+    "sm.contacts.recents":    "हाल के",
+    "sm.contacts.contacts":   "कॉन्टैक्ट्स",
+    "sm.contacts.empty":      "कोई कॉन्टैक्ट नहीं मिला",
+    "sm.chat.payment_to_you": "आपको भुगतान",
+    "sm.chat.paid":           "भुगतान हुआ",
+    "sm.chat.enter_amount":   "राशि दर्ज करें",
+    "sm.chat.pay":            "भुगतान करें",
+    "sm.review.sending_to":   "{name} को पैसे भेज रहा हूँ",
+    "sm.review.next":         "अगला",
+    "sm.pin.heading":         "यूपीआई पिन दर्ज करें",
+    "sm.success.text":        "आपका भुगतान सफल रहा!",
+    "sm.send_again":          "फिर से भेजें",
+    // ─── Tooltip / Tour text ───
+    // Common
+    "tt.skip":                "स्किप करे",
+    "tt.next":                "अगला",
+    // Onboarding tooltips
+    "tt.ob.lang_pref":        "आप अपनी पसंद की भाषा चुन सकते हैं, जिसमें आप ऐप का उपयोग करना चाहते हैं",
+    "tt.ob.lang_others":      "आप यहाँ से हिंदी और मराठी के अलावा अन्य भाषाएँ भी चुन सकते हैं",
+    "tt.ob.mobile":           "आपको अपना बैंक खाते से जुड़ा मोबाइल नंबर दर्ज करना होगा ताकि आप अपना बैंक खाता लिंक कर सकें और यूपीआई भुगतान के लिए उपयोग कर सकें",
+    "tt.ob.otp":              "यह सुनिश्चित करने के लिए कि आपका बैंक खाते से जुड़ा मोबाइल नंबर सिर्फ आप ही इस्तेमाल कर रहे हैं, हम आपके नंबर पर एक ओटीपी भेजेंगे, जिसे आपका ऐप अपने आप पढ़ लेगा",
+    "tt.ob.sim":              "इस स्टेप में आपको अपनी सिम कार्ड कंपनी कन्फर्म करनी होगी। उसके बाद हम आपकी सिम और डिवाइस को ऐप से जोड़ देंगे। इससे यह सुनिश्चित होगा कि आपके अलावा कोई और आपके UPI अकाउंट का इस्तेमाल नहीं कर पाएगा",
+    // Add Bank tooltips
+    "tt.ab.home":             "यूपीआई ऐप में आपका स्वागत है! भुगतान शुरू करने के लिए अपना बैंक खाता लिंक करें",
+    "tt.ab.choose_bank":      "नीचे दी गई सूची से बैंक चुनें और आगे बढ़ने के लिए अपना बैंक खाता लिंक करें",
+    "tt.ab.select":           "चुने हुए बैंक से लिंक किया गया बैंक खाता कन्फर्म करें और अपना यूपीआई पिन सेट करने के लिए आगे बढ़ें",
+    "tt.ab.method":           "डेबिट कार्ड के ज़रिए अपना बैंक खाता लिंक करें और डेबिट कार्ड अपने पास रखें ताकि आने वाली स्क्रीन में डिटेल्स भर सकें",
+    "tt.ab.debit":            "अपना डेबिट कार्ड विवरण दर्ज करें ताकि बैंक खाता लिंक हो सके",
+    "tt.ab.otp":              "अपना बैंक अकाउंट लिंक या जोड़ने के लिए ओटीपी दर्ज करें",
+    "tt.ab.consent":          "यूज़र को आधार प्रमाणीकरण के लिए अपनी बैंक को सहमति देनी होगी",
+    "tt.ab.aadh_num":         "यहाँ अपने आधार विवरण दर्ज करें",
+    "tt.ab.aadh_otp":         "एक ओटीपी उपयोगकर्ता के पंजीकृत मोबाइल नंबर पर एसएमएस के ज़रिए भेजा जाएगा",
+    "tt.ab.success":          "सफलता का संदेश तब दिखाई देगा जब बैंक खाता लिंक या जोड़ दिया जाएगा",
+    "tt.ab.setpin":           "आपका बैंक आपसे 4 या 6 अंकों का यूपीआई पिन सेट करने को कहेगा (बैंक के नियमों के अनुसार) यह पिन आपके खाते से यूपीआई पेमेंट को मंज़ूरी देने के लिए ज़रूरी है\nऐसा पिन चुनें जो आपको आसानी से याद रहे, इसे गोपनीय रखें और कभी किसी से साझा न करें\nयूपीआई या आपका बैंक कभी भी आपका यूपीआई पिन नहीं मांगेगा—सतर्क रहें और सुरक्षित रहें",
+    // Check Balance tooltips
+    "tt.cb.bal_visible.title":"बैलेंस दिखाई दे रहा है",
+    "tt.cb.bal_visible.desc": "जैसे ही यूज़र यूपीआई पिन दर्ज करता है, वो अपना अकाउंट बैलेंस देख सकता है",
+    "tt.cb.check.title":      "बैलेंस देखें",
+    "tt.cb.check.desc":       "अपना यूपीआई पिन दर्ज कर खाते का बैलेंस देखने के लिए यहाँ टैप करें।",
+    "tt.cb.pin.title":        "यूपीआई पिन दर्ज करें",
+    "tt.cb.pin.desc":         "कृपया अपना सेट किया हुआ यूपीआई पिन दर्ज करें",
+    // Send to Mobile tour
+    "tt.sm.home.title":       "मोबाइल पर भेजें",
+    "tt.sm.home.desc":        "पैसे भेजने के लिए 'सेंड टू मोबाइल' पर क्लिक करें",
+    "tt.sm.amount.title":     "राशि दर्ज करें",
+    "tt.sm.amount.desc":      "कॉन्टैक्ट को पे करने के लिए राशि दर्ज करें",
+    "tt.sm.pin.title":        "यूपीआई पिन दर्ज करें",
+    "tt.sm.pin.desc":         "अपना 4 अंकों का यूपीआई पिन दर्ज करें और टिक बटन दबाएँ।",
+    "tt.sm.success.title":    "भुगतान सफल",
+    "tt.sm.success.desc":     "लेन-देन पूरा होने पर सफलता का संदेश यहाँ दिखाई देगा।",
+    "tt.sm.receipt.title":    "विस्तृत लेन-देन इतिहास स्क्रीन",
+    // Scan & Pay tour
+    "tt.sp.start":            "किसी भी यूपीआई क्यूआर को स्कैन करके भुगतान करें। शुरुआत करने के लिए स्कैनर आइकन पर क्लिक करें",
+    "tt.sp.select_qr":        "पैसे भेजने के लिए कोई भी क्यूआर चुनें",
+    "tt.sp.amount":           "राशि और जानकारी भरें, पैसे भेजने का कारण लिखें",
+    "tt.sp.bank":             "अगर यूज़र ने यूपीआई पे में कई बैंक जोड़े हैं, तो नीचे दिए गए बॉटम शीट ड्रॉपडाउन से बैंक चुनें",
+    "tt.sp.pin":              "पैसे भेजने के लिए यूपीआई पिन दर्ज करें",
+    "tt.sp.success":          "लेन-देन पूरा होने पर सफलता का संदेश दिखाई देगा",
+    "tt.sp.receipt":          "विस्तृत लेन-देन इतिहास स्क्रीन",
   },
 };
 
@@ -421,7 +772,7 @@ function getStartedHTML(mode) {
     </div>
     <div class="ob-bottom-bar">
       <!-- <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary">view all languages</button></div> -->
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview ? '' : ''}>Proceed</button></div>
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview || selectedLang !== null ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview || selectedLang === null ? '' : ' onclick="proceedFromGetStarted()"'}>Proceed</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -441,7 +792,7 @@ function langSelectHTML(mode) {
   ];
   let list = "";
   langs.forEach((l, i) => {
-    const isSel = isPreview && l.native === "English";
+    const isSel = isPreview ? l.native === "English" : selectedLang === i;
     const cls = isSel ? " lang-item--selected" : "";
     const radio = isSel
       ? '<div class="lang-radio lang-radio--checked"></div>'
@@ -451,7 +802,9 @@ function langSelectHTML(mode) {
   });
   const doneBtn = isPreview
     ? '<button class="ob-btn ob-btn--primary">Done</button>'
-    : '<button class="ob-btn ob-btn--disabled" id="lang-done-btn">Done</button>';
+    : (selectedLang !== null
+        ? '<button class="ob-btn ob-btn--primary" id="lang-done-btn" onclick="renderScreen(S.MOBILE_ENTRY)">Done</button>'
+        : '<button class="ob-btn ob-btn--disabled" id="lang-done-btn">Done</button>');
   return `
   <div class="screen screen-language${noAnim}">
     <div class="ob-tricolor"></div>${statusBarSVG(true)}
@@ -526,11 +879,11 @@ function simSelectHTML(mode) {
       <div class="sim-cards"${cardsId}>
         <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim1" onclick="selectSim(\'sim1\')"'}>
           <div class="sim-card__logo" style="background:#fce4e4"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#E40000"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 1</div><div class="sim-card__slot">SIM 1</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">${t("sim.card1.name")}</div><div class="sim-card__slot">${t("sim.card1.slot")}</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim1"'}></div></div>
         </div>
         <div class="sim-card"${isPreview ? '' : ' id="sim-card-sim2" onclick="selectSim(\'sim2\')"'}>
           <div class="sim-card__logo" style="background:#e4ebf8"><svg width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1A3F8E"/><text x="24" y="30" font-family="sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">T</text></svg></div>
-          <div class="sim-card__bottom"><div><div class="sim-card__name">Tele 2</div><div class="sim-card__slot">SIM 2</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
+          <div class="sim-card__bottom"><div><div class="sim-card__name">${t("sim.card2.name")}</div><div class="sim-card__slot">${t("sim.card2.slot")}</div></div><div class="lang-radio"${isPreview ? '' : ' id="sim-radio-sim2"'}></div></div>
         </div>
       </div>
       <div class="sim-info-box"><svg class="sim-info-box__icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="#999" stroke-width="1.2"/><path d="M10 9v5" stroke="#999" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="6.5" r=".8" fill="#999"/></svg><span class="sim-info-box__text">${t("sim.info")}</span></div>
@@ -660,17 +1013,17 @@ function checkBalancePinHTML() {
     const active = i === checkBalancePinInput.length ? " ab-pin-digit--active" : "";
     boxes += `<div class="ab-pin-digit${active}" id="cb-pin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
   }
-  const showLabel = checkBalancePinMasked ? "Show" : "Hide";
+  const showLabel = checkBalancePinMasked ? t("sp.show") : t("sp.hide");
   return `
   <div class="screen screen-check-balance-pin">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBackFromCheckBalancePin()">←</span><span class="ob-page-title">Enter UPI</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBackFromCheckBalancePin()">←</span><span class="ob-page-title">${t("cb.page_title")}</span></div>
     <div class="ab-bank-bar">
-      <span class="ab-bank-bar__name">Bharatiya Payments Bank</span>
+      <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="cb-pin-content">
-      <p class="ab-pin-heading">ENTER UPI PIN</p>
+      <p class="ab-pin-heading">${t("cb.enter_pin_heading")}</p>
       <div class="ab-pin-row" id="cb-pin-row">${boxes}</div>
       <p class="ab-pin-show" id="cb-pin-show" onclick="toggleCheckBalancePinMask()" role="button" tabindex="0"><span class="ab-pin-show__circle"></span> <span id="cb-pin-show-label">${showLabel}</span></p>
     </div>
@@ -688,12 +1041,12 @@ function homeScreenHTML() {
       <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
       <div class="bank-card__details">
         <span class="bank-card__name">${selectedBankName()}</span>
-        <span class="bank-card__account">***2453 Bank account</span>
+        <span class="bank-card__account">***2453 ${t("home.bank_account")}</span>
       </div>
       <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     const bankCardRight = balanceRevealed
-      ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">Balance</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
-      : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">Check balance<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+      ? `<div class="bank-card__balance" id="bank-card-balance"><span class="bank-card__balance-label">${t("home.balance")}</span><span class="bank-card__balance-amount">₹37,28,373</span></div>`
+      : `<button type="button" class="bank-card__check-btn" id="check-balance-btn" onclick="openCheckBalancePinScreen()">${t("home.check_balance")}<svg viewBox="0 0 8 8" fill="none"><path d="M3 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
     const bankCardInner = `<div class="bank-card__info">${bankCardLeft}</div><div class="bank-card__divider"></div><div class="bank-card__action">${bankCardRight}</div>`;
     bankCardHTML = `<div class="bank-card bank-card--with-check" id="bank-card">${bankCardInner}</div><div class="bank-card-dots"><span class="bank-card-dots__dot bank-card-dots__dot--active"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span><span class="bank-card-dots__dot"></span></div>`;
   } else {
@@ -701,8 +1054,8 @@ function homeScreenHTML() {
       <div class="bank-card__info">
         <div class="bank-card__logo"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1L1.5 5v1.5h15V5L9 1z" fill="#1a237e"/><rect x="3" y="8" width="2" height="6" fill="#1a237e"/><rect x="8" y="8" width="2" height="6" fill="#1a237e"/><rect x="13" y="8" width="2" height="6" fill="#1a237e"/><rect x="1" y="15" width="16" height="2" rx=".5" fill="#1a237e"/></svg></div>
         <div class="bank-card__details">
-          <span class="bank-card__name">Add Bank Account</span>
-          <span class="bank-card__account">Link your bank to start using UPI</span>
+          <span class="bank-card__name">${t("home.add_bank.title")}</span>
+          <span class="bank-card__account">${t("home.add_bank.subtitle")}</span>
         </div>
       </div>
       <svg class="bank-card__chevron" viewBox="0 0 12 12" fill="none" style="transform:rotate(-90deg)"><path d="M3 4.5l3 3 3-3" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -714,7 +1067,7 @@ function homeScreenHTML() {
     <div class="status-bar"><span class="status-bar__time">9:41</span><div class="status-bar__icons"><img src="assets/iOS/stat_group_black.svg" width="78" height="13" alt="" /></div></div>
     <div class="header">
       <div class="avatar">RS<div class="avatar__qr-badge"><svg viewBox="0 0 12 12" fill="none"><rect x="0" y="0" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="7" y="0" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="0" y="7" width="5" height="5" rx="1" stroke="#0b0b0b" stroke-width="1"/><rect x="2" y="2" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="9" y="2" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="2" y="9" width="1.5" height="1.5" fill="#0b0b0b"/><rect x="8" y="8" width="4" height="4" rx="0.5" stroke="#0b0b0b" stroke-width="0.8"/></svg></div></div>
-      <div class="mode-switch"><div class="mode-switch__tab mode-switch__tab--active"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" fill="#f47920"/><path d="M3 17.5c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="#f47920" stroke-width="1.5" stroke-linecap="round"/></svg><span>Me</span></div><div class="mode-switch__tab mode-switch__tab--icon-only"><svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="3" fill="#999"/><circle cx="14" cy="7" r="2.5" fill="#999"/><path d="M1 17c0-3 2.5-5 6-5s6 2 6 5" stroke="#999" stroke-width="1.2" stroke-linecap="round"/><path d="M13 17c0-2.5 1.8-4 4-4s4 1.5 4 4" stroke="#999" stroke-width="1" stroke-linecap="round" opacity="0.6"/></svg></div></div>
+      <div class="mode-switch"><div class="mode-switch__tab mode-switch__tab--active"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" fill="#f47920"/><path d="M3 17.5c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="#f47920" stroke-width="1.5" stroke-linecap="round"/></svg><span>${t("home.me")}</span></div><div class="mode-switch__tab mode-switch__tab--icon-only"><svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="3" fill="#999"/><circle cx="14" cy="7" r="2.5" fill="#999"/><path d="M1 17c0-3 2.5-5 6-5s6 2 6 5" stroke="#999" stroke-width="1.2" stroke-linecap="round"/><path d="M13 17c0-2.5 1.8-4 4-4s4 1.5 4 4" stroke="#999" stroke-width="1" stroke-linecap="round" opacity="0.6"/></svg></div></div>
       <div class="notification-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5c-3.5 0-6 2.5-6 6v3.5l-1.5 2.5c-.3.5.1 1 .6 1h13.8c.5 0 .9-.5.6-1L18 12v-3.5c0-3.5-2.5-6-6-6z" stroke="#0b0b0b" stroke-width="1.5"/><path d="M9 18.5c.5 1.5 1.5 2.5 3 2.5s2.5-1 3-2.5" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg><div class="notification-btn__dot"></div></div>
     </div>
     <div class="content">
@@ -760,21 +1113,21 @@ function homeScreenHTML() {
 let chooseBankSelected = 0;
 
 const bankList = [
-  "Bharatiya Payments Bank",
-  "JanSeva Bank",
-  "Saral Bank Ltd",
-  "Nagrik Bank",
-  "Vikas Bank Ltd",
-  "Pragati Bank",
+  "ab.bank.bhartiya",
+  "ab.bank.janseva",
+  "ab.bank.saral",
+  "ab.bank.nagrik",
+  "ab.bank.vikas",
+  "ab.bank.pragati",
 ];
 
 function chooseBankHTML() {
   let bankItems = "";
-  bankList.forEach((name, i) => {
+  bankList.forEach((key, i) => {
     bankItems += `
       <div class="ab-choose-bank-item${chooseBankSelected === i ? " ab-choose-bank-item--selected" : ""}" onclick="selectChooseBank(${i})">
         <div class="ab-choose-bank-item__icon">${bankIconSVG()}</div>
-        <span class="ab-choose-bank-item__name">${name}</span>
+        <span class="ab-choose-bank-item__name">${t(key)}</span>
       </div>`;
   });
 
@@ -784,20 +1137,20 @@ function chooseBankHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Choose your bank</h1>
-      <p class="ab-subtitle">Select which bank you have an account with</p>
+      <h1 class="ab-title">${t("ab.choose_bank.title")}</h1>
+      <p class="ab-subtitle">${t("ab.choose_bank.subtitle")}</p>
       <div class="ab-choose-bank-search">
         <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="9" cy="9" r="6.5" stroke="#9ca3af" stroke-width="1.4"/><path d="M14 14l4 4" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>
-        <span class="ab-choose-bank-search__text">Search/Select Bank for bill payment</span>
+        <span class="ab-choose-bank-search__text">${t("ab.choose_bank.search")}</span>
       </div>
       <div class="ab-choose-bank-list">${bankItems}</div>
     </div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_SELECT)">${t("ab.confirm")}</button></div>${homeIndHTML()}</div>
   </div>`;
 }
 
 function selectedBankName() {
-  return bankList[chooseBankSelected];
+  return t(bankList[chooseBankSelected]);
 }
 
 function selectChooseBank(idx) {
@@ -822,8 +1175,8 @@ function selectBankHTML() {
     const pinWarningHTML = acc.needsPin ? `
         <div class="ab-pin-warning">
           <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
-          <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
-          <span class="ab-pin-warning__link">Set UPI PIN</span>
+          <span class="ab-pin-warning__text">${t("ab.pin_warning")}</span>
+          <span class="ab-pin-warning__link">${t("ab.set_upi_pin")}</span>
         </div>` : "";
     accountList += `
       <div class="ab-account-card${acc.needsPin ? " ab-account-card--has-pin" : ""}" onclick="selectBankAccount(${i})">
@@ -846,16 +1199,16 @@ function selectBankHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Which account?</h1>
-      <p class="ab-subtitle">Choose the account that you would want to use</p>
+      <h1 class="ab-title">${t("ab.select.title")}</h1>
+      <p class="ab-subtitle">${t("ab.select.subtitle")}</p>
       <div class="ab-section-label">
-        <span>Select your account</span>
+        <span>${t("ab.select.section")}</span>
         <span class="ab-section-label__star">✦</span>
         <div class="ab-section-label__line"></div>
       </div>
       <div class="ab-account-list" id="ab-tour-select-account">${accountList}</div>
     </div>
-    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Confirm</button></div>${homeIndHTML()}</div>
+    <div class="ob-bottom-bar"><div class="ob-bottom-bar__inner"><button class="ob-btn ob-btn--primary" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">${t("ab.confirm")}</button></div>${homeIndHTML()}</div>
   </div>`;
 }
 
@@ -879,23 +1232,23 @@ function debitCardHTML() {
   return `
   <div class="screen screen-ab-debit">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.set_upi_pin")}</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-debit-content" id="ab-tour-debit-content">
       <div class="ab-debit-section">
-        <p class="ab-debit-label">LAST 6 DIGIT OF DEBIT CARD</p>
+        <p class="ab-debit-label">${t("ab.debit.last6")}</p>
         <div class="ab-digit-row" id="ab-card-digits">${cardBoxes}</div>
       </div>
       <div class="ab-debit-section">
-        <p class="ab-debit-label">Valid Upto</p>
+        <p class="ab-debit-label">${t("ab.debit.valid")}</p>
         <div class="ab-digit-row ab-digit-row--expiry" id="ab-expiry-digits">${expiryBoxes}</div>
       </div>
     </div>
     <div class="ab-debit-bottom">
-      <div class="ab-debit-btn-area"><button class="${btnClass}" id="ab-debit-confirm" ${canConfirm ? 'onclick="renderScreen(S.ADD_BANK_OTP)"' : ''}>Confirm</button></div>
+      <div class="ab-debit-btn-area"><button class="${btnClass}" id="ab-debit-confirm" ${canConfirm ? 'onclick="renderScreen(S.ADD_BANK_OTP)"' : ''}>${t("ab.confirm")}</button></div>
       ${interactiveKBHTML()}
     </div>
   </div>`;
@@ -912,13 +1265,13 @@ function bankOtpHTML() {
   return `
   <div class="screen screen-ab-otp">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter OTP</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.otp.header")}</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-otp-content">
-      <p class="ab-pin-heading">ENTER OTP</p>
+      <p class="ab-pin-heading">${t("ab.otp.heading")}</p>
       <div class="ab-pin-row" id="ab-tour-otp-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("otp")}</div>
@@ -936,13 +1289,13 @@ function setUpiPinHTML() {
   return `
   <div class="screen screen-ab-setpin">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.set_upi_pin")}</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content" id="ab-tour-setpin-content">
-      <p class="ab-pin-heading">ENTER NEW UPI PIN</p>
+      <p class="ab-pin-heading">${t("ab.setpin.heading")}</p>
       <div class="ab-pin-row" id="ab-tour-setpin-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("pin")}</div>
@@ -960,13 +1313,13 @@ function confirmUpiPinHTML() {
   return `
   <div class="screen screen-ab-confirmpin">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Set UPI PIN</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.set_upi_pin")}</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content">
-      <p class="ab-pin-heading">CONFIRM NEW UPI PIN</p>
+      <p class="ab-pin-heading">${t("ab.confirmpin.heading")}</p>
       <div class="ab-pin-row" id="ab-cpin-row">${boxes}</div>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("cpin")}</div>
@@ -982,7 +1335,7 @@ function bankSuccessHTML() {
       <div class="ab-success-badge">
         <img src="assets/paymentDone.gif" alt="Success" width="110" height="80" autoplay />
       </div>
-      <p class="ab-success-text">Your Bank has been added successfully!</p>
+      <p class="ab-success-text">${t("ab.success.text")}</p>
     </div>
   </div>`;
 }
@@ -992,10 +1345,10 @@ function paymentMethodsHTML() {
   <div class="screen screen-ab-methods">
     <div class="ab-gradient-bg"></div>
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="renderScreen(S.HOME)">←</span><span class="ob-page-title">Payment Methods</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="renderScreen(S.HOME)">←</span><span class="ob-page-title">${t("ab.methods.title")}</span></div>
     <div class="ab-methods-content">
       <div class="ab-section-label">
-        <span>Bank Account</span>
+        <span>${t("ab.methods.bank")}</span>
         <span class="ab-section-label__star">✦</span>
         <div class="ab-section-label__line"></div>
       </div>
@@ -1011,7 +1364,7 @@ function paymentMethodsHTML() {
           <div class="ab-methods-add__icon">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#6b7280" stroke-width="1.3"/><path d="M2 8h16" stroke="#6b7280" stroke-width="1.2"/><path d="M6 12h3" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
           </div>
-          <span class="ab-methods-add__text">Add new bank account</span>
+          <span class="ab-methods-add__text">${t("ab.methods.add")}</span>
         </div>
       </div>
     </div>
@@ -1019,8 +1372,8 @@ function paymentMethodsHTML() {
       <div class="ab-toast__icon">
         <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.2"/><path d="M7 10l2 2 4-4" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <span class="ab-toast__text">Your ${selectedBankName()} has been added successfully!</span>
-      <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">Close</span>
+      <span class="ab-toast__text">${t("ab.methods.toast").replace("{bank}", selectedBankName())}</span>
+      <span class="ab-toast__close" onclick="renderScreen(S.LANDING)">${t("ab.methods.close")}</span>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -1037,9 +1390,9 @@ function methodSelectHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Which account?</h1>
-      <p class="ab-subtitle">Choose the account that you would want to use</p>
-      <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
+      <h1 class="ab-title">${t("ab.select.title")}</h1>
+      <p class="ab-subtitle">${t("ab.select.subtitle")}</p>
+      <div class="ab-section-label"><span>${t("ab.select.section")}</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
         <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
@@ -1054,8 +1407,8 @@ function methodSelectHTML() {
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
-            <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
-            <span class="ab-pin-warning__link">Set UPI PIN</span>
+            <span class="ab-pin-warning__text">${t("ab.pin_warning")}</span>
+            <span class="ab-pin-warning__link">${t("ab.set_upi_pin")}</span>
           </div>
         </div>
       </div>
@@ -1064,26 +1417,26 @@ function methodSelectHTML() {
     <div class="ab-ms-overlay">
       <div class="ab-ms-sheet" id="ab-tour-method-sheet">
         <div class="ab-ms-handle"></div>
-        <h3 class="ab-ms-title">Choose option to set UPI PIN</h3>
+        <h3 class="ab-ms-title">${t("ab.method.title")}</h3>
         <div class="ab-ms-options">
           <div class="ab-ms-option" onclick="selectMethod('debit')">
             <div class="ab-ms-option__info">
               <svg class="ab-ms-option__icon" viewBox="0 0 24 24" fill="none" width="24" height="24"><rect x="2" y="4" width="20" height="16" rx="3" stroke="#0b0b0b" stroke-width="1.5"/><path d="M2 10h20" stroke="#0b0b0b" stroke-width="1.5"/><path d="M6 15h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span class="ab-ms-option__label">Debit Card</span>
+              <span class="ab-ms-option__label">${t("ab.method.debit")}</span>
             </div>
             <div class="ab-ms-radio ${debitChecked}"></div>
           </div>
           <div class="ab-ms-option" onclick="selectMethod('aadhaar')">
             <div class="ab-ms-option__info">
                       <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
-              <span class="ab-ms-option__label">Aadhaar number</span>
+              <span class="ab-ms-option__label">${t("ab.method.aadhaar")}</span>
             </div>
             <div class="ab-ms-radio ${aadhaarChecked}"></div>
           </div>
         </div>
         <div class="ab-ms-buttons">
-          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_SELECT)">Cancel</button>
-          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="proceedMethod()">Proceed</button>
+          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_SELECT)">${t("ab.cancel")}</button>
+          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="proceedMethod()">${t("ab.proceed")}</button>
         </div>
       </div>
     </div>
@@ -1114,9 +1467,9 @@ function aadhaarConsentHTML() {
     ${statusBarSVG(true)}
     <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span></div>
     <div class="ab-select-content">
-      <h1 class="ab-title">Which account?</h1>
-      <p class="ab-subtitle">Choose the account that you would want to use</p>
-      <div class="ab-section-label"><span>Select your account</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
+      <h1 class="ab-title">${t("ab.select.title")}</h1>
+      <p class="ab-subtitle">${t("ab.select.subtitle")}</p>
+      <div class="ab-section-label"><span>${t("ab.select.section")}</span><span class="ab-section-label__star">✦</span><div class="ab-section-label__line"></div></div>
       <div class="ab-account-list">
         <div class="ab-account-card ab-account-card--has-pin" onclick="selectBankAccount(0)">
           <div class="ab-account-row">
@@ -1131,8 +1484,8 @@ function aadhaarConsentHTML() {
           </div>
           <div class="ab-pin-warning">
             <svg viewBox="0 0 20 20" fill="none" width="20" height="20"><circle cx="10" cy="10" r="8.5" stroke="#e5a100" stroke-width="1.2"/><path d="M10 6v5" stroke="#e5a100" stroke-width="1.3" stroke-linecap="round"/><circle cx="10" cy="14" r=".8" fill="#e5a100"/></svg>
-            <span class="ab-pin-warning__text">4 digit UPI PIN not set</span>
-            <span class="ab-pin-warning__link">Set UPI PIN</span>
+            <span class="ab-pin-warning__text">${t("ab.pin_warning")}</span>
+            <span class="ab-pin-warning__link">${t("ab.set_upi_pin")}</span>
           </div>
         </div>
       </div>
@@ -1141,10 +1494,10 @@ function aadhaarConsentHTML() {
     <div class="ab-ms-overlay">
       <div class="ab-ms-sheet ab-ms-sheet--consent">
         <div class="ab-ms-handle"></div>
-        <p class="ab-consent-text">I hereby give my consent to <strong>${selectedBankName()}</strong> to collect & use my Aadhaar number for Aadhaar based authentication for the purpose of providing me UPI based payment facilities. I understand that my Aadhaar number shall be used solely for authenticating my identity through Aadhaar Authentication System for the purpose stated above.</p>
+        <p class="ab-consent-text">${t("ab.consent.text").replace("{bank}", selectedBankName())}</p>
         <div class="ab-ms-buttons">
-          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">Cancel</button>
-          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="renderScreen(S.ADD_BANK_AADHAAR_NUMBER)">Accept</button>
+          <button class="ab-ms-btn ab-ms-btn--cancel" onclick="renderScreen(S.ADD_BANK_METHOD_SELECT)">${t("ab.cancel")}</button>
+          <button class="ab-ms-btn ab-ms-btn--proceed" onclick="renderScreen(S.ADD_BANK_AADHAAR_NUMBER)">${t("ab.consent.accept")}</button>
         </div>
       </div>
     </div>
@@ -1163,7 +1516,7 @@ function aadhaarNumberHTML() {
   return `
   <div class="screen screen-ab-aadhaar-num">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">SET UPI PIN</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.set_upi_pin")}</span></div>
     <div class="ab-bank-bar">
       <div class="ab-bank-bar__left">
         <div class="ab-bank-bar__icon">${bankIconSVG()}</div>
@@ -1171,14 +1524,14 @@ function aadhaarNumberHTML() {
       </div>
     </div>
     <div class="ab-aadhaar-content">
-      <h2 class="ab-aadhaar-heading">Create 4-digit UPI PIN using your Aadhaar details</h2>
-      <p class="ab-aadhaar-desc">Your PIN will be securely saved with your Bank. You will need to enter this PIN every time you make a payment using your Bank Account.</p>
+      <h2 class="ab-aadhaar-heading">${t("ab.aadh_num.title")}</h2>
+      <p class="ab-aadhaar-desc">${t("ab.aadh_num.desc")}</p>
       <div class="ab-aadhaar-input-section">
         <div class="ab-aadhaar-label-row">
-          <span class="ab-aadhaar-label">AADHAAR NUMBER</span>
+          <span class="ab-aadhaar-label">${t("ab.aadh_num.label")}</span>
           <img src="assets/aadhar.png" alt="Aadhaar" class="ab-aadhaar-logo" width="24" height="24"/>
         </div>
-        <p class="ab-aadhaar-sublabel">First 6-Digits of Aadhaar Number</p>
+        <p class="ab-aadhaar-sublabel">${t("ab.aadh_num.sublabel")}</p>
         <div class="ab-aadhaar-input-row">
           <div class="ab-aadhaar-mask">
             <span class="ab-aadhaar-mask__sep"></span>
@@ -1194,7 +1547,7 @@ function aadhaarNumberHTML() {
       <div class="ab-aadhaar-numpad">
         ${[1,2,3,4,5,6,7,8,9,"del",0,"go"].map(k => {
           if (k === "del") return '<button class="ab-aadhaar-numpad__key ab-aadhaar-numpad__key--del" onclick="handleAadhaarNumberKey(\'DEL\')">⌫</button>';
-          if (k === "go") return '<button class="ab-aadhaar-numpad__key ab-aadhaar-numpad__key--go" onclick="handleAadhaarNumberKey(\'GO\')" id="ab-aadh-go">Go</button>';
+          if (k === "go") return '<button class="ab-aadhaar-numpad__key ab-aadhaar-numpad__key--go" onclick="handleAadhaarNumberKey(\'GO\')" id="ab-aadh-go">' + t("ab.aadh_num.go") + '</button>';
           return '<button class="ab-aadhaar-numpad__key" onclick="handleAadhaarNumberKey(\'' + k + '\')">'+k+'</button>';
         }).join("")}
       </div>
@@ -1213,15 +1566,15 @@ function aadhaarOtpHTML() {
   return `
   <div class="screen screen-ab-aadhaar-otp">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Enter Aadhaar OTP</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("ab.aadh_otp.header")}</span></div>
     <div class="ab-bank-bar">
       <span class="ab-bank-bar__name">${selectedBankName()}</span>
       <span class="ab-bank-bar__num">XXXXXXXX2453</span>
     </div>
     <div class="ab-pin-content">
-      <p class="ab-pin-heading">ENTER 6 DIGIT OTP</p>
+      <p class="ab-pin-heading">${t("ab.aadh_otp.heading")}</p>
       <div class="ab-pin-row" id="ab-aadhotp-row">${boxes}</div>
-      <p style="text-align:center;font-size:13px;color:#888;margin-top:16px;line-height:1.4">AADHAAR-OTP has been sent to your registered mobile number via SMS</p>
+      <p style="text-align:center;font-size:13px;color:#888;margin-top:16px;line-height:1.4">${t("ab.aadh_otp.note")}</p>
     </div>
     <div class="ab-pin-keyboard">${abNumpadHTML("aadhotp")}</div>
   </div>`;
@@ -1304,39 +1657,69 @@ const abTooltipGuide = {
 const AB_SCREEN_TOOLTIPS = {
   [S.HOME]: {
     element: "#bank-card",
-    desc: "Link your bank account to start making UPI payments",
+    descKey: "tt.ab.home",
     side: "bottom",
     radius: 16,
   },
+  [S.ADD_BANK_CHOOSE_BANK]: {
+    element: ".ab-choose-bank-list",
+    descKey: "tt.ab.choose_bank",
+    side: "top",
+    radius: 12,
+  },
   [S.ADD_BANK_SELECT]: {
     element: "#ab-tour-select-account",
-    desc: "Select this account and set your UPI PIN to link your bank account",
+    descKey: "tt.ab.select",
     side: "bottom",
     radius: 12,
   },
   [S.ADD_BANK_METHOD_SELECT]: {
     element: "#ab-tour-method-sheet",
-    desc: "Link your bank account via Debit Card",
+    descKey: "tt.ab.method",
     side: "top",
     radius: 20,
   },
   [S.ADD_BANK_DEBIT_CARD]: {
     element: "#ab-tour-debit-content",
-    desc: "Enter your debit card details to link your bank account",
+    descKey: "tt.ab.debit",
     side: "bottom",
     radius: 12,
   },
   [S.ADD_BANK_OTP]: {
     element: "#ab-tour-otp-row",
-    desc: "Select bank from the list below and link your bank account to proceed further",
+    descKey: "tt.ab.otp",
+    side: "bottom",
+    radius: 12,
+  },
+  [S.ADD_BANK_AADHAAR_CONSENT]: {
+    element: ".ab-ms-sheet--consent",
+    descKey: "tt.ab.consent",
+    side: "top",
+    radius: 20,
+  },
+  [S.ADD_BANK_AADHAAR_NUMBER]: {
+    element: ".ab-aadhaar-input-section",
+    descKey: "tt.ab.aadh_num",
+    side: "bottom",
+    radius: 12,
+  },
+  [S.ADD_BANK_AADHAAR_OTP]: {
+    element: "#ab-aadhotp-row",
+    descKey: "tt.ab.aadh_otp",
     side: "bottom",
     radius: 12,
   },
   [S.ADD_BANK_SET_PIN]: {
     element: "#ab-tour-setpin-row",
-    desc: "Your bank will ask you to set a 4 or 6 digit UPI PIN (as per bank rules). This PIN is required to approve UPI payments from your account.\n\nChoose a PIN you can easily remember, keep it confidential, and never share it with anyone.\nBHIM or your bank will never ask for your UPI PIN-stay alert and secure.",
+    descKey: "tt.ab.setpin",
     side: "top",
     radius: 12,
+  },
+  [S.ADD_BANK_SUCCESS]: {
+    element: ".ab-success-text",
+    descKey: "tt.ab.success",
+    side: "bottom",
+    radius: 16,
   },
 };
 
@@ -1356,11 +1739,12 @@ function showAbScreenTooltip(state) {
       return;
     }
 
-    let body = `<div class="tt-text">${step.desc}</div>`;
+    const descText = step.descKey ? t(step.descKey) : (step.desc || "");
+    let body = `<div class="tt-text">${descText}</div>`;
     // Buttons
     body += '<div class="bhim-popover-footer"><div class="bhim-popover-buttons">' +
-      '<button class="bhim-btn-skip" onclick="abTourSkip()">Skip</button>' +
-      '<button class="bhim-btn-next" onclick="abTourNext()">Next</button>' +
+      '<button class="bhim-btn-skip" onclick="abTourSkip()">' + t('tt.skip') + '</button>' +
+      '<button class="bhim-btn-next" onclick="abTourNext()">' + t('tt.next') + '</button>' +
       '</div></div>';
 
     const dObj = window.driver.js.driver({
@@ -1473,7 +1857,7 @@ function updateCheckBalancePinUI() {
     }
   }
   const labelEl = document.getElementById("cb-pin-show-label");
-  if (labelEl) labelEl.textContent = checkBalancePinMasked ? "Show" : "Hide";
+  if (labelEl) labelEl.textContent = checkBalancePinMasked ? t("sp.show") : t("sp.hide");
 }
 
 function toggleCheckBalancePinMask() {
@@ -1599,7 +1983,7 @@ function scan1HTML() {
     <div class="scan1-stepper">
       <div class="scan1-stepper__line"></div>
       <span class="scan1-stepper__star">✦</span>
-      <span class="scan1-stepper__text">SEND MONEY TO ANY UPI APP</span>
+      <span class="scan1-stepper__text">${t("sp.send_money")}</span>
       <span class="scan1-stepper__star">✦</span>
       <div class="scan1-stepper__line"></div>
     </div>
@@ -1625,7 +2009,7 @@ function scan1HTML() {
       <div class="scan1-recent__header">
         <div class="scan1-stepper__line"></div>
         <span class="scan1-stepper__star">✦</span>
-        <span class="scan1-stepper__text">RECENT SCANS</span>
+        <span class="scan1-stepper__text">${t("sp.recent_scans")}</span>
         <span class="scan1-stepper__star">✦</span>
         <div class="scan1-stepper__line"></div>
       </div>
@@ -1666,7 +2050,7 @@ function scan2HTML() {
     <div class="scan1-stepper">
       <div class="scan1-stepper__line"></div>
       <span class="scan1-stepper__star">✦</span>
-      <span class="scan1-stepper__text">SEND MONEY TO ANY UPI APP</span>
+      <span class="scan1-stepper__text">${t("sp.send_money")}</span>
       <span class="scan1-stepper__star">✦</span>
       <div class="scan1-stepper__line"></div>
     </div>
@@ -1684,7 +2068,7 @@ function scan2HTML() {
       <div class="scan1-recent__header">
         <div class="scan1-stepper__line"></div>
         <span class="scan1-stepper__star">✦</span>
-        <span class="scan1-stepper__text">RECENT SCANS</span>
+        <span class="scan1-stepper__text">${t("sp.recent_scans")}</span>
         <span class="scan1-stepper__star">✦</span>
         <div class="scan1-stepper__line"></div>
       </div>
@@ -1708,7 +2092,7 @@ function scan2HTML() {
       </div>
     </div>
     <div style="padding: 0 16px 16px;">
-      <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_AMOUNT)">Proceed</button>
+      <button class="sp-cta-btn" onclick="renderScreen(S.ENTER_AMOUNT)">${t("sp.proceed")}</button>
     </div>
     <div class="scan1-footer">
       <img src="assets/upi_dark_sm.svg" alt="UPI" class="scan1-footer__upi" width="46" height="20"/>
@@ -1734,7 +2118,7 @@ function enterAmountHTML() {
           <div class="ea-user-avatar scan1-avatar--green" style="width:56px;height:56px;border-radius:300px;overflow:hidden;position:relative">
             <img src="assets/sample_avatar_real_image.png" alt="" class="scan1-avatar__img"/>
           </div>
-          <p class="ea-user-name">Paying ${scanPayPayee.name}</p>
+          <p class="ea-user-name">${t("sp.paying").replace("{name}", scanPayPayee.name)}</p>
         </div>
         <div class="ea-upi-pill">
           <img src="assets/upi.svg" alt="" class="ea-upi-pill__icon" width="24" height="12"/>
@@ -1750,7 +2134,7 @@ function enterAmountHTML() {
         <p class="ea-amount-words" id="ea-amount-words"></p>
       </div>
       <div class="ea-note-pill">
-        <input type="text" class="ea-note-input" placeholder="Note" value="${scanPayNote}" 
+        <input type="text" class="ea-note-input" placeholder="${t("sp.note")}" value="${scanPayNote}"
                oninput="scanPayNote=this.value" 
                onfocus="document.getElementById('ea-amount-cursor').style.visibility='hidden'" 
                onblur="document.getElementById('ea-amount-cursor').style.visibility='visible'" />
@@ -1758,7 +2142,7 @@ function enterAmountHTML() {
     </div>
     <div class="ea-bottom">
       <div class="ea-cta-wrap">
-        <button class="${ctaClass}" id="ea-next-btn" onclick="onEnterAmountNext()">Next</button>
+        <button class="${ctaClass}" id="ea-next-btn" onclick="onEnterAmountNext()">${t("sp.next")}</button>
       </div>
       <div class="ea-keyboard">${spNumpadHTML("amount")}</div>
     </div>
@@ -1769,7 +2153,7 @@ function enterAmountHTML() {
 function selectAccountHTML() {
   const c = scanPayPayee;
   const amount = parseInt(scanPayAmount || "0", 10);
-  const words = amount > 0 ? numberToWords(amount).replace(/\b\w/g, (m) => m.toUpperCase()) + " Rupees Only" : "";
+  const words = amountInWords(amount);
 
   return `
   <div class="screen screen-sm-review">
@@ -1791,31 +2175,31 @@ function selectAccountHTML() {
         <p class="sm-review-words">${words}</p>
       </div>
       <div class="sm-review-comment-pill">
-        <input class="sm-review-comment-input" type="text" placeholder="Add a comment" value="${scanPayNote}" oninput="scanPayNote=this.value" />
+        <input class="sm-review-comment-input" type="text" placeholder="${t("sp.add_comment")}" value="${scanPayNote}" oninput="scanPayNote=this.value" />
       </div>
     </div>
     <div class="sm-review-bottom-sheet">
-      <div class="sm-review-sheet-title">Select account to pay with</div>
+      <div class="sm-review-sheet-title">${t("sp.select_account")}</div>
       <div class="sm-review-sheet-body">
-        <p class="sm-review-bank-heading">Bank account</p>
+        <p class="sm-review-bank-heading">${t("sp.bank_account")}</p>
         <div class="sm-review-bank-card">
           <div class="sm-review-bank-card__header">
             <div class="sm-review-bank-card__info">
               <div class="sm-review-bank-logo">${bankIconSVG()}</div>
               <div class="sm-review-bank-detail">
-                <span class="sm-review-bank-detail__name">Bharatiya Payments Bank</span>
-                <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
+                <span class="sm-review-bank-detail__name">${selectedBankName()}</span>
+                <span class="sm-review-bank-detail__acc">*** 2453 • ${t("sp.default")}</span>
               </div>
             </div>
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">${t("sp.check_balance")}</a>
           </div>
         </div>
       </div>
       <div class="sm-review-cta-wrap">
-        <button class="sm-review-cta-btn" onclick="renderScreen(S.ENTER_UPI_PIN)">Pay</button>
+        <button class="sm-review-cta-btn" onclick="renderScreen(S.ENTER_UPI_PIN)">${t("sp.pay")}</button>
       </div>
     </div>
     ${homeIndHTML()}
@@ -1830,7 +2214,7 @@ function enterUpiPinHTML() {
     const active = i === scanPayUpiPin.length ? " ab-pin-digit--active" : "";
     boxes += `<div class="ab-pin-digit${active}" id="sp-pin-${i}"><span>${val}</span><div class="ab-pin-digit__line"></div></div>`;
   }
-  const showLabel = scanPayPinMasked ? "Show" : "Hide";
+  const showLabel = scanPayPinMasked ? t("sp.show") : t("sp.hide");
   return `
   <div class="screen screen-enter-upi-pin">
     ${statusBarSVG(true)}
@@ -1843,7 +2227,7 @@ function enterUpiPinHTML() {
       <svg class="sp-bank-name-bar__chevron" viewBox="0 0 12 12" fill="none" width="16" height="16"><path d="M3 4.5l3 3 3-3" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div class="sp-pin-content" id="sp-pin-content">
-      <p class="ab-pin-heading">ENTER UPI PIN</p>
+      <p class="ab-pin-heading">${t("sp.enter_pin_heading")}</p>
       <div class="ab-pin-row" id="sp-pin-row">${boxes}</div>
       <p class="ab-pin-show" onclick="toggleScanPayPinMask()" role="button" tabindex="0"><span class="ab-pin-show__circle"></span> <span id="sp-pin-show-label">${showLabel}</span></p>
     </div>
@@ -1863,7 +2247,7 @@ function paymentSuccessHTML() {
       <div class="ab-success-badge">
         <img src="assets/paymentDone.gif" alt="Success" width="110" height="80" autoplay />
       </div>
-      <p class="ab-success-text" id="sp-success-text">Payment Successful</p>
+      <p class="ab-success-text" id="sp-success-text">${t("sp.payment_success")}</p>
     </div>
   </div>`;
 }
@@ -1875,8 +2259,9 @@ function debitedTransactionHTML() {
   const amount = parseInt(scanPayAmount || "0", 10) || 0;
   const txId = "T" + Date.now().toString().slice(-10);
   const dt = new Date();
-  const dateStr = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
-  const timeStr = dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+  const locale = currentLang === "hi" ? "hi-IN" : "en-IN";
+  const dateStr = dt.toLocaleDateString(locale, { day: "numeric", month: "short", year: "2-digit" });
+  const timeStr = dt.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
 
   return `
   <div class="screen screen-sm-receipt">
@@ -1887,7 +2272,7 @@ function debitedTransactionHTML() {
       </div>
       <div class="sm-receipt-hero__payee">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="#fff" stroke-width="1"/><path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg>
-        <span>Paid to ${c.name}</span>
+        <span>${t("sp.paid_to").replace("{name}", c.name)}</span>
         <img src="./assets/curve.png" alt="Success" class="curve-path" />
       </div>
       <p class="sm-receipt-hero__amount">₹${amount}</p>
@@ -1895,26 +2280,26 @@ function debitedTransactionHTML() {
     <div class="sm-receipt-card" id="sm-receipt-card">
       <div class="sm-receipt-info-grid">
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Banking Name</span>
-          <span class="sm-receipt-info-item__value">Samartha Bhandhar Gruha Udyog</span>
+          <span class="sm-receipt-info-item__label">${t("sp.banking_name")}</span>
+          <span class="sm-receipt-info-item__value">${c.name}</span>
         </div>
       </div>
       <div class="sm-receipt-info-grid sm-receipt-info-grid--two">
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Transaction ID</span>
+          <span class="sm-receipt-info-item__label">${t("sp.txn_id")}</span>
           <div class="sm-receipt-info-item__value sm-receipt-info-item__value--copy">
             <span>${txId}</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="#626262" stroke-width="1.2"/><path d="M3 11V3.5A.5.5 0 013.5 3H11" stroke="#626262" stroke-width="1.2" stroke-linecap="round"/></svg>
           </div>
         </div>
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Date &amp; Time</span>
+          <span class="sm-receipt-info-item__label">${t("sp.datetime")}</span>
           <span class="sm-receipt-info-item__value">${dateStr}, ${timeStr}</span>
         </div>
       </div>
       <div class="sm-receipt-divider"></div>
       <div class="sm-receipt-more">
-        <span>More details</span>
+        <span>${t("sp.more_details")}</span>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#0b0b0b" stroke-width="1.2"/><path d="M10 7v6M7 13l3 0" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round"/></svg>
       </div>
     </div>
@@ -1923,21 +2308,21 @@ function debitedTransactionHTML() {
         <div class="sm-receipt-option__icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <span class="sm-receipt-option__label">Split this<br>expense</span>
+        <span class="sm-receipt-option__label">${t("sp.split_expense")}</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <span class="sm-receipt-option__label">Share<br>screenshot</span>
+        <span class="sm-receipt-option__label">${t("sp.share_screenshot")}</span>
       </div>
     </div>
     <div class="sm-receipt-powered">
       <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
     <div class="sm-receipt-footer">
-      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SCAN_1)">Send again</button>
-      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">Home</button>
+      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SCAN_1)">${t("sp.send_again")}</button>
+      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">${t("sp.home")}</button>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -1997,17 +2382,17 @@ function sendMobileContactsHTML() {
   return `
   <div class="screen screen-sm-contacts">
     ${statusBarSVG(true)}
-    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">Send Money to any UPI App</span></div>
+    <div class="ob-page-header"><span class="ob-back-arrow" onclick="goBack()">←</span><span class="ob-page-title">${t("sm.contacts.header")}</span></div>
     <div class="sm-contacts-wrap">
       <div class="sm-search-row">
         <div class="sm-search-pill">
           <svg class="sm-search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M9.167 15.833a6.667 6.667 0 1 0 0-13.333 6.667 6.667 0 0 0 0 13.333ZM17.5 17.5l-3.625-3.625" stroke="#626262" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <input id="sm-search-input" class="sm-search-input" type="text" placeholder="Search by name or mobile number" value="${smContactSearch}" oninput="updateSendMobileSearch(this.value)" />
+          <input id="sm-search-input" class="sm-search-input" type="text" placeholder="${t("sm.contacts.search")}" value="${smContactSearch}" oninput="updateSendMobileSearch(this.value)" />
         </div>
       </div>
       <div class="sm-section">
         <div class="sm-section__header">
-          <span class="sm-section__title">Recents</span>
+          <span class="sm-section__title">${t("sm.contacts.recents")}</span>
           <span class="sm-section__star">✦</span>
           <span class="sm-section__line"></span>
         </div>
@@ -2015,11 +2400,11 @@ function sendMobileContactsHTML() {
       </div>
       <div class="sm-section sm-section--list">
         <div class="sm-section__header">
-          <span class="sm-section__title">Contacts</span>
+          <span class="sm-section__title">${t("sm.contacts.contacts")}</span>
           <span class="sm-section__star">✦</span>
           <span class="sm-section__line"></span>
         </div>
-        <div class="sm-contacts-list">${listHTML || '<p class="sm-empty">No contacts found</p>'}</div>
+        <div class="sm-contacts-list">${listHTML || '<p class="sm-empty">' + t("sm.contacts.empty") + '</p>'}</div>
       </div>
     </div>
     ${homeIndHTML()}
@@ -2030,7 +2415,8 @@ function sendMobileChatHTML() {
   const c = getSmSelectedContact();
   const payEnabled = parseInt(smChatAmount || "0", 10) > 0;
   const today = new Date();
-  const dateStr = today.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const locale = currentLang === "hi" ? "hi-IN" : "en-IN";
+  const dateStr = today.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
   return `
   <div class="screen screen-sm-chat">
     ${statusBarSVG(true)}
@@ -2052,13 +2438,13 @@ function sendMobileChatHTML() {
       </div>
       <div class="sm-chat-bubble-wrap">
         <div class="sm-chat-bubble--payment">
-          <p class="sm-chat-bubble__label">Payment to you</p>
+          <p class="sm-chat-bubble__label">${t("sm.chat.payment_to_you")}</p>
           <p class="sm-chat-bubble__amount">₹2,000</p>
           <div class="sm-chat-bubble__divider"></div>
           <div class="sm-chat-bubble__footer">
             <div class="sm-chat-bubble__status">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#16a34a" fill="#16a34a"/><path d="M5.5 8l2 2 3.5-3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Paid • 3:06 PM</span>
+              <span>${t("sm.chat.paid")} • 3:06 PM</span>
             </div>
             <svg class="sm-chat-bubble__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 14l4-4-4-4" stroke="#353535" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
@@ -2067,9 +2453,9 @@ function sendMobileChatHTML() {
     </div>
     <div class="sm-chat-footer" id="sm-chat-footer">
       <div class="sm-chat-footer__input-wrap">
-        <input class="sm-chat-footer__input" type="number" min="1" placeholder="Enter amount" value="${smChatAmount}" oninput="updateSendMobileAmount(this.value)" />
+        <input class="sm-chat-footer__input" type="number" min="1" placeholder="${t("sm.chat.enter_amount")}" value="${smChatAmount}" oninput="updateSendMobileAmount(this.value)" />
       </div>
-      <button class="sm-chat-footer__pay${payEnabled ? "" : " sm-chat-footer__pay--disabled"}" onclick="proceedSendMobileReview()">Pay</button>
+      <button class="sm-chat-footer__pay${payEnabled ? "" : " sm-chat-footer__pay--disabled"}" onclick="proceedSendMobileReview()">${t("sm.chat.pay")}</button>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -2078,7 +2464,7 @@ function sendMobileChatHTML() {
 function sendMobileReviewHTML() {
   const c = getSmSelectedContact();
   const amount = parseInt(smChatAmount || "0", 10);
-  const words = amount > 0 ? numberToWords(amount).replace(/\b\w/g, (m) => m.toUpperCase()) + " Rupees Only" : "";
+  const words = amountInWords(amount);
   return `
   <div class="screen screen-sm-review">
     ${statusBarSVG(true)}
@@ -2086,7 +2472,7 @@ function sendMobileReviewHTML() {
     <div class="sm-review-body">
       <div class="sm-review-payee">
         ${renderSmAvatar(c, "sm-avatar sm-avatar--xl")}
-        <p class="sm-review-payee__name">${c.name}</p>
+        <p class="sm-review-payee__name">${t("sm.review.sending_to").replace("{name}", c.name)}</p>
         <div class="sm-review-upi-pill">
           <svg class="sm-review-upi-icon" width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M3.5 0.5L9.5 5.5L6.5 7L9.5 13.5L3.5 8.5L6.5 7L3.5 0.5Z" fill="#097939"/></svg>
           <span>+91 ${c.mobile}@upi</span>
@@ -2097,31 +2483,31 @@ function sendMobileReviewHTML() {
         <p class="sm-review-words">${words}</p>
       </div>
       <div class="sm-review-comment-pill">
-        <input class="sm-review-comment-input" type="text" placeholder="Add a comment" value="${smReviewNote}" oninput="smReviewNote=this.value" />
+        <input class="sm-review-comment-input" type="text" placeholder="${t("sp.note")}" value="${smReviewNote}" oninput="smReviewNote=this.value" />
       </div>
     </div>
     <div class="sm-review-bottom-sheet">
-      <div class="sm-review-sheet-title">Select account to pay with</div>
+      <div class="sm-review-sheet-title">${t("sp.select_account")}</div>
       <div class="sm-review-sheet-body">
-        <p class="sm-review-bank-heading">Bank account</p>
+        <p class="sm-review-bank-heading">${t("sp.bank_account")}</p>
         <div class="sm-review-bank-card">
           <div class="sm-review-bank-card__header">
             <div class="sm-review-bank-card__info">
               <div class="sm-review-bank-logo">A</div>
               <div class="sm-review-bank-detail">
                 <span class="sm-review-bank-detail__name">${selectedBankName()}</span>
-                <span class="sm-review-bank-detail__acc">*** 2453 • DEFAULT</span>
+                <span class="sm-review-bank-detail__acc">*** 2453 • ${t("sp.default")}</span>
               </div>
             </div>
             <svg class="sm-review-bank-card__arrow" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M12 20l4-4-4-4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="sm-review-bank-card__footer">
-            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">Check Balance</a>
+            <a class="sm-review-check-bal sm-review-check-bal--disabled" href="javascript:void(0)">${t("sp.check_balance")}</a>
           </div>
         </div>
       </div>
       <div class="sm-review-cta-wrap">
-        <button class="sm-review-cta-btn" onclick="renderScreen(S.SEND_MOBILE_PIN)">Next</button>
+        <button class="sm-review-cta-btn" onclick="renderScreen(S.SEND_MOBILE_PIN)">${t("sm.review.next")}</button>
       </div>
     </div>
     ${homeIndHTML()}
@@ -2147,11 +2533,11 @@ function sendMobilePinHTML() {
       <svg class="sm-pin-acct-bar__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 8l3 3 3-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div class="sm-pin-center">
-      <p class="sm-pin-title">ENTER UPI PIN</p>
+      <p class="sm-pin-title">${t("sm.pin.heading")}</p>
       <div class="sm-pin-row" id="sm-pin-row">${boxes}</div>
       <div class="sm-pin-show">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="#a0a0a0" stroke-width="1.2"/><circle cx="8" cy="8" r="2" stroke="#a0a0a0" stroke-width="1.2"/></svg>
-        <span>Show</span>
+        <span>${t("sp.show")}</span>
       </div>
     </div>
     <div class="sm-pin-keyboard">${spNumpadHTML("smpin")}</div>
@@ -2165,7 +2551,7 @@ function sendMobileSuccessHTML() {
     ${statusBarSVG(false)}
     <div class="sm-success-wrap" id="sm-success-wrap">
       <img src="./assets/paymentDone.gif" alt="Payment Successful" class="sm-success-gif" />
-      <p class="sm-success-text" id="sm-success-text">Payment Successful</p>
+      <p class="sm-success-text" id="sm-success-text">${t("sm.success.text")}</p>
     </div>
   </div>`;
 }
@@ -2175,8 +2561,9 @@ function sendMobileReceiptHTML() {
   const amount = parseInt(smChatAmount || "0", 10) || 0;
   const txId = "SM" + Date.now().toString().slice(-10);
   const dt = new Date();
-  const dateStr = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
-  const timeStr = dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+  const locale = currentLang === "hi" ? "hi-IN" : "en-IN";
+  const dateStr = dt.toLocaleDateString(locale, { day: "numeric", month: "short", year: "2-digit" });
+  const timeStr = dt.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
   return `
   <div class="screen screen-sm-receipt">
     ${statusBarSVG(false)}
@@ -2186,7 +2573,7 @@ function sendMobileReceiptHTML() {
       </div>
       <div class="sm-receipt-hero__payee">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="#fff" stroke-width="1"/><path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg>
-        <span>Paid to ${c.name}</span>
+        <span>${t("sp.paid_to").replace("{name}", c.name)}</span>
         <img src="./assets/curve.png" alt="Success" class="curve-path" />
       </div>
       <p class="sm-receipt-hero__amount">₹${amount}</p>
@@ -2194,26 +2581,26 @@ function sendMobileReceiptHTML() {
     <div class="sm-receipt-card" id="sm-receipt-card">
       <div class="sm-receipt-info-grid">
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Banking Name</span>
+          <span class="sm-receipt-info-item__label">${t("sp.banking_name")}</span>
           <span class="sm-receipt-info-item__value">${selectedBankName()}</span>
         </div>
       </div>
       <div class="sm-receipt-info-grid sm-receipt-info-grid--two">
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Transaction ID</span>
+          <span class="sm-receipt-info-item__label">${t("sp.txn_id")}</span>
           <div class="sm-receipt-info-item__value sm-receipt-info-item__value--copy">
             <span>${txId}</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="#626262" stroke-width="1.2"/><path d="M3 11V3.5A.5.5 0 013.5 3H11" stroke="#626262" stroke-width="1.2" stroke-linecap="round"/></svg>
           </div>
         </div>
         <div class="sm-receipt-info-item">
-          <span class="sm-receipt-info-item__label">Date &amp; Time</span>
+          <span class="sm-receipt-info-item__label">${t("sp.datetime")}</span>
           <span class="sm-receipt-info-item__value">${dateStr}, ${timeStr}</span>
         </div>
       </div>
       <div class="sm-receipt-divider"></div>
       <div class="sm-receipt-more">
-        <span>More details</span>
+        <span>${t("sp.more_details")}</span>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#0b0b0b" stroke-width="1.2"/><path d="M10 7v6M7 13l3 0" stroke="#0b0b0b" stroke-width="1.2" stroke-linecap="round"/></svg>
       </div>
     </div>
@@ -2222,21 +2609,21 @@ function sendMobileReceiptHTML() {
         <div class="sm-receipt-option__icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><rect x="14" y="6" width="8" height="12" rx="1.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M10 10h4M10 14h4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <span class="sm-receipt-option__label">Split this<br>expense</span>
+        <span class="sm-receipt-option__label">${t("sp.split_expense")}</span>
       </div>
       <div class="sm-receipt-option">
         <div class="sm-receipt-option__icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="6" cy="12" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><circle cx="18" cy="19" r="2.5" stroke="#0b0b0b" stroke-width="1.5"/><path d="M8.3 13.3l7.4 4.4M15.7 6.3l-7.4 4.4" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <span class="sm-receipt-option__label">Share<br>screenshot</span>
+        <span class="sm-receipt-option__label">${t("sp.share_screenshot")}</span>
       </div>
     </div>
     <div class="sm-receipt-powered">
         <img src="assets/upi_dark_sm.svg" onerror="this.src='assets/upi.svg'" alt="UPI" width="46" height="20" />
     </div>
     <div class="sm-receipt-footer">
-      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SEND_MOBILE_CHAT)">Send again</button>
-      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">Home</button>
+      <button class="sm-receipt-btn sm-receipt-btn--light" onclick="renderScreen(S.SEND_MOBILE_CHAT)">${t("sm.send_again")}</button>
+      <button class="sm-receipt-btn sm-receipt-btn--primary" onclick="renderScreen(S.HOME)">${t("sp.home")}</button>
     </div>
     ${homeIndHTML()}
   </div>`;
@@ -2495,55 +2882,36 @@ function handleKeyPress(key) {
 function proceedFromGetStarted() {
   if (selectedLang === null) return;
   currentLang = selectedLang === 0 ? "hi" : "en";
+  persistLang(currentLang);
   renderScreen(S.MOBILE_ENTRY);
+}
+
+// Re-render the current screen and re-fire its tooltip so every t() call
+// picks up the newly-selected language immediately.
+function refreshLanguage() {
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  if (currentState) {
+    if (tooltipGuide.shownForScreen[currentState]) {
+      tooltipGuide.shownForScreen[currentState] = false;
+    }
+    renderScreen(currentState);
+  }
 }
 
 function selectGetStartedLanguage(idx) {
   selectedLang = idx;
   // idx 0 = Hindi, idx 1 = English
   currentLang = idx === 0 ? "hi" : "en";
-  [0, 1].forEach((i) => {
-    const card = document.getElementById("gs-lang-card-" + i);
-    const radio = card && card.querySelector(".gs-lang-card__radio");
-    if (card && radio) {
-      if (i === idx) {
-        card.classList.add("gs-lang-card--selected");
-        radio.className = "gs-lang-card__radio gs-lang-card__radio--checked";
-      } else {
-        card.classList.remove("gs-lang-card--selected");
-        radio.className = "gs-lang-card__radio";
-      }
-    }
-  });
-  // Enable Proceed button
-  const btn = document.getElementById("gs-proceed-btn");
-  if (btn) {
-    btn.className = "ob-btn ob-btn--primary";
-    btn.onclick = proceedFromGetStarted;
-  }
+  persistLang(currentLang);
+  refreshLanguage();
 }
 
 function selectLanguage(idx) {
   selectedLang = idx;
   // idx 0 = Hindi, everything else defaults to English
   currentLang = idx === 0 ? "hi" : "en";
-  document.querySelectorAll(".lang-item").forEach((el, i) => {
-    if (i === idx) {
-      el.classList.add("lang-item--selected");
-      el.querySelector(".lang-radio").className =
-        "lang-radio lang-radio--checked";
-    } else {
-      el.classList.remove("lang-item--selected");
-      el.querySelector(".lang-radio").className = "lang-radio";
-    }
-  });
-  const btn = document.getElementById("lang-done-btn");
-  if (btn) {
-    btn.className = "ob-btn ob-btn--primary";
-    btn.onclick = function () {
-      renderScreen(S.MOBILE_ENTRY);
-    };
-  }
+  persistLang(currentLang);
+  refreshLanguage();
 }
 
 function selectSim(sim) {
@@ -2750,7 +3118,7 @@ function updateAmountUI() {
   const wordsEl = document.getElementById("ea-amount-words");
   if (wordsEl) {
     const num = parseInt(scanPayAmount) || 0;
-    wordsEl.textContent = num > 0 ? numberToWords(num) + " rupees only" : "";
+    wordsEl.textContent = amountInWords(num);
   }
 }
 
@@ -2765,6 +3133,28 @@ function numberToWords(n) {
   if (n < 100000) return numberToWords(Math.floor(n/1000)) + " thousand" + (n%1000 ? " " + numberToWords(n%1000) : "");
   if (n < 10000000) return numberToWords(Math.floor(n/100000)) + " lakh" + (n%100000 ? " " + numberToWords(n%100000) : "");
   return String(n);
+}
+
+function numberToWordsHi(n) {
+  if (n === 0) return "शून्य";
+  const ones = ["", "एक", "दो", "तीन", "चार", "पाँच", "छह", "सात", "आठ", "नौ",
+    "दस", "ग्यारह", "बारह", "तेरह", "चौदह", "पंद्रह", "सोलह", "सत्रह", "अठारह", "उन्नीस"];
+  const tens = ["", "", "बीस", "तीस", "चालीस", "पचास", "साठ", "सत्तर", "अस्सी", "नब्बे"];
+  if (n < 20) return ones[n];
+  if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? " " + ones[n%10] : "");
+  if (n < 1000) return ones[Math.floor(n/100)] + " सौ" + (n%100 ? " " + numberToWordsHi(n%100) : "");
+  if (n < 100000) return numberToWordsHi(Math.floor(n/1000)) + " हज़ार" + (n%1000 ? " " + numberToWordsHi(n%1000) : "");
+  if (n < 10000000) return numberToWordsHi(Math.floor(n/100000)) + " लाख" + (n%100000 ? " " + numberToWordsHi(n%100000) : "");
+  return String(n);
+}
+
+// Locale-aware "X Rupees Only" / "केवल X रुपये"
+function amountInWords(amount) {
+  if (!(amount > 0)) return "";
+  if (currentLang === "hi") {
+    return t("sp.only") + " " + numberToWordsHi(amount) + " " + t("sp.rupees_only");
+  }
+  return numberToWords(amount).replace(/\b\w/g, (m) => m.toUpperCase()) + " " + t("sp.rupees_only") + " " + t("sp.only");
 }
 
 function updateScanPayPinUI() {
@@ -2782,7 +3172,7 @@ function toggleScanPayPinMask() {
   scanPayPinMasked = !scanPayPinMasked;
   updateScanPayPinUI();
   const lbl = document.getElementById("sp-pin-show-label");
-  if (lbl) lbl.textContent = scanPayPinMasked ? "Show" : "Hide";
+  if (lbl) lbl.textContent = scanPayPinMasked ? t("sp.show") : t("sp.hide");
 }
 
 // ─── Send to Mobile – Flow Control & UI Helpers ──────────────
@@ -2886,13 +3276,13 @@ function updatePasscodeUI() {
   if (!btn) return;
   if (passcodeEnter.length === 4 && passcodeConfirm.length === 4) {
     btn.className = "ob-btn ob-btn--primary";
-    btn.textContent = "Confirm Passcode";
+    btn.textContent = t("pass.confirm");
     btn.onclick = function () {
       renderScreen(S.LOADING_SPLASH);
     };
   } else {
     btn.className = "ob-btn ob-btn--disabled";
-    btn.textContent = "Proceed";
+    btn.textContent = t("pass.proceed");
     btn.onclick = null;
   }
 }
@@ -2902,27 +3292,27 @@ function updatePasscodeUI() {
 const SCREEN_TOOLTIPS = {
   [S.GET_STARTED]: {
     element: "#gs-lang-section",
-    text: "You can choose your preferred language in which you want to access the app",
+    textKey: "tt.ob.lang_pref",
     side: "top",
   },
   [S.LANG_SELECT]: {
     element: "#lang-item-2",
-    text: "You can choose other languages apart from Hindi and Marathi from here",
+    textKey: "tt.ob.lang_others",
     side: "top",
   },
   [S.MOBILE_ENTRY]: {
     element: "#mob-input-wrap",
-    text: "You need to enter the mobile number linked with your bank account so that you can link and use your bank account for UPI Payments",
+    textKey: "tt.ob.mobile",
     side: "bottom",
   },
   [S.OTP_ENTRY]: {
     element: "#otp-boxes",
-    text: "To ensure that your mobile number, linked with your bank account, is being used only by you, we will send an OTP on your number which will be auto fetched by your app.",
+    textKey: "tt.ob.otp",
     side: "bottom",
   },
   [S.SIM_SELECT]: {
     element: "#sim-cards",
-    text: "In this step you need to confirm your SIM Card company and we will proceed with binding of your SIM and device with the app. This will ensure that no one else can use your UPI Account apart from yourself",
+    textKey: "tt.ob.sim",
     side: "bottom",
   },
 };
@@ -2943,14 +3333,15 @@ function showScreenTooltip(state) {
       return;
     }
 
-    let body = `<div class="tt-text">${tt.text}</div>`;
+    const ttText = tt.textKey ? t(tt.textKey) : (tt.text || "");
+    let body = `<div class="tt-text">${ttText}</div>`;
     if (tt.bullets) {
       body += '<ul class="tt-bullets">';
       tt.bullets.forEach((b) => { body += '<li>' + b + '</li>'; });
       body += '</ul>';
     }
     // Buttons
-    body += '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">Skip</button><button class="tt-btn-next" onclick="tooltipNext()">Next</button></div>';
+    body += '<div class="tt-buttons"><button class="tt-btn-skip" onclick="tooltipSkip()">' + t('tt.skip') + '</button><button class="tt-btn-next" onclick="tooltipNext()">' + t('tt.next') + '</button></div>';
 
     const dObj = window.driver.js.driver({
       showProgress: false,
@@ -3042,23 +3433,23 @@ function showCbScreenTooltip(state) {
     if (balanceRevealed) {
       step = {
         element: "#bank-card",
-        desc: "Your account balance is shown here after you enter your UPI PIN.",
-        title: "Balance visible",
+        desc: t("tt.cb.bal_visible.desc"),
+        title: t("tt.cb.bal_visible.title"),
         side: "bottom",
       };
     } else {
       step = {
         element: "#bank-card",
-        desc: "Tap here to enter your UPI PIN and view your account balance.",
-        title: "Check Balance",
+        desc: t("tt.cb.check.desc"),
+        title: t("tt.cb.check.title"),
         side: "bottom",
       };
     }
   } else if (state === S.CHECK_BALANCE_PIN) {
     step = {
       element: "#cb-pin-row",
-      desc: "Enter your 4-digit UPI PIN to view your account balance securely.",
-      title: "Enter UPI PIN",
+      desc: t("tt.cb.pin.desc"),
+      title: t("tt.cb.pin.title"),
       side: "bottom",
     };
   }
@@ -3075,8 +3466,8 @@ function showCbScreenTooltip(state) {
 
     let body = `<div class="tt-text">${step.desc}</div>`;
     body += '<div class="bhim-popover-footer"><div class="bhim-popover-buttons">' +
-      '<button class="bhim-btn-skip" onclick="cbTourSkip()">Skip</button>' +
-      '<button class="bhim-btn-next" onclick="cbTourNext()">Next</button>' +
+      '<button class="bhim-btn-skip" onclick="cbTourSkip()">' + t('tt.skip') + '</button>' +
+      '<button class="bhim-btn-next" onclick="cbTourNext()">' + t('tt.next') + '</button>' +
       '</div></div>';
 
     const dObj = window.driver.js.driver({
@@ -3168,15 +3559,15 @@ function showSendMobileTour(state) {
   const SM_TOTAL_STEPS = 5;
   let step = null;
   if (state === S.HOME) {
-    step = { element: "#send-to-mobile", title: "Send to Mobile", desc: "Click here to send money.", side: "bottom", padding: 10, radius: 14, idx: 0 };
+    step = { element: "#send-to-mobile", title: t("tt.sm.home.title"), desc: t("tt.sm.home.desc"), side: "bottom", padding: 10, radius: 14, idx: 0 };
   } else if (state === S.SEND_MOBILE_CHAT) {
-    step = { element: "#sm-chat-footer", title: "Enter Amount", desc: "Use this footer to enter the amount and tap Pay.", side: "top", padding: 8, radius: 16, idx: 1 };
+    step = { element: "#sm-chat-footer", title: t("tt.sm.amount.title"), desc: t("tt.sm.amount.desc"), side: "top", padding: 8, radius: 16, idx: 1 };
   } else if (state === S.SEND_MOBILE_PIN) {
-    step = { element: "#sm-pin-row", title: "Enter UPI PIN", desc: "Enter your 4-digit UPI PIN and tap the tick button.", side: "bottom", padding: 12, radius: 12, idx: 2 };
+    step = { element: "#sm-pin-row", title: t("tt.sm.pin.title"), desc: t("tt.sm.pin.desc"), side: "bottom", padding: 12, radius: 12, idx: 2 };
   } else if (state === S.SEND_MOBILE_SUCCESS) {
-    step = { element: "#sm-success-text", title: "Payment Successful", desc: "Success message will appear once transaction is done.", side: "bottom", padding: 20, radius: 16, idx: 3, onNext: function () { renderScreen(S.SEND_MOBILE_RECEIPT); } };
+    step = { element: "#sm-success-text", title: t("tt.sm.success.title"), desc: t("tt.sm.success.desc"), side: "bottom", padding: 20, radius: 16, idx: 3, onNext: function () { renderScreen(S.SEND_MOBILE_RECEIPT); } };
   } else if (state === S.SEND_MOBILE_RECEIPT) {
-    step = { element: "#sm-receipt-card", title: "Detailed Transaction History Screen", desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { if (activeDriver) { activeDriver.destroy(); activeDriver = null; } } };
+    step = { element: "#sm-receipt-card", title: t("tt.sm.receipt.title"), desc: "", side: "bottom", padding: 10, radius: 20, idx: 4, onNext: function () { if (activeDriver) { activeDriver.destroy(); activeDriver = null; } } };
   }
 
   if (!step) return;
@@ -3230,8 +3621,8 @@ function showSendMobileTour(state) {
       descHTML +
       dotsHTML +
       '<div class="smc-tooltip__btns">' +
-        '<button class="smc-tooltip__skip" onclick="smCoachSkip()">Skip</button>' +
-        '<button class="smc-tooltip__next" onclick="smCoachNext()">Next</button>' +
+        '<button class="smc-tooltip__skip" onclick="smCoachSkip()">' + t('tt.skip') + '</button>' +
+        '<button class="smc-tooltip__next" onclick="smCoachNext()">' + t('tt.next') + '</button>' +
       "</div>";
 
     // Position tooltip above or below the spotlight
@@ -3288,7 +3679,7 @@ function showScanPayTour(state) {
   if (state === S.HOME) {
     step = {
       element: "#scanner-btn",
-      title: "Click on Scanner Icon to start the journey of Scan & pay",
+      title: t("tt.sp.start"),
       desc: "",
       side: "top",
       padding: 14,
@@ -3298,7 +3689,7 @@ function showScanPayTour(state) {
   } else if (state === S.SCAN_2) {
     step = {
       element: ".scan2-camera",
-      title: "Select any QR to send money",
+      title: t("tt.sp.select_qr"),
       desc: "",
       side: "bottom",
       padding: 10,
@@ -3308,7 +3699,7 @@ function showScanPayTour(state) {
   } else if (state === S.ENTER_AMOUNT) {
     step = {
       element: ".ea-body",
-      title: "Enter amount and details, purpose of sending money",
+      title: t("tt.sp.amount"),
       desc: "",
       side: "bottom",
       padding: 10,
@@ -3318,7 +3709,7 @@ function showScanPayTour(state) {
   } else if (state === S.SELECT_ACCOUNT_TO_PAY) {
     step = {
       element: ".sm-review-bottom-sheet",
-      title: "Bank selection from bottom sheet dropdown if User has multiple bank added in UPI App",
+      title: t("tt.sp.bank"),
       desc: "",
       side: "top",
       padding: 8,
@@ -3328,7 +3719,7 @@ function showScanPayTour(state) {
   } else if (state === S.ENTER_UPI_PIN) {
     step = {
       element: "#sp-pin-content",
-      title: "Enter UPI PIN to send money",
+      title: t("tt.sp.pin"),
       desc: "",
       side: "bottom",
       padding: 10,
@@ -3338,7 +3729,7 @@ function showScanPayTour(state) {
   } else if (state === S.PAYMENT_SUCCESS) {
     step = {
       element: "#sp-success-text",
-      title: "Success message will appear once transaction is done",
+      title: t("tt.sp.success"),
       desc: "",
       side: "bottom",
       padding: 20,
@@ -3348,7 +3739,7 @@ function showScanPayTour(state) {
   } else if (state === S.DEBITED_TRANSACTION) {
     step = {
       element: "#sm-receipt-card",
-      title: "Detailed Transaction History Screen",
+      title: t("tt.sp.receipt"),
       desc: "",
       side: "bottom",
       padding: 10,
@@ -3408,8 +3799,8 @@ function showScanPayTour(state) {
       descHTML +
       dotsHTML +
       '<div class="spc-tooltip__btns">' +
-        '<button class="spc-tooltip__skip" onclick="spCoachSkip()">Skip</button>' +
-        '<button class="spc-tooltip__next" onclick="spCoachNext()">Next</button>' +
+        '<button class="spc-tooltip__skip" onclick="spCoachSkip()">' + t('tt.skip') + '</button>' +
+        '<button class="spc-tooltip__next" onclick="spCoachNext()">' + t('tt.next') + '</button>' +
       "</div>";
 
     // Position tooltip above or below the spotlight
