@@ -302,6 +302,11 @@ const i18n = {
     "landing.check_balance":    "Check Balance",
     "landing.send_mobile":      "Send to Mobile",
     "landing.scan_pay":         "Scan and Pay",
+    // ─── Get Started screen ───
+    "gs.tagline":               "India's most loved<br>UPI App!",
+    "gs.carousel":              "Bring your family together<br>with BHIM's family mode",
+    "gs.lang_title":            "Choose your preferred language",
+    "gs.proceed":               "Proceed",
     // ─── Send to Mobile Flow ───
     "sm.contacts.header":     "Send Money to any UPI App",
     "sm.contacts.search":     "Search by name or mobile number",
@@ -526,11 +531,16 @@ const i18n = {
     "cb.page_title":          "यूपीआई पिन",
     "cb.enter_pin_heading":   "यूपीआई पिन दर्ज करें",
     // ─── Landing menu ───
-    "landing.start_onboarding": "ऑनबोर्डिंग शुरू करें",
+    "landing.start_onboarding": "पंजीकरण शुरू करें",
     "landing.add_bank":         "बैंक खाता जोड़ें",
     "landing.check_balance":    "बैलेंस देखें",
-    "landing.send_mobile":      "मोबाइल पर भेजें",
-    "landing.scan_pay":         "स्कैन और भुगतान",
+    "landing.send_mobile":      "पैसे भेजें",
+    "landing.scan_pay":         "स्कैन और भुगतान करें",
+    // ─── Get Started screen ───
+    "gs.tagline":               "भारत का सबसे चहेता<br>यूपीआई ऐप!",
+    "gs.carousel":              "बीआईएम के फैमिली मोड के साथ<br>अपने परिवार को साथ लाएं",
+    "gs.lang_title":            "अपनी पसंदीदा भाषा चुनें",
+    "gs.proceed":               "आगे बढ़ें",
     // ─── Send to Mobile Flow ───
     "sm.contacts.header":     "किसी भी यूपीआई ऐप पर पैसे भेजें",
     "sm.contacts.search":     "नाम या मोबाइल नंबर से खोजें",
@@ -728,11 +738,11 @@ function landingHTML() {
   <div class="screen screen-landing">
     <div class="landing-logo">${upiLogoDarkSVG(140, 58, "upi_dark_sm.svg")}</div>
     <div class="landing-buttons">
-      <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> Start Onboarding Flow</button>
-      <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> Add Bank Account</button>
-      <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>3.</span> Check Balance</button>
-      <button class="ob-btn ob-btn--primary" onclick="startSendToMobileFlow()"><span>4.</span> Send to Mobile</button>
-      <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>5.</span> Scan and Pay</button>
+      <button class="ob-btn ob-btn--primary" onclick="startOnboarding()"><span>1.</span> ${t("landing.start_onboarding")}</button>
+      <button class="ob-btn ob-btn--primary" onclick="startAddBankFlow()"><span>2.</span> ${t("landing.add_bank")}</button>
+      <button class="ob-btn ob-btn--primary" onclick="startCheckBalanceFlow()"><span>3.</span> ${t("landing.check_balance")}</button>
+      <button class="ob-btn ob-btn--primary" onclick="startSendToMobileFlow()"><span>4.</span> ${t("landing.send_mobile")}</button>
+      <button class="ob-btn ob-btn--primary" onclick="startScanAndPayFlow()"><span>5.</span> ${t("landing.scan_pay")}</button>
     </div>
   </div>`;
 }
@@ -753,12 +763,12 @@ function getStartedHTML(mode) {
   <div class="screen screen-get-started${noAnim}">
     <div class="gs-blue-bg"></div>
     ${statusBarSVG(false)}
-    <div class="gs-header"><div style="margin-top:8px">${upiLogoSVG(91, 48, "upi.svg")}</div><div class="gs-tagline">India's most loved<br>UPI App!</div></div>
+    <div class="gs-header"><div style="margin-top:8px">${upiLogoSVG(91, 48, "upi.svg")}</div><div class="gs-tagline">${t("gs.tagline")}</div></div>
     <div class="gs-body">
-      <div class="gs-carousel"><div class="gs-carousel__icon"><img width="64" height="64" src="assets/star.png"  alt="Star"></div><div class="gs-carousel__text">Bring your family together<br>with BHIM's family mode</div></div>
+      <div class="gs-carousel"><div class="gs-carousel__icon"><img width="64" height="64" src="assets/star.png"  alt="Star"></div><div class="gs-carousel__text">${t("gs.carousel")}</div></div>
       <div class="gs-dots"><div class="gs-dot"></div><div class="gs-dot gs-dot--active"></div><div class="gs-dot"></div><div class="gs-dot"></div></div>
       <div class="gs-lang-section"${langSectionId}>
-        <p class="gs-lang-title">Choose your preferred language</p>
+        <p class="gs-lang-title">${t("gs.lang_title")}</p>
         <div class="gs-lang-cards">
           ${[["हिंदी", "नमस्ते"], ["English", "Hello"]].map(([name, greet], i) => {
             const sel = selectedLang === i;
@@ -772,7 +782,7 @@ function getStartedHTML(mode) {
     </div>
     <div class="ob-bottom-bar">
       <!-- <div class="ob-bottom-bar__inner" style="padding-top:0"><button class="ob-btn ob-btn--tertiary">view all languages</button></div> -->
-      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview || selectedLang !== null ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview || selectedLang === null ? '' : ' onclick="proceedFromGetStarted()"'}>Proceed</button></div>
+      <div class="ob-bottom-bar__inner"><button class="ob-btn ${isPreview || selectedLang !== null ? 'ob-btn--primary' : 'ob-btn--disabled'}" id="gs-proceed-btn"${isPreview || selectedLang === null ? '' : ' onclick="proceedFromGetStarted()"'}>${t("gs.proceed")}</button></div>
       ${homeIndHTML()}
     </div>
   </div>`;
@@ -3909,6 +3919,15 @@ function demoPrevious() {
     dismissSpCoachMark();
     renderScreen(seq[idx - 1]);
   }
+}
+
+function demoHome() {
+  if (currentState === S.LANDING) return;
+  if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  dismissSmCoachMark();
+  dismissSpCoachMark();
+  clearTimers();
+  renderScreen(S.LANDING);
 }
 
 // ─── Init ────────────────────────────────────────────────────

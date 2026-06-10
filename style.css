@@ -133,6 +133,7 @@ body {
 .demo-nav {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: var(--phone-w);
   gap: 12px;
 }
@@ -151,6 +152,31 @@ body {
   background: #fff;
   border: 1px solid #d2d2d2;
   color: #0b0b0b;
+}
+
+.demo-nav__btn--home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1px solid #d2d2d2;
+  color: #0b0b0b;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.demo-nav__btn--home:hover {
+  background: linear-gradient(152deg, #e55c11 6%, #f47920 106%);
+  color: #fff;
+  border-color: transparent;
+  opacity: 1;
+}
+
+.demo-nav__btn--home:active {
+  transform: scale(0.95);
 }
 
 .demo-nav__btn--next {
