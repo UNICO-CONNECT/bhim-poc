@@ -307,6 +307,8 @@ const i18n = {
     "gs.carousel":              "Bring your family together<br>with BHIM's family mode",
     "gs.lang_title":            "Choose your preferred language",
     "gs.proceed":               "Proceed",
+    // ─── Demo chrome ───
+    "demo.disclaimer":          "This is only a demo. Any action here will not result in a real payment.",
     // ─── Send to Mobile Flow ───
     "sm.contacts.header":     "Send Money to any UPI App",
     "sm.contacts.search":     "Search by name or mobile number",
@@ -541,6 +543,8 @@ const i18n = {
     "gs.carousel":              "बीआईएम के फैमिली मोड के साथ<br>अपने परिवार को साथ लाएं",
     "gs.lang_title":            "अपनी पसंदीदा भाषा चुनें",
     "gs.proceed":               "आगे बढ़ें",
+    // ─── Demo chrome ───
+    "demo.disclaimer":          "यह केवल एक डेमो है। यहाँ की गई कोई भी कार्रवाई वास्तविक भुगतान नहीं होगी।",
     // ─── Send to Mobile Flow ───
     "sm.contacts.header":     "किसी भी यूपीआई ऐप पर पैसे भेजें",
     "sm.contacts.search":     "नाम या मोबाइल नंबर से खोजें",
@@ -2896,10 +2900,18 @@ function proceedFromGetStarted() {
   renderScreen(S.MOBILE_ENTRY);
 }
 
+// Update chrome elements that live OUTSIDE the phone shell (in index.html)
+// — they aren't covered by renderScreen's t() resolution.
+function updateDemoChrome() {
+  const disc = document.getElementById("demo-disclaimer");
+  if (disc) disc.textContent = t("demo.disclaimer");
+}
+
 // Re-render the current screen and re-fire its tooltip so every t() call
 // picks up the newly-selected language immediately.
 function refreshLanguage() {
   if (activeDriver) { activeDriver.destroy(); activeDriver = null; }
+  updateDemoChrome();
   if (currentState) {
     if (tooltipGuide.shownForScreen[currentState]) {
       tooltipGuide.shownForScreen[currentState] = false;
@@ -3933,5 +3945,6 @@ function demoHome() {
 // ─── Init ────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
   phoneShell = document.getElementById("phone-shell");
+  updateDemoChrome();
   renderScreen(S.LANDING);
 });
